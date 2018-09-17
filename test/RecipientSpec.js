@@ -68,6 +68,36 @@ export default describe('Recipient', () => {
     it('returns stringified recipient', () => {
       let recipient = new SharedBox.Helpers.Recipient({foo : 'bar'});
       expect(recipient.toJson()).to.equal('{"recipient":{"email":null,"firstName":null,"lastName":null,"contactMethods":[]}}');
+      let wholeRecipient = new SharedBox.Helpers.Recipient({
+        'id': '59adbccb-87cc-4224-bfd7-314dae796e48',
+        'firstName': 'John',
+        'lastName': 'Doe',
+        'email': 'john.doe@email.com',
+        'options': {
+          'locked': false,
+          'bouncedEmail': false,
+          'verified': false,
+          'contactMethods': [
+            {
+              'id': 1,
+              'destination': '+55555555555',
+              'destinationType': 'office_phone',
+              'verified': false,
+              'createdAt': '2018-09-01T16:26:07-04:00',
+              'updatedAt': '2018-09-01T16:26:07-04:00'
+            },
+            {
+              'id': 2,
+              'destination': '+1111111111',
+              'destinationType': 'cell_phone',
+              'verified': true,
+              'createdAt': '2018-09-01T16:26:07-04:00',
+              'updatedAt': '2018-09-01T16:26:07-04:00'
+            }
+          ]
+        }}
+      );
+      expect(wholeRecipient.toJson()).to.equal('{"recipient":{"email":"john.doe@email.com","firstName":"John","lastName":"Doe","contactMethods":[{"destinationType":"office_phone","destination":"+55555555555"},{"destinationType":"cell_phone","destination":"+1111111111"}]}}');
     });
   });
 });
