@@ -39,11 +39,4 @@ export default describe('Recipient', () => {
       expect(recipient.toJson()).to.equal('{"recipient":{"email":null,"firstName":null,"lastName":null,"contactMethods":[]}}');
     });
   });
-
-  describe('.toObject', () => {
-    it('return objectified recipient', () => {
-      let recipient = new SharedBox.Helpers.Recipient({foo : 'bar'});
-      expect(recipient.toObject()).to.deep.equal({email: null, firstName: null, lastName: null, id: null, options : {locked: null, bouncedEmail: null, verified: null, contactMethods: [], createdAt: null, updatedAt: null}});
-    });
-  });
 });
