@@ -1,0 +1,42 @@
+//initializeSharedbox JSON response examples
+{
+  "guid": "dc6f21e0f02c41123b795e4",
+  "uploadUrl": "upload_url"
+}
+
+//uploadFile JSON response examples
+{ 
+  "temporaryDocument": {
+    "documentGuid": "65f53ec1282c454fa98439dbda134093"
+  }
+}
+
+//JSON returned by submitSharedbox (JsonClient)
+{ "guid": "1c820789a50747df8746aa5d71922a3f",
+  "userId": 3,
+  "subject": "Donec rutrum congue leo eget malesuada.",
+  "expiration": "2018-12-06T05:38:09.951Z",
+  "notificationLanguage": "en",
+  "status":"in_progress",
+  "allowRememberMe": false,
+  "allowSms": false,
+  "allowVoice": false,
+  "allowEmail": true,
+  "retentionPeriodType": "discard_at_expiration",
+  "retentionPeriodValue": null,
+  "retentionPeriodUnit": null,
+  "previewUrl": "http://sharedbox.com/sharedboxes/dhjewg67ewtfg476/preview",
+  "createdAt": "2018-12-05T22:38:09.965Z",
+  "updatedAt": "2018-12-05T22:38:09.965Z"
+}
+
+//closeSharedbox JSON response examples
+{
+  "result": true,
+  "message": "Sharedbox successfully closed." 
+}
+
+{
+  "result": false,
+  "message": "Unable to close the Sharedbox." 
+}

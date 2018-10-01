@@ -1,7 +1,6 @@
 import SharedBox from '../src/sharedbox.js';
-//import _map from 'lodash/map';
-//import _partial from 'lodash/partial';
 let expect = require('chai').expect;
+let wholeRecipientJSON = require('../JSON/Recipient.json');
 
 export default describe('Recipient', () => {
 
@@ -10,35 +9,7 @@ export default describe('Recipient', () => {
     it('creates a recipient from the input', () => {
       let emptyRecipient = new SharedBox.Helpers.Recipient();
       expect(emptyRecipient).to.deep.equal({ email: null, firstName: null, lastName: null});
-      let wholeRecipient = new SharedBox.Helpers.Recipient({
-        'id': '59adbccb-87cc-4224-bfd7-314dae796e48',
-        'firstName': 'John',
-        'lastName': 'Doe',
-        'email': 'john.doe@email.com',
-        'options': {
-          'locked': false,
-          'bouncedEmail': false,
-          'verified': false,
-          'contactMethods': [
-            {
-              'id': 1,
-              'destination': '+55555555555',
-              'destinationType': 'office_phone',
-              'verified': false,
-              'createdAt': '2018-09-01T16:26:07-04:00',
-              'updatedAt': '2018-09-01T16:26:07-04:00'
-            },
-            {
-              'id': 2,
-              'destination': '+1111111111',
-              'destinationType': 'cell_phone',
-              'verified': true,
-              'createdAt': '2018-09-01T16:26:07-04:00',
-              'updatedAt': '2018-09-01T16:26:07-04:00'
-            }
-          ]
-        }}
-      );
+      let wholeRecipient = new SharedBox.Helpers.Recipient(wholeRecipientJSON);
       expect(wholeRecipient).to.be.an.instanceof(SharedBox.Helpers.Recipient);
       expect(wholeRecipient.email).to.equal('john.doe@email.com');
       expect(wholeRecipient.firstName).to.equal('John');

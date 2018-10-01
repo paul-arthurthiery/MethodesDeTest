@@ -1,0 +1,29 @@
+{
+  "id": "59adbccb-87cc-4224-bfd7-314dae796e48",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@email.com",
+  "options": {
+    "locked": false,
+    "bouncedEmail": false,
+    "verified": false,
+    "contactMethods": [
+      {
+        "id": 1,
+        "destination": "+55555555555",
+        "destinationType": "office_phone",
+        "verified": false,
+        "createdAt": "2018-09-01T16:26:07-04:00",
+        "updatedAt": "2018-09-01T16:26:07-04:00"
+      },
+      {
+        "id": 2,
+        "destination": "+1111111111",
+        "destinationType": "cell_phone",
+        "verified": true,
+        "createdAt": "2018-09-01T16:26:07-04:00",
+        "updatedAt": "2018-09-01T16:26:07-04:00"
+      }
+    ]
+  }
+}
