@@ -89,7 +89,7 @@ export default class JsonClient {
    * @return The json containing the informations of the created SharedBox
    */
   submitSharedBox(sharedBoxJson) {
-    const suffix = `api/sharedboxes`;
+    const suffix = 'api/sharedboxes';
     return this._makeRequest(suffix, {
       headers: {
         'Authorization-Token': this.apiToken,
