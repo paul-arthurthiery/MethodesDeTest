@@ -6,6 +6,7 @@ let expect = require('chai').expect;
 let sinon = require('sinon');
 let fetch = Utils.fetch;
 chai.use(sinonChai);
+import * as recipientToAdd from '../JSON/Recipient.json';
 
 export default describe('JsonClient', () => {
   let jsonClient;
@@ -15,6 +16,35 @@ export default describe('JsonClient', () => {
     return new Promise((resolve, reject) => {
       promiseHelper(resolve, reject);
     });
+  };
+  let sharedBoxToSubmit ={
+    'userEmail': 'user@acme.com',
+    'guid': '1c820789a50747df8746aa5d71922a3f',
+    'uploadUrl': 'upload_url',
+    'recipients': [/* list of Recipient objects*/],
+    'attachments': [/*list of Attachment objects*/],
+    'message': 'lorem ipsum...',
+    'subject': 'Donec rutrum congue leo eget malesuada.',
+    'notificationLanguage': 'en',
+    'securityOptions': {
+      'allowRememberMe': true,
+      'allowSms': true,
+      'allowVoice': true,
+      'allowEmail': true,
+      'expirationValue': 5,
+      'expirationUnit': 'days',
+      'retentionPeriodType': 'do_not_discard',
+      'retentionPeriodValue': null,
+      'retentionPeriodUnit': 'hours',
+      'allowManualClose': true
+    },
+    'userId': 1,
+    'status': 'in_progress',
+    'previewUrl': 'http://sharedbox.com/sharedboxes/dhjewg67ewtfg476/preview',
+    'createdAt': '2018-05-24T14:45:35.062Z',
+    'updatedAt': '2018-05-24T14:45:35.589Z',
+    'expiration': '2018-05-31T14:45:35.038Z',
+    'closedAt': null
   };
   let submitSharedBoxResponse = {
     'guid': '1c820789a50747df8746aa5d71922a3f',
@@ -65,11 +95,7 @@ export default describe('JsonClient', () => {
     it('submits the SharedBox and returns the proper success message', () => {
       fetchStub.onFirstCall().returns(fakePromise(r => r(new Response('someEndpoint/'))));
       fetchStub.onSecondCall().returns(fakePromise(r => r(new Response(JSON.stringify(submitSharedBoxResponse)))));
-      jsonClient.submitSharedBox({
-        'temporaryDocument': {
-          'documentGuid': '65f53ec1282c454fa98439dbda134093'
-        }
-      }).then(res => {
+      jsonClient.submitSharedBox(sharedBoxToSubmit).then(res => {
         expect(res).to.deep.equal(submitSharedBoxResponse);
         expect(fetchStub).to.have.been.calledWith('endpoint/services/sharedbox/server/url', {'method': 'get'});
         expect(fetchStub).to.have.been.calledWith('someEndpoint/api/sharedboxes', {
@@ -78,11 +104,26 @@ export default describe('JsonClient', () => {
             'Content-Type': 'application/json'
           },
           'method': 'post',
-          'body': {
-            'temporaryDocument': {
-              'documentGuid': '65f53ec1282c454fa98439dbda134093'
-            }
-          }
+          'body': sharedBoxToSubmit
+        });
+      });
+    });
+  });
+
+  describe('addRecipient', () => {
+    it('adds a recipient to a sharedbox and returns the proper success message', () => {
+      fetchStub.onFirstCall().returns(fakePromise(r => r(new Response('someEndpoint/'))));
+      fetchStub.onSecondCall().returns(fakePromise(r => r(new Response(JSON.stringify(recipientToAdd)))));
+      jsonClient.addRecipient('dc6f21e0f02c41123b795e4', recipientToAdd).then(res => {
+        expect(res).to.deep.equal(recipientToAdd);
+        expect(fetchStub).to.have.been.calledWith('endpoint/services/sharedbox/server/url', {'method': 'get'});
+        expect(fetchStub).to.have.been.calledWith('someEndpoint/api/sharedboxes/dc6f21e0f02c41123b795e4/recipients', {
+          'headers': {
+            'Authorization-Token': 'apiToken',
+            'Content-Type': 'application/json'
+          },
+          'method': 'post',
+          'body': recipientToAdd
         });
       });
     });
