@@ -129,4 +129,39 @@ export default describe('JsonClient', () => {
     });
   });
 
+  describe('closeSharedBox', () => {
+
+    it('closes a sharedbox and returns the proper success message', () => {
+      fetchStub.onFirstCall().returns(fakePromise(r => r(new Response('someEndpoint/'))));
+      fetchStub.onSecondCall().returns(fakePromise(r => r(new Response(JSON.stringify({'result': true,'message': 'Sharedbox successfully closed.' })))));
+      jsonClient.closeSharedbox('dc6f21e0f02c41123b795e4').then(res => {
+        expect(res).to.deep.equal({'result': true,'message': 'Sharedbox successfully closed.' });
+        expect(fetchStub).to.have.been.calledWith('endpoint/services/sharedbox/server/url', {'method': 'get'});
+        expect(fetchStub).to.have.been.calledWith('someEndpoint/api/sharedboxes/dc6f21e0f02c41123b795e4/close', {
+          'headers': {
+            'Authorization-Token': 'apiToken',
+            'Content-Type': 'application/json'
+          },
+          'method': 'patch'
+        });
+      });
+    });
+
+    it('fails to close a sharedbox and returns the proper failure message', () => {
+      fetchStub.onFirstCall().returns(fakePromise(r => r(new Response('someEndpoint/'))));
+      fetchStub.onSecondCall().returns(fakePromise(r => r(new Response(JSON.stringify({'result': false, 'message': 'Unable to close the Sharedbox.' })))));
+      jsonClient.closeSharedbox('dc6f21e0f02c41123b795e4').then(res => {
+        expect(res).to.deep.equal({'result': false, 'message': 'Unable to close the Sharedbox.'});
+        expect(fetchStub).to.have.been.calledWith('endpoint/services/sharedbox/server/url', {'method': 'get'});
+        expect(fetchStub).to.have.been.calledWith('someEndpoint/api/sharedboxes/dc6f21e0f02c41123b795e4/close', {
+          'headers': {
+            'Authorization-Token': 'apiToken',
+            'Content-Type': 'application/json'
+          },
+          'method': 'patch'
+        });
+      });
+    });
+  });
+
 });
