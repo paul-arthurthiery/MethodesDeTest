@@ -1,10 +1,9 @@
-//Example of Sharedbox object
 {
     "userEmail": "user@acme.com",
     "guid": "1c820789a50747df8746aa5d71922a3f",
     "uploadUrl": "upload_url",
-    "recipients": [/* list of Recipient objects*/],
-    "attachments": [/*list of Attachment objects*/],
+    "recipients": [],
+    "attachments": [],
     "message": "lorem ipsum...",
     "subject": "Donec rutrum congue leo eget malesuada.",
     "notificationLanguage": "en",

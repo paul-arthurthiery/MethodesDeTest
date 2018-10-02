@@ -6,6 +6,19 @@ export default describe('Recipient', () => {
 
 
   describe('.constructor', () => {
+    it('create recipient without input', () => {
+      let recipientTest = new SharedBox.Helpers.Recipient();
+      expect(recipientTest).to.be.an.instanceof(SharedBox.Helpers.Recipient);
+      expect(recipientTest.firstName).to.eql(null);
+      expect(recipientTest.lastName).to.eql(null);
+      expect(recipientTest.email).to.eql(null);
+      expect(recipientTest.options).to.be.an.instanceof(SharedBox.Helpers.Options);
+      expect(recipientTest.options.locked).to.eql(null);
+      expect(recipientTest.options.bouncedEmail).to.eql(null);
+      expect(recipientTest.options.verified).to.eql(null);
+      expect(recipientTest.options.contactMethods).to.eql([]);
+    });
+
     it('creates a recipient from the input', () => {
       let emptyRecipient = new SharedBox.Helpers.Recipient();
       expect(emptyRecipient).to.deep.equal({ email: null, firstName: null, lastName: null});
