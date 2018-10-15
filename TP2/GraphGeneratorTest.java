@@ -17,7 +17,7 @@ class GraphGeneratorTest {
     @org.junit.jupiter.api.Test
     /*
     simple() prend 2 entrées: V et E
-    V peut avoir n'importe quel int positif ou nul
+    V peut être n'importe quel int positif ou nul
     E doit valoir entre 0 et V*(V-1)/2
     On a donc pour V: min-(-1), min(0), V(1 à 2147483647)
     pour E: min-(-1), min(0), E(1 à (V*(V-1)/2-1)), max(V*(V-1)/2), max+(1+(V*(V-1)/2))
@@ -50,7 +50,7 @@ class GraphGeneratorTest {
     @org.junit.jupiter.api.Test
     /*
     simple() prend 2 entrées: V et p
-    V peut avoir n'importe quel int positif ou nul
+    V peut être n'importe quel int positif ou nul
     p doit valoir entre 0 1
     On a donc pour V: min-(-1), min(0), V(1 à 2147483647)
     pour p: min-(-1.0), min(0.0), p(0.01 à 0.99), max(1.0), max+(1.1)
@@ -80,11 +80,44 @@ class GraphGeneratorTest {
     }
 
     @org.junit.jupiter.api.Test
-    void bipartite() {
+    /*
+    bipartite() prend 3 entrées: V1, V2 et E
+    V1 et V2 peuvent être n'importe quel int positif ou nul
+    E doit être entre 0 et V1*V2
+    On a donc pour V1 et V2: min-(-1), min(0), V(1 à 2147483647)
+    pour E: min-(-1), min(0), E(1 à (V1*V2)-1), max(V1*V2), max+((V1*V2)+1)
+    Nous avons donc 7 cas de test : V11, V12, E1, V12V22E2, V13V23E3, V13V23E4, E5
+    */
+    void bipartiteVVE() {
+        //V11
+        Throwable negativeVertex1 = assertThrows(IllegalArgumentException.class,() -> {
+            GraphGenerator.bipartite(-1, 0, 0);
+        });
+        //V21
+        Throwable negativeVertex2 = assertThrows(IllegalArgumentException.class,() -> {
+            GraphGenerator.bipartite(0, -1, 0);
+        });
+        //E1
+        Throwable negativeEdge = assertThrows(IllegalArgumentException.class,() -> {
+            GraphGenerator.bipartite(0, 0, -1);
+        });
+        //V12V22E2
+        assertEquals(GraphGenerator.bipartite(0,0, 0).V(), 0);
+        assertEquals(GraphGenerator.bipartite(0,0, 0).E(), 0);
+        //V3E3
+        assertEquals(GraphGenerator.bipartite(25,25, 100).V(), 50);
+        assertEquals(GraphGenerator.bipartite(25,25, 100).E(), 100);
+        //V3E4
+        assertEquals(GraphGenerator.bipartite(10,10, 100).V(), 20);
+        assertEquals(GraphGenerator.bipartite(10,10, 100).E(), 100);
+        //E5
+        Throwable tooManyEdges = assertThrows(IllegalArgumentException.class,() -> {
+            GraphGenerator.bipartite(10, 10, 101);
+        });
     }
 
     @org.junit.jupiter.api.Test
-    void bipartite1() {
+    void bipartiteVVp() {
     }
 
     @org.junit.jupiter.api.Test
