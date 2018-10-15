@@ -5,15 +5,7 @@ import edu.princeton.cs.algs4.GraphGenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GraphGeneratorTest {
-    @org.junit.jupiter.api.BeforeEach
-    void setUp() {
-    }
-
-    @org.junit.jupiter.api.AfterEach
-    void tearDown() {
-    }
-
+class GraphGeneratorTestEC {
     @org.junit.jupiter.api.Test
     /*
     simple() prend 2 entrées: V et E
