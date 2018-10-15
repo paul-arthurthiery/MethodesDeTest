@@ -17,6 +17,7 @@ export default describe('Client', () => {
   let submitSharedBoxStub;
   let addRecipientStub;
   let closeSharedBoxStub;
+  let uploadFileStub;
   let Response = fetch.Response;
   let fakePromise = (promiseHelper) => {
     return new Promise((resolve, reject) => {
@@ -100,7 +101,6 @@ export default describe('Client', () => {
 
   beforeEach(() => {
     fetchStub = sinon.stub(Utils, 'fetch');
-
   });
 
   afterEach(() => {
@@ -209,6 +209,29 @@ export default describe('Client', () => {
         expect(res).to.deep.equal({'result': false, 'message': 'Unable to close the Sharedbox.'});
       });
     });
+  });
+
+  describe('uploadAttachment', () => {
+    before(() => {
+      uploadFileStub = sinon.stub(jsonClient, 'uploadFile');
+    });
+
+    after(() => {
+      jsonClient.uploadFile.restore();
+    });
+
+    let attachment = {'stream': null, 'contentType': null, 'filename': 'file'};
+    it('uploads a file and returns the proper success message', () => {
+      fetchStub.onFirstCall().returns(fakePromise(r => r(new Response('someEndpoint/'))));
+      fetchStub.onSecondCall().returns(fakePromise(r => r(new Response({'temporaryDocument': {
+        'documentGuid': '1c820789a50747df8746aa5d71922a3f'
+      }}))));
+      uploadFileStub.returns(fakePromise(r => r(new Response({'filename': 'file', 'guid': '1c820789a50747df8746aa5d71922a3f'}))));
+      client.uploadAttachment(sharedBoxToSubmit, attachment).then(res => {
+        expect(res).to.deep.equal({'filename': 'file', 'guid': '1c820789a50747df8746aa5d71922a3f', 'stream': null, 'contentType': null});
+      });
+    });
+
   });
 
 });
