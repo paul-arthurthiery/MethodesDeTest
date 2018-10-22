@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>GabowSCC.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">GabowSCC.java</span></div><h1>GabowSCC.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac GabowSCC.java
+ *  Execution:    java GabowSCC V E
+ *  Dependencies: Digraph.java Stack.java TransitiveClosure.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt
+ *
+ *  Compute the strongly-connected components of a digraph using 
+ *  Gabow's algorithm (aka Cheriyan-Mehlhorn algorithm).
+ *
+ *  Runs in O(E + V) time.
+ *
+ *  % java GabowSCC tinyDG.txt
+ *  5 components
+ *  1 
+ *  0 2 3 4 5
+ *  9 10 11 12
+ *  6 8
+ *  7 
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+/**
+ *  The {@code GabowSCC} class represents a data type for 
+ *  determining the strong components in a digraph.
+ *  The &lt;em&gt;id&lt;/em&gt; operation determines in which strong component
+ *  a given vertex lies; the &lt;em&gt;areStronglyConnected&lt;/em&gt; operation
+ *  determines whether two vertices are in the same strong component;
+ *  and the &lt;em&gt;count&lt;/em&gt; operation determines the number of strong
+ *  components.
+
+ *  The &lt;em&gt;component identifier&lt;/em&gt; of a component is one of the
+ *  vertices in the strong component: two vertices have the same component
+ *  identifier if and only if they are in the same strong component.
+
+ *  &lt;p&gt;
+ *  This implementation uses the Gabow's algorithm.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;id&lt;/em&gt;, &lt;em&gt;count&lt;/em&gt;, and &lt;em&gt;areStronglyConnected&lt;/em&gt;
+ *  operations take constant time.
+ *  For alternate implementations of the same API, see
+ *  {@link KosarajuSharirSCC} and {@link TarjanSCC}.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L55" title="All 2 branches missed.">public class GabowSCC {</span>
+
+    private boolean[] marked;        // marked[v] = has v been visited?
+    private int[] id;                // id[v] = id of strong component containing v
+    private int[] preorder;          // preorder[v] = preorder of v
+    private int pre;                 // preorder number counter
+    private int count;               // number of strongly-connected components
+    private Stack&lt;Integer&gt; stack1;
+    private Stack&lt;Integer&gt; stack2;
+
+
+    /**
+     * Computes the strong components of the digraph {@code G}.
+     * @param G the digraph
+     */
+<span class="nc" id="L70">    public GabowSCC(Digraph G) {</span>
+<span class="nc" id="L71">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L72">        stack1 = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L73">        stack2 = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L74">        id = new int[G.V()]; </span>
+<span class="nc" id="L75">        preorder = new int[G.V()];</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L77">            id[v] = -1;</span>
+
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (!marked[v]) dfs(G, v);</span>
+        }
+
+        // check that id[] gives strong components
+<span class="nc bnc" id="L84" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L85">    }</span>
+
+    private void dfs(Digraph G, int v) { 
+<span class="nc" id="L88">        marked[v] = true;</span>
+<span class="nc" id="L89">        preorder[v] = pre++;</span>
+<span class="nc" id="L90">        stack1.push(v);</span>
+<span class="nc" id="L91">        stack2.push(v);</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (!marked[w]) dfs(G, w);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            else if (id[w] == -1) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                while (preorder[stack2.peek()] &gt; preorder[w])</span>
+<span class="nc" id="L96">                    stack2.pop();</span>
+            }
+        }
+
+        // found strong component containing v
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (stack2.peek() == v) {</span>
+<span class="nc" id="L102">            stack2.pop();</span>
+            int w;
+            do {
+<span class="nc" id="L105">                w = stack1.pop();</span>
+<span class="nc" id="L106">                id[w] = count;</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            } while (w != v);</span>
+<span class="nc" id="L108">            count++;</span>
+        }
+<span class="nc" id="L110">    }</span>
+
+    /**
+     * Returns the number of strong components.
+     * @return the number of strong components
+     */
+    public int count() {
+<span class="nc" id="L117">        return count;</span>
+    }
+
+    /**
+     * Are vertices {@code v} and {@code w} in the same strong component?
+     * @param  v one vertex
+     * @param  w the other vertex
+     * @return {@code true} if vertices {@code v} and {@code w} are in the same
+     *         strong component, and {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= w &lt; V}
+     */
+    public boolean stronglyConnected(int v, int w) {
+<span class="nc" id="L130">        validateVertex(v);</span>
+<span class="nc" id="L131">        validateVertex(w);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        return id[v] == id[w];</span>
+    }
+
+    /**
+     * Returns the component id of the strong component containing vertex {@code v}.
+     * @param  v the vertex
+     * @return the component id of the strong component containing vertex {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int id(int v) {
+<span class="nc" id="L142">        validateVertex(v);</span>
+<span class="nc" id="L143">        return id[v];</span>
+    }
+
+    // does the id[] array contain the strongly connected components?
+    private boolean check(Digraph G) {
+<span class="nc" id="L148">        TransitiveClosure tc = new TransitiveClosure(G);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            for (int w = 0; w &lt; G.V(); w++) {</span>
+<span class="nc bnc" id="L151" title="All 6 branches missed.">                if (stronglyConnected(v, w) != (tc.reachable(v, w) &amp;&amp; tc.reachable(w, v)))</span>
+<span class="nc" id="L152">                    return false;</span>
+            }
+        }
+<span class="nc" id="L155">        return true;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L160">        int V = marked.length;</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L162">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L163">    }</span>
+
+    /**
+     * Unit tests the {@code GabowSCC} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L171">        In in = new In(args[0]);</span>
+<span class="nc" id="L172">        Digraph G = new Digraph(in);</span>
+<span class="nc" id="L173">        GabowSCC scc = new GabowSCC(G);</span>
+
+        // number of connected components
+<span class="nc" id="L176">        int m = scc.count();</span>
+<span class="nc" id="L177">        StdOut.println(m + &quot; components&quot;);</span>
+
+        // compute list of vertices in each strong component
+<span class="nc" id="L180">        Queue&lt;Integer&gt;[] components = (Queue&lt;Integer&gt;[]) new Queue[m];</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L182">            components[i] = new Queue&lt;Integer&gt;();</span>
+        }
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L185">            components[scc.id(v)].enqueue(v);</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            for (int v : components[i]) {</span>
+<span class="nc" id="L191">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L193">            StdOut.println();</span>
+        }
+
+<span class="nc" id="L196">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

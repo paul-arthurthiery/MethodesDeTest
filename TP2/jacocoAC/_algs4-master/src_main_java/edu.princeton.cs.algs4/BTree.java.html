@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>BTree.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">BTree.java</span></div><h1>BTree.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac BTree.java
+ *  Execution:    java BTree
+ *  Dependencies: StdOut.java
+ *
+ *  B-tree.
+ *
+ *  Limitations
+ *  -----------
+ *   -  Assumes M is even and M &gt;= 4
+ *   -  should b be an array of children or list (it would help with
+ *      casting to make it a list)
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code BTree} class represents an ordered symbol table of generic
+ *  key-value pairs.
+ *  It supports the &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; methods.
+ *  A symbol table implements the &lt;em&gt;associative array&lt;/em&gt; abstraction:
+ *  when associating a value with a key that is already in the symbol table,
+ *  the convention is to replace the old value with the new value.
+ *  Unlike {@link java.util.Map}, this class uses the convention that
+ *  values cannot be {@code null}—setting the
+ *  value associated with a key to {@code null} is equivalent to deleting the key
+ *  from the symbol table.
+ *  &lt;p&gt;
+ *  This implementation uses a B-tree. It requires that
+ *  the key type implements the {@code Comparable} interface and calls the
+ *  {@code compareTo()} and method to compare two keys. It does not call either
+ *  {@code equals()} or {@code hashCode()}.
+ *  The &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;put&lt;/em&gt;, and &lt;em&gt;contains&lt;/em&gt; operations
+ *  each make log&lt;sub&gt;&lt;em&gt;m&lt;/em&gt;&lt;/sub&gt;(&lt;em&gt;n&lt;/em&gt;) probes in the worst case,
+ *  where &lt;em&gt;n&lt;/em&gt; is the number of key-value pairs
+ *  and &lt;em&gt;m&lt;/em&gt; is the branching factor.
+ *  The &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; operations take constant time.
+ *  Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://algs4.cs.princeton.edu/62btree&quot;&gt;Section 6.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+public class BTree&lt;Key extends Comparable&lt;Key&gt;, Value&gt;  {
+    // max children per B-tree node = M-1
+    // (must be even and greater than 2)
+    private static final int M = 4;
+
+    private Node root;       // root of the B-tree
+    private int height;      // height of the B-tree
+    private int n;           // number of key-value pairs in the B-tree
+
+    // helper B-tree node data type
+    private static final class Node {
+        private int m;                             // number of children
+<span class="nc" id="L58">        private Entry[] children = new Entry[M];   // the array of children</span>
+
+        // create a node with k children
+<span class="nc" id="L61">        private Node(int k) {</span>
+<span class="nc" id="L62">            m = k;</span>
+<span class="nc" id="L63">        }</span>
+    }
+
+    // internal nodes: only use key and next
+    // external nodes: only use key and value
+    private static class Entry {
+        private Comparable key;
+        private final Object val;
+        private Node next;     // helper field to iterate over array entries
+<span class="nc" id="L72">        public Entry(Comparable key, Object val, Node next) {</span>
+<span class="nc" id="L73">            this.key  = key;</span>
+<span class="nc" id="L74">            this.val  = val;</span>
+<span class="nc" id="L75">            this.next = next;</span>
+<span class="nc" id="L76">        }</span>
+    }
+
+    /**
+     * Initializes an empty B-tree.
+     */
+<span class="nc" id="L82">    public BTree() {</span>
+<span class="nc" id="L83">        root = new Node(0);</span>
+<span class="nc" id="L84">    }</span>
+ 
+    /**
+     * Returns true if this symbol table is empty.
+     * @return {@code true} if this symbol table is empty; {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     * @return the number of key-value pairs in this symbol table
+     */
+    public int size() {
+<span class="nc" id="L99">        return n;</span>
+    }
+
+    /**
+     * Returns the height of this B-tree (for debugging).
+     *
+     * @return the height of this B-tree
+     */
+    public int height() {
+<span class="nc" id="L108">        return height;</span>
+    }
+
+
+    /**
+     * Returns the value associated with the given key.
+     *
+     * @param  key the key
+     * @return the value associated with the given key if the key is in the symbol table
+     *         and {@code null} if the key is not in the symbol table
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Value get(Key key) {
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to get() is null&quot;);</span>
+<span class="nc" id="L122">        return search(root, key, height);</span>
+    }
+
+    private Value search(Node x, Key key, int ht) {
+<span class="nc" id="L126">        Entry[] children = x.children;</span>
+
+        // external node
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (ht == 0) {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            for (int j = 0; j &lt; x.m; j++) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                if (eq(key, children[j].key)) return (Value) children[j].val;</span>
+            }
+<span class="nc" id="L133">        }</span>
+
+        // internal node
+        else {
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            for (int j = 0; j &lt; x.m; j++) {</span>
+<span class="nc bnc" id="L138" title="All 4 branches missed.">                if (j+1 == x.m || less(key, children[j+1].key))</span>
+<span class="nc" id="L139">                    return search(children[j].next, key, ht-1);</span>
+            }
+        }
+<span class="nc" id="L142">        return null;</span>
+    }
+
+
+    /**
+     * Inserts the key-value pair into the symbol table, overwriting the old value
+     * with the new value if the key is already in the symbol table.
+     * If the value is {@code null}, this effectively deletes the key from the symbol table.
+     *
+     * @param  key the key
+     * @param  val the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(Key key, Value val) {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument key to put() is null&quot;);</span>
+<span class="nc" id="L157">        Node u = insert(root, key, val, height); </span>
+<span class="nc" id="L158">        n++;</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if (u == null) return;</span>
+
+        // need to split root
+<span class="nc" id="L162">        Node t = new Node(2);</span>
+<span class="nc" id="L163">        t.children[0] = new Entry(root.children[0].key, null, root);</span>
+<span class="nc" id="L164">        t.children[1] = new Entry(u.children[0].key, null, u);</span>
+<span class="nc" id="L165">        root = t;</span>
+<span class="nc" id="L166">        height++;</span>
+<span class="nc" id="L167">    }</span>
+
+    private Node insert(Node h, Key key, Value val, int ht) {
+        int j;
+<span class="nc" id="L171">        Entry t = new Entry(key, val, null);</span>
+
+        // external node
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (ht == 0) {</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            for (j = 0; j &lt; h.m; j++) {</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                if (less(key, h.children[j].key)) break;</span>
+            }
+<span class="nc" id="L178">        }</span>
+
+        // internal node
+        else {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">            for (j = 0; j &lt; h.m; j++) {</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">                if ((j+1 == h.m) || less(key, h.children[j+1].key)) {</span>
+<span class="nc" id="L184">                    Node u = insert(h.children[j++].next, key, val, ht-1);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                    if (u == null) return null;</span>
+<span class="nc" id="L186">                    t.key = u.children[0].key;</span>
+<span class="nc" id="L187">                    t.next = u;</span>
+<span class="nc" id="L188">                    break;</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        for (int i = h.m; i &gt; j; i--)</span>
+<span class="nc" id="L194">            h.children[i] = h.children[i-1];</span>
+<span class="nc" id="L195">        h.children[j] = t;</span>
+<span class="nc" id="L196">        h.m++;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (h.m &lt; M) return null;</span>
+<span class="nc" id="L198">        else         return split(h);</span>
+    }
+
+    // split node in half
+    private Node split(Node h) {
+<span class="nc" id="L203">        Node t = new Node(M/2);</span>
+<span class="nc" id="L204">        h.m = M/2;</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        for (int j = 0; j &lt; M/2; j++)</span>
+<span class="nc" id="L206">            t.children[j] = h.children[M/2+j]; </span>
+<span class="nc" id="L207">        return t;    </span>
+    }
+
+    /**
+     * Returns a string representation of this B-tree (for debugging).
+     *
+     * @return a string representation of this B-tree.
+     */
+    public String toString() {
+<span class="nc" id="L216">        return toString(root, height, &quot;&quot;) + &quot;\n&quot;;</span>
+    }
+
+    private String toString(Node h, int ht, String indent) {
+<span class="nc" id="L220">        StringBuilder s = new StringBuilder();</span>
+<span class="nc" id="L221">        Entry[] children = h.children;</span>
+
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if (ht == 0) {</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">            for (int j = 0; j &lt; h.m; j++) {</span>
+<span class="nc" id="L225">                s.append(indent + children[j].key + &quot; &quot; + children[j].val + &quot;\n&quot;);</span>
+            }
+<span class="nc" id="L227">        }</span>
+        else {
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            for (int j = 0; j &lt; h.m; j++) {</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">                if (j &gt; 0) s.append(indent + &quot;(&quot; + children[j].key + &quot;)\n&quot;);</span>
+<span class="nc" id="L231">                s.append(toString(children[j].next, ht-1, indent + &quot;     &quot;));</span>
+            }
+        }
+<span class="nc" id="L234">        return s.toString();</span>
+    }
+
+
+    // comparison functions - make Comparable instead of Key to avoid casts
+    private boolean less(Comparable k1, Comparable k2) {
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        return k1.compareTo(k2) &lt; 0;</span>
+    }
+
+    private boolean eq(Comparable k1, Comparable k2) {
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        return k1.compareTo(k2) == 0;</span>
+    }
+
+
+    /**
+     * Unit tests the {@code BTree} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L254">        BTree&lt;String, String&gt; st = new BTree&lt;String, String&gt;();</span>
+
+<span class="nc" id="L256">        st.put(&quot;www.cs.princeton.edu&quot;, &quot;128.112.136.12&quot;);</span>
+<span class="nc" id="L257">        st.put(&quot;www.cs.princeton.edu&quot;, &quot;128.112.136.11&quot;);</span>
+<span class="nc" id="L258">        st.put(&quot;www.princeton.edu&quot;,    &quot;128.112.128.15&quot;);</span>
+<span class="nc" id="L259">        st.put(&quot;www.yale.edu&quot;,         &quot;130.132.143.21&quot;);</span>
+<span class="nc" id="L260">        st.put(&quot;www.simpsons.com&quot;,     &quot;209.052.165.60&quot;);</span>
+<span class="nc" id="L261">        st.put(&quot;www.apple.com&quot;,        &quot;17.112.152.32&quot;);</span>
+<span class="nc" id="L262">        st.put(&quot;www.amazon.com&quot;,       &quot;207.171.182.16&quot;);</span>
+<span class="nc" id="L263">        st.put(&quot;www.ebay.com&quot;,         &quot;66.135.192.87&quot;);</span>
+<span class="nc" id="L264">        st.put(&quot;www.cnn.com&quot;,          &quot;64.236.16.20&quot;);</span>
+<span class="nc" id="L265">        st.put(&quot;www.google.com&quot;,       &quot;216.239.41.99&quot;);</span>
+<span class="nc" id="L266">        st.put(&quot;www.nytimes.com&quot;,      &quot;199.239.136.200&quot;);</span>
+<span class="nc" id="L267">        st.put(&quot;www.microsoft.com&quot;,    &quot;207.126.99.140&quot;);</span>
+<span class="nc" id="L268">        st.put(&quot;www.dell.com&quot;,         &quot;143.166.224.230&quot;);</span>
+<span class="nc" id="L269">        st.put(&quot;www.slashdot.org&quot;,     &quot;66.35.250.151&quot;);</span>
+<span class="nc" id="L270">        st.put(&quot;www.espn.com&quot;,         &quot;199.181.135.201&quot;);</span>
+<span class="nc" id="L271">        st.put(&quot;www.weather.com&quot;,      &quot;63.111.66.11&quot;);</span>
+<span class="nc" id="L272">        st.put(&quot;www.yahoo.com&quot;,        &quot;216.109.118.65&quot;);</span>
+
+
+<span class="nc" id="L275">        StdOut.println(&quot;cs.princeton.edu:  &quot; + st.get(&quot;www.cs.princeton.edu&quot;));</span>
+<span class="nc" id="L276">        StdOut.println(&quot;hardvardsucks.com: &quot; + st.get(&quot;www.harvardsucks.com&quot;));</span>
+<span class="nc" id="L277">        StdOut.println(&quot;simpsons.com:      &quot; + st.get(&quot;www.simpsons.com&quot;));</span>
+<span class="nc" id="L278">        StdOut.println(&quot;apple.com:         &quot; + st.get(&quot;www.apple.com&quot;));</span>
+<span class="nc" id="L279">        StdOut.println(&quot;ebay.com:          &quot; + st.get(&quot;www.ebay.com&quot;));</span>
+<span class="nc" id="L280">        StdOut.println(&quot;dell.com:          &quot; + st.get(&quot;www.dell.com&quot;));</span>
+<span class="nc" id="L281">        StdOut.println();</span>
+
+<span class="nc" id="L283">        StdOut.println(&quot;size:    &quot; + st.size());</span>
+<span class="nc" id="L284">        StdOut.println(&quot;height:  &quot; + st.height());</span>
+<span class="nc" id="L285">        StdOut.println(st);</span>
+<span class="nc" id="L286">        StdOut.println();</span>
+<span class="nc" id="L287">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

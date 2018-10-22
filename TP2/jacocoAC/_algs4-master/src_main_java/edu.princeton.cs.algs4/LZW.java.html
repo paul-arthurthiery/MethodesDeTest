@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LZW.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LZW.java</span></div><h1>LZW.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LZW.java
+ *  Execution:    java LZW - &lt; input.txt   (compress)
+ *  Execution:    java LZW + &lt; input.txt   (expand)
+ *  Dependencies: BinaryIn.java BinaryOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/55compression/abraLZW.txt
+ *                https://algs4.cs.princeton.edu/55compression/ababLZW.txt
+ *
+ *  Compress or expand binary input from standard input using LZW.
+ *
+ *  WARNING: STARTING WITH ORACLE JAVA 6, UPDATE 7 the SUBSTRING
+ *  METHOD TAKES TIME AND SPACE LINEAR IN THE SIZE OF THE EXTRACTED
+ *  SUBSTRING (INSTEAD OF CONSTANT SPACE AND TIME AS IN EARLIER
+ *  IMPLEMENTATIONS).
+ *
+ *  See &lt;a href = &quot;http://java-performance.info/changes-to-string-java-1-7-0_06/&quot;&gt;this article&lt;/a&gt;
+ *  for more details.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LZW} class provides static methods for compressing
+ *  and expanding a binary input using LZW compression over the 8-bit extended
+ *  ASCII alphabet with 12-bit codewords.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/55compress&quot;&gt;Section 5.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick  
+ *  @author Kevin Wayne
+ */
+public class LZW {
+    private static final int R = 256;        // number of input chars
+    private static final int L = 4096;       // number of codewords = 2^W
+    private static final int W = 12;         // codeword width
+
+    // Do not instantiate.
+<span class="nc" id="L41">    private LZW() { }</span>
+
+    /**
+     * Reads a sequence of 8-bit bytes from standard input; compresses
+     * them using LZW compression with 12-bit codewords; and writes the results
+     * to standard output.
+     */
+    public static void compress() { 
+<span class="nc" id="L49">        String input = BinaryStdIn.readString();</span>
+<span class="nc" id="L50">        TST&lt;Integer&gt; st = new TST&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        for (int i = 0; i &lt; R; i++)</span>
+<span class="nc" id="L52">            st.put(&quot;&quot; + (char) i, i);</span>
+<span class="nc" id="L53">        int code = R+1;  // R is codeword for EOF</span>
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        while (input.length() &gt; 0) {</span>
+<span class="nc" id="L56">            String s = st.longestPrefixOf(input);  // Find max prefix match s.</span>
+<span class="nc" id="L57">            BinaryStdOut.write(st.get(s), W);      // Print s's encoding.</span>
+<span class="nc" id="L58">            int t = s.length();</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">            if (t &lt; input.length() &amp;&amp; code &lt; L)    // Add s to symbol table.</span>
+<span class="nc" id="L60">                st.put(input.substring(0, t + 1), code++);</span>
+<span class="nc" id="L61">            input = input.substring(t);            // Scan past s in input.</span>
+        }
+<span class="nc" id="L63">        BinaryStdOut.write(R, W);</span>
+<span class="nc" id="L64">        BinaryStdOut.close();</span>
+<span class="nc" id="L65">    } </span>
+
+    /**
+     * Reads a sequence of bit encoded using LZW compression with
+     * 12-bit codewords from standard input; expands them; and writes
+     * the results to standard output.
+     */
+    public static void expand() {
+<span class="nc" id="L73">        String[] st = new String[L];</span>
+        int i; // next available codeword value
+
+        // initialize symbol table with all 1-character strings
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        for (i = 0; i &lt; R; i++)</span>
+<span class="nc" id="L78">            st[i] = &quot;&quot; + (char) i;</span>
+<span class="nc" id="L79">        st[i++] = &quot;&quot;;                        // (unused) lookahead for EOF</span>
+
+<span class="nc" id="L81">        int codeword = BinaryStdIn.readInt(W);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (codeword == R) return;           // expanded message is empty string</span>
+<span class="nc" id="L83">        String val = st[codeword];</span>
+
+<span class="nc" id="L85">        while (true) {</span>
+<span class="nc" id="L86">            BinaryStdOut.write(val);</span>
+<span class="nc" id="L87">            codeword = BinaryStdIn.readInt(W);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            if (codeword == R) break;</span>
+<span class="nc" id="L89">            String s = st[codeword];</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (i == codeword) s = val + val.charAt(0);   // special case hack</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (i &lt; L) st[i++] = val + s.charAt(0);</span>
+<span class="nc" id="L92">            val = s;</span>
+        }
+<span class="nc" id="L94">        BinaryStdOut.close();</span>
+<span class="nc" id="L95">    }</span>
+
+    /**
+     * Sample client that calls {@code compress()} if the command-line
+     * argument is &quot;-&quot; an {@code expand()} if it is &quot;+&quot;.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if      (args[0].equals(&quot;-&quot;)) compress();</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        else if (args[0].equals(&quot;+&quot;)) expand();</span>
+<span class="nc" id="L106">        else throw new IllegalArgumentException(&quot;Illegal command line argument&quot;);</span>
+<span class="nc" id="L107">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

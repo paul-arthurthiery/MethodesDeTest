@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>TarjanSCC.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">TarjanSCC.java</span></div><h1>TarjanSCC.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac TarjanSCC.java
+ *  Execution:    Java TarjanSCC V E
+ *  Dependencies: Digraph.java Stack.java TransitiveClosure.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt
+ *
+ *  Compute the strongly-connected components of a digraph using 
+ *  Tarjan's algorithm.
+ *
+ *  Runs in O(E + V) time.
+ *
+ *  % java TarjanSCC tinyDG.txt
+ *  5 components
+ *  1 
+ *  0 2 3 4 5
+ *  9 10 11 12
+ *  6 8
+ *  7 
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code TarjanSCC} class represents a data type for 
+ *  determining the strong components in a digraph.
+ *  The &lt;em&gt;id&lt;/em&gt; operation determines in which strong component
+ *  a given vertex lies; the &lt;em&gt;areStronglyConnected&lt;/em&gt; operation
+ *  determines whether two vertices are in the same strong component;
+ *  and the &lt;em&gt;count&lt;/em&gt; operation determines the number of strong
+ *  components.
+
+ *  The &lt;em&gt;component identifier&lt;/em&gt; of a component is one of the
+ *  vertices in the strong component: two vertices have the same component
+ *  identifier if and only if they are in the same strong component.
+
+ *  &lt;p&gt;
+ *  This implementation uses Tarjan's algorithm.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;id&lt;/em&gt;, &lt;em&gt;count&lt;/em&gt;, and &lt;em&gt;areStronglyConnected&lt;/em&gt;
+ *  operations take constant time.
+ *  For alternate implementations of the same API, see
+ *  {@link KosarajuSharirSCC} and {@link GabowSCC}.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L56" title="All 2 branches missed.">public class TarjanSCC {</span>
+
+    private boolean[] marked;        // marked[v] = has v been visited?
+    private int[] id;                // id[v] = id of strong component containing v
+    private int[] low;               // low[v] = low number of v
+    private int pre;                 // preorder number counter
+    private int count;               // number of strongly-connected components
+    private Stack&lt;Integer&gt; stack;
+
+
+    /**
+     * Computes the strong components of the digraph {@code G}.
+     * @param G the digraph
+     */
+<span class="nc" id="L70">    public TarjanSCC(Digraph G) {</span>
+<span class="nc" id="L71">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L72">        stack = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L73">        id = new int[G.V()]; </span>
+<span class="nc" id="L74">        low = new int[G.V()];</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (!marked[v]) dfs(G, v);</span>
+        }
+
+        // check that id[] gives strong components
+<span class="nc bnc" id="L80" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L81">    }</span>
+
+    private void dfs(Digraph G, int v) { 
+<span class="nc" id="L84">        marked[v] = true;</span>
+<span class="nc" id="L85">        low[v] = pre++;</span>
+<span class="nc" id="L86">        int min = low[v];</span>
+<span class="nc" id="L87">        stack.push(v);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (!marked[w]) dfs(G, w);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (low[w] &lt; min) min = low[w];</span>
+        }
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (min &lt; low[v]) {</span>
+<span class="nc" id="L93">            low[v] = min;</span>
+<span class="nc" id="L94">            return;</span>
+        }
+        int w;
+        do {
+<span class="nc" id="L98">            w = stack.pop();</span>
+<span class="nc" id="L99">            id[w] = count;</span>
+<span class="nc" id="L100">            low[w] = G.V();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        } while (w != v);</span>
+<span class="nc" id="L102">        count++;</span>
+<span class="nc" id="L103">    }</span>
+
+
+    /**
+     * Returns the number of strong components.
+     * @return the number of strong components
+     */
+    public int count() {
+<span class="nc" id="L111">        return count;</span>
+    }
+
+
+    /**
+     * Are vertices {@code v} and {@code w} in the same strong component?
+     * @param  v one vertex
+     * @param  w the other vertex
+     * @return {@code true} if vertices {@code v} and {@code w} are in the same
+     *         strong component, and {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= w &lt; V}
+     */
+    public boolean stronglyConnected(int v, int w) {
+<span class="nc" id="L125">        validateVertex(v);</span>
+<span class="nc" id="L126">        validateVertex(w);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        return id[v] == id[w];</span>
+    }
+
+    /**
+     * Returns the component id of the strong component containing vertex {@code v}.
+     * @param  v the vertex
+     * @return the component id of the strong component containing vertex {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int id(int v) {
+<span class="nc" id="L137">        validateVertex(v);</span>
+<span class="nc" id="L138">        return id[v];</span>
+    }
+
+    // does the id[] array contain the strongly connected components?
+    private boolean check(Digraph G) {
+<span class="nc" id="L143">        TransitiveClosure tc = new TransitiveClosure(G);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            for (int w = 0; w &lt; G.V(); w++) {</span>
+<span class="nc bnc" id="L146" title="All 6 branches missed.">                if (stronglyConnected(v, w) != (tc.reachable(v, w) &amp;&amp; tc.reachable(w, v)))</span>
+<span class="nc" id="L147">                    return false;</span>
+            }
+        }
+<span class="nc" id="L150">        return true;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L155">        int V = marked.length;</span>
+<span class="nc bnc" id="L156" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L157">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L158">    }</span>
+
+    /**
+     * Unit tests the {@code TarjanSCC} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L166">        In in = new In(args[0]);</span>
+<span class="nc" id="L167">        Digraph G = new Digraph(in);</span>
+<span class="nc" id="L168">        TarjanSCC scc = new TarjanSCC(G);</span>
+
+        // number of connected components
+<span class="nc" id="L171">        int m = scc.count();</span>
+<span class="nc" id="L172">        StdOut.println(m + &quot; components&quot;);</span>
+
+        // compute list of vertices in each strong component
+<span class="nc" id="L175">        Queue&lt;Integer&gt;[] components = (Queue&lt;Integer&gt;[]) new Queue[m];</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L177">            components[i] = new Queue&lt;Integer&gt;();</span>
+        }
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L180">            components[scc.id(v)].enqueue(v);</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">            for (int v : components[i]) {</span>
+<span class="nc" id="L186">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L188">            StdOut.println();</span>
+        }
+
+<span class="nc" id="L191">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

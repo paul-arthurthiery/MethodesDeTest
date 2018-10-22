@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>FlowNetwork.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">FlowNetwork.java</span></div><h1>FlowNetwork.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac FlowNetwork.java
+ *  Execution:    java FlowNetwork V E
+ *  Dependencies: Bag.java FlowEdge.java
+ *
+ *  A capacitated flow network, implemented using adjacency lists.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+/**
+ *  The {@code FlowNetwork} class represents a capacitated network
+ *  with vertices named 0 through &lt;em&gt;V&lt;/em&gt; - 1, where each directed
+ *  edge is of type {@link FlowEdge} and has a real-valued capacity
+ *  and flow.
+ *  It supports the following two primary operations: add an edge to the network,
+ *  iterate over all of the edges incident to or from a vertex. It also provides
+ *  methods for returning the number of vertices &lt;em&gt;V&lt;/em&gt; and the number
+ *  of edges &lt;em&gt;E&lt;/em&gt;. Parallel edges and self-loops are permitted.
+ *  &lt;p&gt;
+ *  This implementation uses an adjacency-lists representation, which 
+ *  is a vertex-indexed array of {@link Bag} objects.
+ *  All operations take constant time (in the worst case) except
+ *  iterating over the edges incident to a given vertex, which takes
+ *  time proportional to the number of such edges.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/64maxflow&quot;&gt;Section 6.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class FlowNetwork {
+<span class="nc" id="L37">    private static final String NEWLINE = System.getProperty(&quot;line.separator&quot;);</span>
+
+    private final int V;
+    private int E;
+    private Bag&lt;FlowEdge&gt;[] adj;
+    
+    /**
+     * Initializes an empty flow network with {@code V} vertices and 0 edges.
+     * @param V the number of vertices
+     * @throws IllegalArgumentException if {@code V &lt; 0}
+     */
+<span class="nc" id="L48">    public FlowNetwork(int V) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (V &lt; 0) throw new IllegalArgumentException(&quot;Number of vertices in a Graph must be nonnegative&quot;);</span>
+<span class="nc" id="L50">        this.V = V;</span>
+<span class="nc" id="L51">        this.E = 0;</span>
+<span class="nc" id="L52">        adj = (Bag&lt;FlowEdge&gt;[]) new Bag[V];</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc" id="L54">            adj[v] = new Bag&lt;FlowEdge&gt;();</span>
+<span class="nc" id="L55">    }</span>
+
+    /**
+     * Initializes a random flow network with {@code V} vertices and &lt;em&gt;E&lt;/em&gt; edges.
+     * The capacities are integers between 0 and 99 and the flow values are zero.
+     * @param V the number of vertices
+     * @param E the number of edges
+     * @throws IllegalArgumentException if {@code V &lt; 0}
+     * @throws IllegalArgumentException if {@code E &lt; 0}
+     */
+    public FlowNetwork(int V, int E) {
+<span class="nc" id="L66">        this(V);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (E &lt; 0) throw new IllegalArgumentException(&quot;Number of edges must be nonnegative&quot;);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        for (int i = 0; i &lt; E; i++) {</span>
+<span class="nc" id="L69">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L70">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L71">            double capacity = StdRandom.uniform(100);</span>
+<span class="nc" id="L72">            addEdge(new FlowEdge(v, w, capacity));</span>
+        }
+<span class="nc" id="L74">    }</span>
+
+    /**  
+     * Initializes a flow network from an input stream.
+     * The format is the number of vertices &lt;em&gt;V&lt;/em&gt;,
+     * followed by the number of edges &lt;em&gt;E&lt;/em&gt;,
+     * followed by &lt;em&gt;E&lt;/em&gt; pairs of vertices and edge capacities,
+     * with each entry separated by whitespace.
+     * @param in the input stream
+     * @throws IllegalArgumentException if the endpoints of any edge are not in prescribed range
+     * @throws IllegalArgumentException if the number of vertices or edges is negative
+     */
+    public FlowNetwork(In in) {
+<span class="nc" id="L87">        this(in.readInt());</span>
+<span class="nc" id="L88">        int E = in.readInt();</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (E &lt; 0) throw new IllegalArgumentException(&quot;number of edges must be nonnegative&quot;);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        for (int i = 0; i &lt; E; i++) {</span>
+<span class="nc" id="L91">            int v = in.readInt();</span>
+<span class="nc" id="L92">            int w = in.readInt();</span>
+<span class="nc" id="L93">            validateVertex(v);</span>
+<span class="nc" id="L94">            validateVertex(w);</span>
+<span class="nc" id="L95">            double capacity = in.readDouble();</span>
+<span class="nc" id="L96">            addEdge(new FlowEdge(v, w, capacity));</span>
+        }
+<span class="nc" id="L98">    }</span>
+
+
+    /**
+     * Returns the number of vertices in the edge-weighted graph.
+     * @return the number of vertices in the edge-weighted graph
+     */
+    public int V() {
+<span class="nc" id="L106">        return V;</span>
+    }
+
+    /**
+     * Returns the number of edges in the edge-weighted graph.
+     * @return the number of edges in the edge-weighted graph
+     */
+    public int E() {
+<span class="nc" id="L114">        return E;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc bnc" id="L119" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L120">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L121">    }</span>
+
+    /**
+     * Adds the edge {@code e} to the network.
+     * @param e the edge
+     * @throws IllegalArgumentException unless endpoints of edge are between
+     *         {@code 0} and {@code V-1}
+     */
+    public void addEdge(FlowEdge e) {
+<span class="nc" id="L130">        int v = e.from();</span>
+<span class="nc" id="L131">        int w = e.to();</span>
+<span class="nc" id="L132">        validateVertex(v);</span>
+<span class="nc" id="L133">        validateVertex(w);</span>
+<span class="nc" id="L134">        adj[v].add(e);</span>
+<span class="nc" id="L135">        adj[w].add(e);</span>
+<span class="nc" id="L136">        E++;</span>
+<span class="nc" id="L137">    }</span>
+
+    /**
+     * Returns the edges incident on vertex {@code v} (includes both edges pointing to
+     * and from {@code v}).
+     * @param v the vertex
+     * @return the edges incident on vertex {@code v} as an Iterable
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public Iterable&lt;FlowEdge&gt; adj(int v) {
+<span class="nc" id="L147">        validateVertex(v);</span>
+<span class="nc" id="L148">        return adj[v];</span>
+    }
+
+    // return list of all edges - excludes self loops
+    public Iterable&lt;FlowEdge&gt; edges() {
+<span class="nc" id="L153">        Bag&lt;FlowEdge&gt; list = new Bag&lt;FlowEdge&gt;();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            for (FlowEdge e : adj(v)) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                if (e.to() != v)</span>
+<span class="nc" id="L157">                    list.add(e);</span>
+            }
+<span class="nc" id="L159">        return list;</span>
+    }
+
+
+    /**
+     * Returns a string representation of the flow network.
+     * This method takes time proportional to &lt;em&gt;E&lt;/em&gt; + &lt;em&gt;V&lt;/em&gt;.
+     * @return the number of vertices &lt;em&gt;V&lt;/em&gt;, followed by the number of edges &lt;em&gt;E&lt;/em&gt;,  
+     *    followed by the &lt;em&gt;V&lt;/em&gt; adjacency lists
+     */
+    public String toString() {
+<span class="nc" id="L170">        StringBuilder s = new StringBuilder();</span>
+<span class="nc" id="L171">        s.append(V + &quot; &quot; + E + NEWLINE);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L173">            s.append(v + &quot;:  &quot;);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">            for (FlowEdge e : adj[v]) {</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">                if (e.to() != v) s.append(e + &quot;  &quot;);</span>
+            }
+<span class="nc" id="L177">            s.append(NEWLINE);</span>
+        }
+<span class="nc" id="L179">        return s.toString();</span>
+    }
+
+    /**
+     * Unit tests the {@code FlowNetwork} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L188">        In in = new In(args[0]);</span>
+<span class="nc" id="L189">        FlowNetwork G = new FlowNetwork(in);</span>
+<span class="nc" id="L190">        StdOut.println(G);</span>
+<span class="nc" id="L191">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

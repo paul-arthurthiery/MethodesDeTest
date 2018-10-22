@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>FFT.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">FFT.java</span></div><h1>FFT.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac FFT.java
+ *  Execution:    java FFT n
+ *  Dependencies: Complex.java
+ *
+ *  Compute the FFT and inverse FFT of a length n complex sequence.
+ *  Bare bones implementation that runs in O(n log n) time. Our goal
+ *  is to optimize the clarity of the code, rather than performance.
+ *
+ *  Limitations
+ *  -----------
+ *   -  assumes n is a power of 2
+ *
+ *   -  not the most memory efficient algorithm (because it uses
+ *      an object type for representing complex numbers and because
+ *      it re-allocates memory for the subarray, instead of doing
+ *      in-place or reusing a single temporary array)
+ *  
+ *
+ *  % java FFT 4
+ *  x
+ *  -------------------
+ *  -0.03480425839330703
+ *  0.07910192950176387
+ *  0.7233322451735928
+ *  0.1659819820667019
+ *
+ *  y = fft(x)
+ *  -------------------
+ *  0.9336118983487516
+ *  -0.7581365035668999 + 0.08688005256493803i
+ *  0.44344407521182005
+ *  -0.7581365035668999 - 0.08688005256493803i
+ *
+ *  z = ifft(y)
+ *  -------------------
+ *  -0.03480425839330703
+ *  0.07910192950176387 + 2.6599344570851287E-18i
+ *  0.7233322451735928
+ *  0.1659819820667019 - 2.6599344570851287E-18i
+ *
+ *  c = cconvolve(x, x)
+ *  -------------------
+ *  0.5506798633981853
+ *  0.23461407150576394 - 4.033186818023279E-18i
+ *  -0.016542951108772352
+ *  0.10288019294318276 + 4.033186818023279E-18i
+ *
+ *  d = convolve(x, x)
+ *  -------------------
+ *  0.001211336402308083 - 3.122502256758253E-17i
+ *  -0.005506167987577068 - 5.058885073636224E-17i
+ *  -0.044092969479563274 + 2.1934338938072244E-18i
+ *  0.10288019294318276 - 3.6147323062478115E-17i
+ *  0.5494685269958772 + 3.122502256758253E-17i
+ *  0.240120239493341 + 4.655566391833896E-17i
+ *  0.02755001837079092 - 2.1934338938072244E-18i
+ *  4.01805098805014E-17i
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code FFT} class provides methods for computing the 
+ *  FFT (Fast-Fourier Transform), inverse FFT, linear convolution,
+ *  and circular convolution of a complex array.
+ *  &lt;p&gt;
+ *  It is a bare-bones implementation that runs in &lt;em&gt;n&lt;/em&gt; log &lt;em&gt;n&lt;/em&gt; time,
+ *  where &lt;em&gt;n&lt;/em&gt; is the length of the complex array. For simplicity,
+ *  &lt;em&gt;n&lt;/em&gt; must be a power of 2.
+ *  Our goal is to optimize the clarity of the code, rather than performance.
+ *  It is not the most memory efficient implementation because it uses
+ *  objects to represents complex numbers and it it re-allocates memory
+ *  for the subarray, instead of doing in-place or reusing a single temporary array.
+ *  
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/99scientific&quot;&gt;Section 9.9&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class FFT {
+
+<span class="nc" id="L86">    private static final Complex ZERO = new Complex(0, 0);</span>
+
+    // Do not instantiate.
+<span class="nc" id="L89">    private FFT() { }</span>
+
+    /**
+     * Returns the FFT of the specified complex array.
+     *
+     * @param  x the complex array
+     * @return the FFT of the complex array {@code x}
+     * @throws IllegalArgumentException if the length of {@code x} is not a power of 2
+     */
+    public static Complex[] fft(Complex[] x) {
+<span class="nc" id="L99">        int n = x.length;</span>
+
+        // base case
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (n == 1) {</span>
+<span class="nc" id="L103">            return new Complex[] { x[0] };</span>
+        }
+
+        // radix 2 Cooley-Tukey FFT
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (n % 2 != 0) {</span>
+<span class="nc" id="L108">            throw new IllegalArgumentException(&quot;n is not a power of 2&quot;);</span>
+        }
+
+        // fft of even terms
+<span class="nc" id="L112">        Complex[] even = new Complex[n/2];</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (int k = 0; k &lt; n/2; k++) {</span>
+<span class="nc" id="L114">            even[k] = x[2*k];</span>
+        }
+<span class="nc" id="L116">        Complex[] q = fft(even);</span>
+
+        // fft of odd terms
+<span class="nc" id="L119">        Complex[] odd  = even;  // reuse the array</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        for (int k = 0; k &lt; n/2; k++) {</span>
+<span class="nc" id="L121">            odd[k] = x[2*k + 1];</span>
+        }
+<span class="nc" id="L123">        Complex[] r = fft(odd);</span>
+
+        // combine
+<span class="nc" id="L126">        Complex[] y = new Complex[n];</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        for (int k = 0; k &lt; n/2; k++) {</span>
+<span class="nc" id="L128">            double kth = -2 * k * Math.PI / n;</span>
+<span class="nc" id="L129">            Complex wk = new Complex(Math.cos(kth), Math.sin(kth));</span>
+<span class="nc" id="L130">            y[k]       = q[k].plus(wk.times(r[k]));</span>
+<span class="nc" id="L131">            y[k + n/2] = q[k].minus(wk.times(r[k]));</span>
+        }
+<span class="nc" id="L133">        return y;</span>
+    }
+
+
+    /**
+     * Returns the inverse FFT of the specified complex array.
+     *
+     * @param  x the complex array
+     * @return the inverse FFT of the complex array {@code x}
+     * @throws IllegalArgumentException if the length of {@code x} is not a power of 2
+     */
+    public static Complex[] ifft(Complex[] x) {
+<span class="nc" id="L145">        int n = x.length;</span>
+<span class="nc" id="L146">        Complex[] y = new Complex[n];</span>
+
+        // take conjugate
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L150">            y[i] = x[i].conjugate();</span>
+        }
+
+        // compute forward FFT
+<span class="nc" id="L154">        y = fft(y);</span>
+
+        // take conjugate again
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L158">            y[i] = y[i].conjugate();</span>
+        }
+
+        // divide by n
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L163">            y[i] = y[i].scale(1.0 / n);</span>
+        }
+
+<span class="nc" id="L166">        return y;</span>
+
+    }
+
+    /**
+     * Returns the circular convolution of the two specified complex arrays.
+     *
+     * @param  x one complex array
+     * @param  y the other complex array
+     * @return the circular convolution of {@code x} and {@code y}
+     * @throws IllegalArgumentException if the length of {@code x} does not equal
+     *         the length of {@code y} or if the length is not a power of 2
+     */
+    public static Complex[] cconvolve(Complex[] x, Complex[] y) {
+
+        // should probably pad x and y with 0s so that they have same length
+        // and are powers of 2
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (x.length != y.length) {</span>
+<span class="nc" id="L184">            throw new IllegalArgumentException(&quot;Dimensions don't agree&quot;);</span>
+        }
+
+<span class="nc" id="L187">        int n = x.length;</span>
+
+        // compute FFT of each sequence
+<span class="nc" id="L190">        Complex[] a = fft(x);</span>
+<span class="nc" id="L191">        Complex[] b = fft(y);</span>
+
+        // point-wise multiply
+<span class="nc" id="L194">        Complex[] c = new Complex[n];</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L196">            c[i] = a[i].times(b[i]);</span>
+        }
+
+        // compute inverse FFT
+<span class="nc" id="L200">        return ifft(c);</span>
+    }
+
+    /**
+     * Returns the linear convolution of the two specified complex arrays.
+     *
+     * @param  x one complex array
+     * @param  y the other complex array
+     * @return the linear convolution of {@code x} and {@code y}
+     * @throws IllegalArgumentException if the length of {@code x} does not equal
+     *         the length of {@code y} or if the length is not a power of 2
+     */
+    public static Complex[] convolve(Complex[] x, Complex[] y) {
+<span class="nc" id="L213">        Complex[] a = new Complex[2*x.length];</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        for (int i = 0; i &lt; x.length; i++)</span>
+<span class="nc" id="L215">            a[i] = x[i];</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        for (int i = x.length; i &lt; 2*x.length; i++)</span>
+<span class="nc" id="L217">            a[i] = ZERO;</span>
+
+<span class="nc" id="L219">        Complex[] b = new Complex[2*y.length];</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (int i = 0; i &lt; y.length; i++)</span>
+<span class="nc" id="L221">            b[i] = y[i];</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        for (int i = y.length; i &lt; 2*y.length; i++)</span>
+<span class="nc" id="L223">            b[i] = ZERO;</span>
+
+<span class="nc" id="L225">        return cconvolve(a, b);</span>
+    }
+
+    // display an array of Complex numbers to standard output
+    private static void show(Complex[] x, String title) {
+<span class="nc" id="L230">        StdOut.println(title);</span>
+<span class="nc" id="L231">        StdOut.println(&quot;-------------------&quot;);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="nc" id="L233">            StdOut.println(x[i]);</span>
+        }
+<span class="nc" id="L235">        StdOut.println();</span>
+<span class="nc" id="L236">    }</span>
+
+
+   /***************************************************************************
+    *  Test client.
+    ***************************************************************************/
+
+    /**
+     * Unit tests the {@code FFT} class.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L249">        int n = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L250">        Complex[] x = new Complex[n];</span>
+
+        // original data
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L254">            x[i] = new Complex(i, 0);</span>
+<span class="nc" id="L255">            x[i] = new Complex(StdRandom.uniform(-1.0, 1.0), 0);</span>
+        }
+<span class="nc" id="L257">        show(x, &quot;x&quot;);</span>
+
+        // FFT of original data
+<span class="nc" id="L260">        Complex[] y = fft(x);</span>
+<span class="nc" id="L261">        show(y, &quot;y = fft(x)&quot;);</span>
+
+        // take inverse FFT
+<span class="nc" id="L264">        Complex[] z = ifft(y);</span>
+<span class="nc" id="L265">        show(z, &quot;z = ifft(y)&quot;);</span>
+
+        // circular convolution of x with itself
+<span class="nc" id="L268">        Complex[] c = cconvolve(x, x);</span>
+<span class="nc" id="L269">        show(c, &quot;c = cconvolve(x, x)&quot;);</span>
+
+        // linear convolution of x with itself
+<span class="nc" id="L272">        Complex[] d = convolve(x, x);</span>
+<span class="nc" id="L273">        show(d, &quot;d = convolve(x, x)&quot;);</span>
+<span class="nc" id="L274">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LinkedStack.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LinkedStack.java</span></div><h1>LinkedStack.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LinkedStack.java
+ *  Execution:    java LinkedStack &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/13stacks/tobe.txt
+ *
+ *  A generic stack, implemented using a linked list. Each stack
+ *  element is of type Item.
+ *  
+ *  % more tobe.txt 
+ *  to be or not to - be - - that - - - is
+ *
+ *  % java LinkedStack &lt; tobe.txt
+ *  to be not that or be (2 left on stack)
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+
+/**
+ *  The {@code LinkedStack} class represents a last-in-first-out (LIFO) stack of
+ *  generic items.
+ *  It supports the usual &lt;em&gt;push&lt;/em&gt; and &lt;em&gt;pop&lt;/em&gt; operations, along with methods
+ *  for peeking at the top item, testing if the stack is empty, and iterating through
+ *  the items in LIFO order.
+ *  &lt;p&gt;
+ *  This implementation uses a singly linked list with a non-static nested class for 
+ *  linked-list nodes. See {@link Stack} for a version that uses a static nested class.
+ *  The &lt;em&gt;push&lt;/em&gt;, &lt;em&gt;pop&lt;/em&gt;, &lt;em&gt;peek&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt;
+ *  operations all take constant time in the worst case.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/13stacks&quot;&gt;Section 1.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L43" title="All 2 branches missed.">public class LinkedStack&lt;Item&gt; implements Iterable&lt;Item&gt; {</span>
+    private int n;          // size of the stack
+    private Node first;     // top of stack
+
+    // helper linked list class
+<span class="nc" id="L48">    private class Node {</span>
+        private Item item;
+        private Node next;
+    }
+
+    /**
+     * Initializes an empty stack.
+     */
+<span class="nc" id="L56">    public LinkedStack() {</span>
+<span class="nc" id="L57">        first = null;</span>
+<span class="nc" id="L58">        n = 0;</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L60">    }</span>
+
+    /**
+     * Is this stack empty?
+     * @return true if this stack is empty; false otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        return first == null;</span>
+    }
+
+    /**
+     * Returns the number of items in the stack.
+     * @return the number of items in the stack
+     */
+    public int size() {
+<span class="nc" id="L75">        return n;</span>
+    }
+
+    /**
+     * Adds the item to this stack.
+     * @param item the item to add
+     */
+    public void push(Item item) {
+<span class="nc" id="L83">        Node oldfirst = first;</span>
+<span class="nc" id="L84">        first = new Node();</span>
+<span class="nc" id="L85">        first.item = item;</span>
+<span class="nc" id="L86">        first.next = oldfirst;</span>
+<span class="nc" id="L87">        n++;</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L89">    }</span>
+
+    /**
+     * Removes and returns the item most recently added to this stack.
+     * @return the item most recently added
+     * @throws java.util.NoSuchElementException if this stack is empty
+     */
+    public Item pop() {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Stack underflow&quot;);</span>
+<span class="nc" id="L98">        Item item = first.item;        // save item to return</span>
+<span class="nc" id="L99">        first = first.next;            // delete first node</span>
+<span class="nc" id="L100">        n--;</span>
+<span class="nc bnc" id="L101" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L102">        return item;                   // return the saved item</span>
+    }
+
+
+    /**
+     * Returns (but does not remove) the item most recently added to this stack.
+     * @return the item most recently added to this stack
+     * @throws java.util.NoSuchElementException if this stack is empty
+     */
+    public Item peek() {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Stack underflow&quot;);</span>
+<span class="nc" id="L113">        return first.item;</span>
+    }
+
+    /**
+     * Returns a string representation of this stack.
+     * @return the sequence of items in the stack in LIFO order, separated by spaces
+     */
+    public String toString() {
+<span class="nc" id="L121">        StringBuilder s = new StringBuilder();</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        for (Item item : this)</span>
+<span class="nc" id="L123">            s.append(item + &quot; &quot;);</span>
+<span class="nc" id="L124">        return s.toString();</span>
+    }
+       
+    /**
+     * Returns an iterator to this stack that iterates through the items in LIFO order.
+     * @return an iterator to this stack that iterates through the items in LIFO order.
+     */
+    public Iterator&lt;Item&gt; iterator() {
+<span class="nc" id="L132">        return new ListIterator();</span>
+    }
+
+    // an iterator, doesn't implement remove() since it's optional
+<span class="nc" id="L136">    private class ListIterator implements Iterator&lt;Item&gt; {</span>
+<span class="nc" id="L137">        private Node current = first;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        public boolean hasNext()  { return current != null;                     }</span>
+<span class="nc" id="L139">        public void remove()      { throw new UnsupportedOperationException();  }</span>
+
+        public Item next() {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L143">            Item item = current.item;</span>
+<span class="nc" id="L144">            current = current.next; </span>
+<span class="nc" id="L145">            return item;</span>
+        }
+    }
+
+
+    // check internal invariants
+    private boolean check() {
+
+        // check a few properties of instance variable 'first'
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (n &lt; 0) {</span>
+<span class="nc" id="L155">            return false;</span>
+        }
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (n == 0) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (first != null) return false;</span>
+        }
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        else if (n == 1) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (first == null)      return false;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (first.next != null) return false;</span>
+        }
+        else {
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            if (first == null)      return false;</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (first.next == null) return false;</span>
+        }
+
+        // check internal consistency of instance variable n
+<span class="nc" id="L170">        int numberOfNodes = 0;</span>
+<span class="nc bnc" id="L171" title="All 4 branches missed.">        for (Node x = first; x != null &amp;&amp; numberOfNodes &lt;= n; x = x.next) {</span>
+<span class="nc" id="L172">            numberOfNodes++;</span>
+        }
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (numberOfNodes != n) return false;</span>
+
+<span class="nc" id="L176">        return true;</span>
+    }
+
+    /**
+     * Unit tests the {@code LinkedStack} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L185">        LinkedStack&lt;String&gt; stack = new LinkedStack&lt;String&gt;();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L187">            String item = StdIn.readString();</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">            if (!item.equals(&quot;-&quot;))</span>
+<span class="nc" id="L189">                stack.push(item);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            else if (!stack.isEmpty())</span>
+<span class="nc" id="L191">                StdOut.print(stack.pop() + &quot; &quot;);</span>
+        }
+<span class="nc" id="L193">        StdOut.println(&quot;(&quot; + stack.size() + &quot; left on stack)&quot;);</span>
+<span class="nc" id="L194">    }</span>
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

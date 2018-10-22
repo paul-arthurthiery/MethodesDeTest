@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>GraphGeneratorTest.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java/tests</a> &gt; <a href="index.source.html" class="el_package">tests</a> &gt; <span class="el_source">GraphGeneratorTest.java</span></div><h1>GraphGeneratorTest.java</h1><pre class="source lang-java linenums">package tests;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import edu.princeton.cs.algs4.GraphGenerator;
+
+<span class="fc" id="L7">class GraphGeneratorTestEC {</span>
+    @org.junit.jupiter.api.Test
+    /*
+    simple() prend 2 entrées: V et E
+    V peut être n'importe quel int positif ou nul
+    E doit valoir entre 0 et V*(V-1)/2
+    On a donc pour V: min-(-1), min(0), V(1 à 2147483647)
+    pour E: min-(-1), min(0), E(1 à (V*(V-1)/2-1)), max(V*(V-1)/2), max+(1+(V*(V-1)/2))
+    Nous avons donc 6 cas de test : V1, E1, V2E2, V3E3, V3E4, E5
+    */
+    void simpleVE() {
+        //V1
+<span class="fc" id="L19">        Throwable negativeVertex = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L20">            GraphGenerator.simple(-1, 0);</span>
+<span class="nc" id="L21">        });</span>
+        //E1
+<span class="fc" id="L23">        Throwable negativeEdge = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L24">            GraphGenerator.simple(0, -1);</span>
+<span class="nc" id="L25">        });</span>
+        //V2E2
+<span class="fc" id="L27">        assertEquals(GraphGenerator.simple(0,0).V(), 0);</span>
+<span class="fc" id="L28">        assertEquals(GraphGenerator.simple(0,0).E(), 0);</span>
+        //V3E3
+<span class="fc" id="L30">        assertEquals(GraphGenerator.simple(25,30).V(), 25);</span>
+<span class="fc" id="L31">        assertEquals(GraphGenerator.simple(25,30).E(), 30);</span>
+        //V3E4
+<span class="fc" id="L33">        assertEquals(GraphGenerator.simple(12,66).V(), 12);</span>
+<span class="fc" id="L34">        assertEquals(GraphGenerator.simple(12,66).E(), 66);</span>
+        //E5
+<span class="fc" id="L36">        Throwable tooManyEdges = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L37">            GraphGenerator.simple(12, 67);</span>
+<span class="nc" id="L38">        });</span>
+<span class="fc" id="L39">    }</span>
+
+    @org.junit.jupiter.api.Test
+    /*
+    simple() prend 2 entrées: V et p
+    V peut être n'importe quel int positif ou nul
+    p doit valoir entre 0 1
+    On a donc pour V: min-(-1), min(0), V(1 à 2147483647)
+    pour p: min-(-1.0), min(0.0), p(0.01 à 0.99), max(1.0), max+(1.1)
+    Nous avons donc 6 cas de test : V1, P1, V2P2, V3P3, V3P4, P5
+    */
+    void simpleVp() {
+        //V1
+<span class="fc" id="L52">        Throwable negativeVertex = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L53">            GraphGenerator.simple(-1, 0.0);</span>
+<span class="nc" id="L54">        });</span>
+        //P1
+<span class="fc" id="L56">        Throwable negativeProbability = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L57">            GraphGenerator.simple(0, -1.0);</span>
+<span class="nc" id="L58">        });</span>
+        //V2P2
+<span class="fc" id="L60">        assertEquals(GraphGenerator.simple(0,0.0).V(), 0);</span>
+<span class="fc" id="L61">        assertEquals(GraphGenerator.simple(0,0.0).E(), 0);</span>
+        //V3P3
+<span class="fc" id="L63">        assertEquals(GraphGenerator.simple(25,0.5).V(), 25);</span>
+        //V3P4
+<span class="fc" id="L65">        assertEquals(GraphGenerator.simple(12,1.0).V(), 12);</span>
+<span class="fc" id="L66">        assertEquals(GraphGenerator.simple(12,1.0).E(), 66);</span>
+        //P5
+<span class="fc" id="L68">        Throwable probabilityTooBig = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L69">            GraphGenerator.simple(12, 1.1);</span>
+<span class="nc" id="L70">        });</span>
+<span class="fc" id="L71">    }</span>
+
+    @org.junit.jupiter.api.Test
+    /*
+    bipartite() prend 3 entrées: V1, V2 et E
+    V1 et V2 peuvent être n'importe quel int positif ou nul
+    E doit être entre 0 et V1*V2
+    On a donc pour V1 et V2: min-(-1), min(0), V(1 à 2147483647)
+    pour E: min-(-1), min(0), E(1 à (V1*V2)-1), max(V1*V2), max+((V1*V2)+1)
+    Nous avons donc 7 cas de test : V11, V12, E1, V12V22E2, V13V23E3, V13V23E4, E5
+    */
+    void bipartiteVVE() {
+        //V11
+<span class="fc" id="L84">        Throwable negativeVertex1 = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L85">            GraphGenerator.bipartite(-1, 0, 0);</span>
+<span class="nc" id="L86">        });</span>
+        //V21
+<span class="fc" id="L88">        Throwable negativeVertex2 = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L89">            GraphGenerator.bipartite(0, -1, 0);</span>
+<span class="nc" id="L90">        });</span>
+        //E1
+<span class="fc" id="L92">        Throwable negativeEdge = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L93">            GraphGenerator.bipartite(0, 0, -1);</span>
+<span class="nc" id="L94">        });</span>
+        //V12V22E2
+<span class="fc" id="L96">        assertEquals(GraphGenerator.bipartite(0,0, 0).V(), 0);</span>
+<span class="fc" id="L97">        assertEquals(GraphGenerator.bipartite(0,0, 0).E(), 0);</span>
+        //V3E3
+<span class="fc" id="L99">        assertEquals(GraphGenerator.bipartite(25,25, 100).V(), 50);</span>
+<span class="fc" id="L100">        assertEquals(GraphGenerator.bipartite(25,25, 100).E(), 100);</span>
+        //V3E4
+<span class="fc" id="L102">        assertEquals(GraphGenerator.bipartite(10,10, 100).V(), 20);</span>
+<span class="fc" id="L103">        assertEquals(GraphGenerator.bipartite(10,10, 100).E(), 100);</span>
+        //E5
+<span class="fc" id="L105">        Throwable tooManyEdges = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L106">            GraphGenerator.bipartite(10, 10, 101);</span>
+<span class="nc" id="L107">        });</span>
+<span class="fc" id="L108">    }</span>
+
+    @org.junit.jupiter.api.Test
+    /*
+    bipartite() prend 3 entrées: V1, V2 et p
+    V1 et V2 peuvent être n'importe quel int positif ou nul
+    p doit valoir entre 0 1
+    On a donc pour V1 et V2: min-(-1), min(0), V(1 à 2147483647)
+    pour p: min-(-1.0), min(0.0), p(0.01 à 0.99), max(1.0), max+(1.1)
+    Nous avons donc 7 cas de test : V11, V21, P1, V12V22P2, V13V23P3, V13V23P4, P5
+    */
+    void bipartiteVVp() {
+        //V11
+<span class="fc" id="L121">        Throwable negativeVertex1 = assertThrows(NegativeArraySizeException.class,() -&gt; {</span>
+<span class="nc" id="L122">            GraphGenerator.bipartite(-1, 0, 0.0);</span>
+<span class="nc" id="L123">        });</span>
+        //V21
+<span class="fc" id="L125">        Throwable negativeVertex2 = assertThrows(NegativeArraySizeException.class,() -&gt; {</span>
+<span class="nc" id="L126">            GraphGenerator.bipartite(0, -1, 0.0);</span>
+<span class="nc" id="L127">        });</span>
+        //P1
+<span class="fc" id="L129">        Throwable negativeProbability = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L130">            GraphGenerator.bipartite(0, 0,-1.0);</span>
+<span class="nc" id="L131">        });</span>
+        //V12V22P2
+<span class="fc" id="L133">        assertEquals(GraphGenerator.bipartite(0, 0,0.0).V(), 0);</span>
+<span class="fc" id="L134">        assertEquals(GraphGenerator.bipartite(0,0, 0.0).E(), 0);</span>
+        //V13V23P3
+<span class="fc" id="L136">        assertEquals(GraphGenerator.bipartite(25, 25, 0.5).V(), 50);</span>
+        //V13V23P4
+<span class="fc" id="L138">        assertEquals(GraphGenerator.bipartite(12,12, 1.0).V(), 24);</span>
+<span class="fc" id="L139">        assertEquals(GraphGenerator.bipartite(12, 12,1.0).E(), 144);</span>
+        //P5
+<span class="fc" id="L141">        Throwable probabilityTooBig = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L142">            GraphGenerator.bipartite(12, 12, 1.1);</span>
+<span class="nc" id="L143">        });</span>
+<span class="fc" id="L144">    }</span>
+
+    @org.junit.jupiter.api.Test
+    /*
+    regular() prend 2 entrées: V et k
+    V peut être n'importe quel int positif ou nul
+    k peut etre entre 0 et V+2 mais k*V doit être pair (pas d'edge qui ne vont nul part)
+    On a donc pour V1: min-(-1), min(0), V(1 à 2147483647)
+    pour k: min(0), k(1 à 2147483647) err(V*k%2 != 0)
+    Nous avons donc 7 cas de test : V1, V2K1, V3K2, K3
+    */
+    void regular() {
+        //V1
+<span class="fc" id="L157">        Throwable negativeVertex = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L158">            GraphGenerator.regular(-1, 0);</span>
+<span class="nc" id="L159">        });</span>
+        //V2K1
+<span class="fc" id="L161">        assertEquals(GraphGenerator.regular(0,0).V(), 0);</span>
+<span class="fc" id="L162">        assertEquals(GraphGenerator.regular(0,0).E(), 0);</span>
+        //V3K2
+<span class="fc" id="L164">        assertEquals(GraphGenerator.regular(10,2).V(), 10);</span>
+<span class="fc" id="L165">        assertEquals(GraphGenerator.regular(10,2).E(), 10);</span>
+        //K3
+<span class="fc" id="L167">        Throwable oddDegreeTimesEdges = assertThrows(IllegalArgumentException.class,() -&gt; {</span>
+<span class="nc" id="L168">            GraphGenerator.regular(3, 3);</span>
+<span class="nc" id="L169">        });</span>
+<span class="fc" id="L170">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

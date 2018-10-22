@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>CPM.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">CPM.java</span></div><h1>CPM.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac CPM.java
+ *  Execution:    java CPM &lt; input.txt
+ *  Dependencies: EdgeWeightedDigraph.java AcyclicDigraphLP.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/44sp/jobsPC.txt
+ *
+ *  Critical path method.
+ *
+ *  % java CPM &lt; jobsPC.txt
+ *   job   start  finish
+ *  --------------------
+ *     0     0.0    41.0
+ *     1    41.0    92.0
+ *     2   123.0   173.0
+ *     3    91.0   127.0
+ *     4    70.0   108.0
+ *     5     0.0    45.0
+ *     6    70.0    91.0
+ *     7    41.0    73.0
+ *     8    91.0   123.0
+ *     9    41.0    70.0
+ *  Finish time:   173.0
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code CPM} class provides a client that solves the
+ *  parallel precedence-constrained job scheduling problem
+ *  via the &lt;em&gt;critical path method&lt;/em&gt;. It reduces the problem
+ *  to the longest-paths problem in edge-weighted DAGs.
+ *  It builds an edge-weighted digraph (which must be a DAG)
+ *  from the job-scheduling problem specification,
+ *  finds the longest-paths tree, and computes the longest-paths
+ *  lengths (which are precisely the start times for each job).
+ *  &lt;p&gt;
+ *  This implementation uses {@link AcyclicLP} to find a longest
+ *  path in a DAG.
+ *  The running time is proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of jobs and &lt;em&gt;E&lt;/em&gt; is the
+ *  number of precedence constraints.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/44sp&quot;&gt;Section 4.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class CPM {
+
+    // this class cannot be instantiated
+<span class="nc" id="L54">    private CPM() { }</span>
+
+    /**
+     *  Reads the precedence constraints from standard input
+     *  and prints a feasible schedule to standard output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // number of jobs
+<span class="nc" id="L65">        int n = StdIn.readInt();</span>
+
+        // source and sink
+<span class="nc" id="L68">        int source = 2*n;</span>
+<span class="nc" id="L69">        int sink   = 2*n + 1;</span>
+
+        // build network
+<span class="nc" id="L72">        EdgeWeightedDigraph G = new EdgeWeightedDigraph(2*n + 2);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L74">            double duration = StdIn.readDouble();</span>
+<span class="nc" id="L75">            G.addEdge(new DirectedEdge(source, i, 0.0));</span>
+<span class="nc" id="L76">            G.addEdge(new DirectedEdge(i+n, sink, 0.0));</span>
+<span class="nc" id="L77">            G.addEdge(new DirectedEdge(i, i+n,    duration));</span>
+
+            // precedence constraints
+<span class="nc" id="L80">            int m = StdIn.readInt();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            for (int j = 0; j &lt; m; j++) {</span>
+<span class="nc" id="L82">                int precedent = StdIn.readInt();</span>
+<span class="nc" id="L83">                G.addEdge(new DirectedEdge(n+i, precedent, 0.0));</span>
+            }
+        }
+
+        // compute longest path
+<span class="nc" id="L88">        AcyclicLP lp = new AcyclicLP(G, source);</span>
+
+        // print results
+<span class="nc" id="L91">        StdOut.println(&quot; job   start  finish&quot;);</span>
+<span class="nc" id="L92">        StdOut.println(&quot;--------------------&quot;);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L94">            StdOut.printf(&quot;%4d %7.1f %7.1f\n&quot;, i, lp.distTo(i), lp.distTo(i+n));</span>
+        }
+<span class="nc" id="L96">        StdOut.printf(&quot;Finish time: %7.1f\n&quot;, lp.distTo(sink));</span>
+<span class="nc" id="L97">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

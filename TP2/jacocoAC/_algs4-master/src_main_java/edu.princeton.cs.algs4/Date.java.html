@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Date.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Date.java</span></div><h1>Date.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Date.java
+ *  Execution:    java Date
+ *  Dependencies: StdOut.java
+ *
+ *  An immutable data type for dates.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Date} class is an immutable data type to encapsulate a
+ *  date (day, month, and year).
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Date implements Comparable&lt;Date&gt; {
+<span class="nc" id="L24">    private static final int[] DAYS = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };</span>
+
+    private final int month;   // month (between 1 and 12)
+    private final int day;     // day   (between 1 and DAYS[month]
+    private final int year;    // year
+
+   /**
+     * Initializes a new date from the month, day, and year.
+     * @param month the month (between 1 and 12)
+     * @param day the day (between 1 and 28-31, depending on the month)
+     * @param year the year
+     * @throws IllegalArgumentException if this date is invalid
+     */
+<span class="nc" id="L37">    public Date(int month, int day, int year) {</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        if (!isValid(month, day, year)) throw new IllegalArgumentException(&quot;Invalid date&quot;);</span>
+<span class="nc" id="L39">        this.month = month;</span>
+<span class="nc" id="L40">        this.day   = day;</span>
+<span class="nc" id="L41">        this.year  = year;</span>
+<span class="nc" id="L42">    }</span>
+
+    /**
+     * Initializes new date specified as a string in form MM/DD/YYYY.
+     * @param date the string representation of this date
+     * @throws IllegalArgumentException if this date is invalid
+     */
+<span class="nc" id="L49">    public Date(String date) {</span>
+<span class="nc" id="L50">        String[] fields = date.split(&quot;/&quot;);</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (fields.length != 3) {</span>
+<span class="nc" id="L52">            throw new IllegalArgumentException(&quot;Invalid date&quot;);</span>
+        }
+<span class="nc" id="L54">        month = Integer.parseInt(fields[0]);</span>
+<span class="nc" id="L55">        day   = Integer.parseInt(fields[1]);</span>
+<span class="nc" id="L56">        year  = Integer.parseInt(fields[2]);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (!isValid(month, day, year)) throw new IllegalArgumentException(&quot;Invalid date&quot;);</span>
+<span class="nc" id="L58">    }</span>
+
+    /**
+     * Return the month.
+     * @return the month (an integer between 1 and 12)
+     */
+    public int month() {
+<span class="nc" id="L65">        return month;</span>
+    }
+
+    /**
+     * Returns the day.
+     * @return the day (an integer between 1 and 31)
+     */
+    public int day() {
+<span class="nc" id="L73">        return day;</span>
+    }
+
+    /**
+     * Returns the year.
+     * @return the year
+     */
+    public int year() {
+<span class="nc" id="L81">        return year;</span>
+    }
+
+
+    // is the given date valid?
+    private static boolean isValid(int m, int d, int y) {
+<span class="nc bnc" id="L87" title="All 4 branches missed.">        if (m &lt; 1 || m &gt; 12)      return false;</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        if (d &lt; 1 || d &gt; DAYS[m]) return false;</span>
+<span class="nc bnc" id="L89" title="All 6 branches missed.">        if (m == 2 &amp;&amp; d == 29 &amp;&amp; !isLeapYear(y)) return false;</span>
+<span class="nc" id="L90">        return true;</span>
+    }
+
+    // is y a leap year?
+    private static boolean isLeapYear(int y) {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (y % 400 == 0) return true;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (y % 100 == 0) return false;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        return y % 4 == 0;</span>
+    }
+
+    /**
+     * Returns the next date in the calendar.
+     *
+     * @return a date that represents the next day after this day
+     */
+    public Date next() {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (isValid(month, day + 1, year))    return new Date(month, day + 1, year);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        else if (isValid(month + 1, 1, year)) return new Date(month + 1, 1, year);</span>
+<span class="nc" id="L108">        else                                  return new Date(1, 1, year + 1);</span>
+    }
+
+    /**
+     * Compares two dates chronologically.
+     *
+     * @param  that the other date
+     * @return {@code true} if this date is after that date; {@code false} otherwise
+     */
+    public boolean isAfter(Date that) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        return compareTo(that) &gt; 0;</span>
+    }
+
+    /**
+     * Compares two dates chronologically.
+     *
+     * @param  that the other date
+     * @return {@code true} if this date is before that date; {@code false} otherwise
+     */
+    public boolean isBefore(Date that) {
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        return compareTo(that) &lt; 0;</span>
+    }
+
+    /**
+     * Compares two dates chronologically.
+     *
+     * @return the value {@code 0} if the argument date is equal to this date;
+     *         a negative integer if this date is chronologically less than
+     *         the argument date; and a positive ineger if this date is chronologically
+     *         after the argument date
+     */
+    @Override
+    public int compareTo(Date that) {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (this.year  &lt; that.year)  return -1;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (this.year  &gt; that.year)  return +1;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (this.month &lt; that.month) return -1;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (this.month &gt; that.month) return +1;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (this.day   &lt; that.day)   return -1;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (this.day   &gt; that.day)   return +1;</span>
+<span class="nc" id="L147">        return 0;</span>
+    }
+
+    /**
+     * Returns a string representation of this date.
+     *
+     * @return the string representation in the format MM/DD/YYYY
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L157">        return month + &quot;/&quot; + day + &quot;/&quot; + year;</span>
+    }
+
+    /**
+     * Compares this date to the specified date.
+     *
+     * @param  other the other date
+     * @return {@code true} if this date equals {@code other}; {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L171">        Date that = (Date) other;</span>
+<span class="nc bnc" id="L172" title="All 6 branches missed.">        return (this.month == that.month) &amp;&amp; (this.day == that.day) &amp;&amp; (this.year == that.year);</span>
+    }
+
+    /**
+     * Returns an integer hash code for this date.
+     *
+     * @return an integer hash code for this date
+     */
+    @Override
+    public int hashCode() {
+<span class="nc" id="L182">        int hash = 17;</span>
+<span class="nc" id="L183">        hash = 31*hash + month;</span>
+<span class="nc" id="L184">        hash = 31*hash + day;</span>
+<span class="nc" id="L185">        hash = 31*hash + year;</span>
+<span class="nc" id="L186">        return hash;</span>
+    }
+
+    /**
+     * Unit tests the {@code Date} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L195">        Date today = new Date(2, 25, 2004);</span>
+<span class="nc" id="L196">        StdOut.println(today);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        for (int i = 0; i &lt; 10; i++) {</span>
+<span class="nc" id="L198">            today = today.next();</span>
+<span class="nc" id="L199">            StdOut.println(today);</span>
+        }
+
+<span class="nc" id="L202">        StdOut.println(today.isAfter(today.next()));</span>
+<span class="nc" id="L203">        StdOut.println(today.isAfter(today));</span>
+<span class="nc" id="L204">        StdOut.println(today.next().isAfter(today));</span>
+
+
+<span class="nc" id="L207">        Date birthday = new Date(10, 16, 1971);</span>
+<span class="nc" id="L208">        StdOut.println(birthday);</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        for (int i = 0; i &lt; 10; i++) {</span>
+<span class="nc" id="L210">            birthday = birthday.next();</span>
+<span class="nc" id="L211">            StdOut.println(birthday);</span>
+        }
+<span class="nc" id="L213">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DirectedEulerianCycle.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DirectedEulerianCycle.java</span></div><h1>DirectedEulerianCycle.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DirectedEulerianCycle.java
+ *  Execution:    java DirectedEulerianCycle V E
+ *  Dependencies: Digraph.java Stack.java StdOut.java
+ *                BreadthFirstPaths.java
+ *                DigraphGenerator.java StdRandom.java
+ *
+ *  Find an Eulerian cycle in a digraph, if one exists.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+
+/**
+ *  The {@code DirectedEulerianCycle} class represents a data type
+ *  for finding an Eulerian cycle or path in a digraph.
+ *  An &lt;em&gt;Eulerian cycle&lt;/em&gt; is a cycle (not necessarily simple) that
+ *  uses every edge in the digraph exactly once.
+ *  &lt;p&gt;
+ *  This implementation uses a nonrecursive depth-first search.
+ *  The constructor runs in O(&lt;Em&gt;E&lt;/em&gt; + &lt;em&gt;V&lt;/em&gt;) time,
+ *  and uses O(&lt;em&gt;V&lt;/em&gt;) extra space, where &lt;em&gt;E&lt;/em&gt; is the
+ *  number of edges and &lt;em&gt;V&lt;/em&gt; the number of vertices
+ *  All other methods take O(1) time.
+ *  &lt;p&gt;
+ *  To compute Eulerian paths in digraphs, see {@link DirectedEulerianPath}.
+ *  To compute Eulerian cycles and paths in undirected graphs, see
+ *  {@link EulerianCycle} and {@link EulerianPath}.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ * 
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *  @author Nate Liu
+ */
+<span class="nc bnc" id="L40" title="All 2 branches missed.">public class DirectedEulerianCycle {</span>
+<span class="nc" id="L41">    private Stack&lt;Integer&gt; cycle = null;  // Eulerian cycle; null if no such cylce</span>
+
+    /**
+     * Computes an Eulerian cycle in the specified digraph, if one exists.
+     * 
+     * @param G the digraph
+     */
+<span class="nc" id="L48">    public DirectedEulerianCycle(Digraph G) {</span>
+
+        // must have at least one edge
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (G.E() == 0) return;</span>
+
+        // necessary condition: indegree(v) = outdegree(v) for each vertex v
+        // (without this check, DFS might return a path instead of a cycle)
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            if (G.outdegree(v) != G.indegree(v))</span>
+<span class="nc" id="L57">                return;</span>
+
+        // create local view of adjacency lists, to iterate one vertex at a time
+<span class="nc" id="L60">        Iterator&lt;Integer&gt;[] adj = (Iterator&lt;Integer&gt;[]) new Iterator[G.V()];</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L62">            adj[v] = G.adj(v).iterator();</span>
+
+        // initialize stack with any non-isolated vertex
+<span class="nc" id="L65">        int s = nonIsolatedVertex(G);</span>
+<span class="nc" id="L66">        Stack&lt;Integer&gt; stack = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L67">        stack.push(s);</span>
+
+        // greedily add to putative cycle, depth-first search style
+<span class="nc" id="L70">        cycle = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        while (!stack.isEmpty()) {</span>
+<span class="nc" id="L72">            int v = stack.pop();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            while (adj[v].hasNext()) {</span>
+<span class="nc" id="L74">                stack.push(v);</span>
+<span class="nc" id="L75">                v = adj[v].next();</span>
+            }
+            // add vertex with no more leaving edges to cycle
+<span class="nc" id="L78">            cycle.push(v);</span>
+        }
+
+        // check if all edges have been used
+        // (in case there are two or more vertex-disjoint Eulerian cycles)
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (cycle.size() != G.E() + 1)</span>
+<span class="nc" id="L84">            cycle = null;</span>
+
+<span class="nc bnc" id="L86" title="All 4 branches missed.">        assert certifySolution(G);</span>
+<span class="nc" id="L87">    }</span>
+
+    /**
+     * Returns the sequence of vertices on an Eulerian cycle.
+     * 
+     * @return the sequence of vertices on an Eulerian cycle;
+     *         {@code null} if no such cycle
+     */
+    public Iterable&lt;Integer&gt; cycle() {
+<span class="nc" id="L96">        return cycle;</span>
+    }
+
+    /**
+     * Returns true if the digraph has an Eulerian cycle.
+     * 
+     * @return {@code true} if the digraph has an Eulerian cycle;
+     *         {@code false} otherwise
+     */
+    public boolean hasEulerianCycle() {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        return cycle != null;</span>
+    }
+
+    // returns any non-isolated vertex; -1 if no such vertex
+    private static int nonIsolatedVertex(Digraph G) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            if (G.outdegree(v) &gt; 0)</span>
+<span class="nc" id="L113">                return v;</span>
+<span class="nc" id="L114">        return -1;</span>
+    }
+
+
+    /**************************************************************************
+     *
+     *  The code below is solely for testing correctness of the data type.
+     *
+     **************************************************************************/
+
+    // Determines whether a digraph has an Eulerian cycle using necessary
+    // and sufficient conditions (without computing the cycle itself):
+    //    - at least one edge
+    //    - indegree(v) = outdegree(v) for every vertex
+    //    - the graph is connected, when viewed as an undirected graph
+    //      (ignoring isolated vertices)
+    private static boolean satisfiesNecessaryAndSufficientConditions(Digraph G) {
+
+        // Condition 0: at least 1 edge
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (G.E() == 0) return false;</span>
+
+        // Condition 1: indegree(v) == outdegree(v) for every vertex
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            if (G.outdegree(v) != G.indegree(v))</span>
+<span class="nc" id="L138">                return false;</span>
+
+        // Condition 2: graph is connected, ignoring isolated vertices
+<span class="nc" id="L141">        Graph H = new Graph(G.V());</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            for (int w : G.adj(v))</span>
+<span class="nc" id="L144">                H.addEdge(v, w);</span>
+        
+        // check that all non-isolated vertices are conneted
+<span class="nc" id="L147">        int s = nonIsolatedVertex(G);</span>
+<span class="nc" id="L148">        BreadthFirstPaths bfs = new BreadthFirstPaths(H, s);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L150" title="All 4 branches missed.">            if (H.degree(v) &gt; 0 &amp;&amp; !bfs.hasPathTo(v))</span>
+<span class="nc" id="L151">                return false;</span>
+
+<span class="nc" id="L153">        return true;</span>
+    }
+
+    // check that solution is correct
+    private boolean certifySolution(Digraph G) {
+
+        // internal consistency check
+<span class="nc bnc" id="L160" title="All 4 branches missed.">        if (hasEulerianCycle() == (cycle() == null)) return false;</span>
+
+        // hashEulerianCycle() returns correct value
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (hasEulerianCycle() != satisfiesNecessaryAndSufficientConditions(G)) return false;</span>
+
+        // nothing else to check if no Eulerian cycle
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (cycle == null) return true;</span>
+
+        // check that cycle() uses correct number of edges
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (cycle.size() != G.E() + 1) return false;</span>
+
+        // check that cycle() is a directed cycle of G
+        // TODO
+
+<span class="nc" id="L174">        return true;</span>
+    }
+
+
+    private static void unitTest(Digraph G, String description) {
+<span class="nc" id="L179">        StdOut.println(description);</span>
+<span class="nc" id="L180">        StdOut.println(&quot;-------------------------------------&quot;);</span>
+<span class="nc" id="L181">        StdOut.print(G);</span>
+
+<span class="nc" id="L183">        DirectedEulerianCycle euler = new DirectedEulerianCycle(G);</span>
+
+<span class="nc" id="L185">        StdOut.print(&quot;Eulerian cycle: &quot;);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (euler.hasEulerianCycle()) {</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            for (int v : euler.cycle()) {</span>
+<span class="nc" id="L188">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L190">            StdOut.println();</span>
+<span class="nc" id="L191">        }</span>
+        else {
+<span class="nc" id="L193">            StdOut.println(&quot;none&quot;);</span>
+        }
+<span class="nc" id="L195">        StdOut.println();</span>
+<span class="nc" id="L196">    }</span>
+
+
+    /**
+     * Unit tests the {@code DirectedEulerianCycle} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L205">        int V = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L206">        int E = Integer.parseInt(args[1]);</span>
+
+        // Eulerian cycle
+<span class="nc" id="L209">        Digraph G1 = DigraphGenerator.eulerianCycle(V, E);</span>
+<span class="nc" id="L210">        unitTest(G1, &quot;Eulerian cycle&quot;);</span>
+
+        // Eulerian path
+<span class="nc" id="L213">        Digraph G2 = DigraphGenerator.eulerianPath(V, E);</span>
+<span class="nc" id="L214">        unitTest(G2, &quot;Eulerian path&quot;);</span>
+
+        // empty digraph
+<span class="nc" id="L217">        Digraph G3 = new Digraph(V);</span>
+<span class="nc" id="L218">        unitTest(G3, &quot;empty digraph&quot;);</span>
+
+        // self loop
+<span class="nc" id="L221">        Digraph G4 = new Digraph(V);</span>
+<span class="nc" id="L222">        int v4 = StdRandom.uniform(V);</span>
+<span class="nc" id="L223">        G4.addEdge(v4, v4);</span>
+<span class="nc" id="L224">        unitTest(G4, &quot;single self loop&quot;);</span>
+
+        // union of two disjoint cycles
+<span class="nc" id="L227">        Digraph H1 = DigraphGenerator.eulerianCycle(V/2, E/2);</span>
+<span class="nc" id="L228">        Digraph H2 = DigraphGenerator.eulerianCycle(V - V/2, E - E/2);</span>
+<span class="nc" id="L229">        int[] perm = new int[V];</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L231">            perm[i] = i;</span>
+<span class="nc" id="L232">        StdRandom.shuffle(perm);</span>
+<span class="nc" id="L233">        Digraph G5 = new Digraph(V);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        for (int v = 0; v &lt; H1.V(); v++)</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            for (int w : H1.adj(v))</span>
+<span class="nc" id="L236">                G5.addEdge(perm[v], perm[w]);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        for (int v = 0; v &lt; H2.V(); v++)</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            for (int w : H2.adj(v))</span>
+<span class="nc" id="L239">                G5.addEdge(perm[V/2 + v], perm[V/2 + w]);</span>
+<span class="nc" id="L240">        unitTest(G5, &quot;Union of two disjoint cycles&quot;);</span>
+
+        // random digraph
+<span class="nc" id="L243">        Digraph G6 = DigraphGenerator.simple(V, E);</span>
+<span class="nc" id="L244">        unitTest(G6, &quot;simple digraph&quot;);</span>
+
+        // 4-vertex digraph
+<span class="nc" id="L247">        Digraph G7 = new Digraph(new In(&quot;eulerianD.txt&quot;));</span>
+<span class="nc" id="L248">        unitTest(G7, &quot;4-vertex Eulerian digraph&quot;);</span>
+<span class="nc" id="L249">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Transaction.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Transaction.java</span></div><h1>Transaction.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Transaction.java
+ *  Execution:    java Transaction
+ *  Dependencies: StdOut.java
+ *  
+ *  Data type for commercial transactions.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+/**
+ *  The {@code Transaction} class is an immutable data type to encapsulate a
+ *  commercial transaction with a customer name, date, and amount.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Transaction implements Comparable&lt;Transaction&gt; {
+    private final String  who;      // customer
+    private final Date    when;     // date
+    private final double  amount;   // amount
+
+
+    /**
+     * Initializes a new transaction from the given arguments.
+     *
+     * @param  who the person involved in this transaction
+     * @param  when the date of this transaction
+     * @param  amount the amount of this transaction
+     * @throws IllegalArgumentException if {@code amount} 
+     *         is {@code Double.NaN}, {@code Double.POSITIVE_INFINITY},
+     *         or {@code Double.NEGATIVE_INFINITY}
+     */
+<span class="nc" id="L42">    public Transaction(String who, Date when, double amount) {</span>
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        if (Double.isNaN(amount) || Double.isInfinite(amount))</span>
+<span class="nc" id="L44">            throw new IllegalArgumentException(&quot;Amount cannot be NaN or infinite&quot;);</span>
+<span class="nc" id="L45">        this.who    = who;</span>
+<span class="nc" id="L46">        this.when   = when;</span>
+<span class="nc" id="L47">        this.amount = amount;</span>
+<span class="nc" id="L48">    }</span>
+
+    /**
+     * Initializes a new transaction by parsing a string of the form NAME DATE AMOUNT.
+     *
+     * @param  transaction the string to parse
+     * @throws IllegalArgumentException if {@code amount} 
+     *         is {@code Double.NaN}, {@code Double.POSITIVE_INFINITY},
+     *         or {@code Double.NEGATIVE_INFINITY}
+     */
+<span class="nc" id="L58">    public Transaction(String transaction) {</span>
+<span class="nc" id="L59">        String[] a = transaction.split(&quot;\\s+&quot;);</span>
+<span class="nc" id="L60">        who    = a[0];</span>
+<span class="nc" id="L61">        when   = new Date(a[1]);</span>
+<span class="nc" id="L62">        amount = Double.parseDouble(a[2]);</span>
+<span class="nc bnc" id="L63" title="All 4 branches missed.">        if (Double.isNaN(amount) || Double.isInfinite(amount))</span>
+<span class="nc" id="L64">            throw new IllegalArgumentException(&quot;Amount cannot be NaN or infinite&quot;);</span>
+<span class="nc" id="L65">    }</span>
+
+    /**
+     * Returns the name of the customer involved in this transaction.
+     *
+     * @return the name of the customer involved in this transaction
+     */
+    public String who() {
+<span class="nc" id="L73">        return who;</span>
+    }
+ 
+    /**
+     * Returns the date of this transaction.
+     *
+     * @return the date of this transaction
+     */
+    public Date when() {
+<span class="nc" id="L82">        return when;</span>
+    }
+ 
+    /**
+     * Returns the amount of this transaction.
+     *
+     * @return the amount of this transaction
+     */
+    public double amount() {
+<span class="nc" id="L91">        return amount;</span>
+    }
+
+    /**
+     * Returns a string representation of this transaction.
+     *
+     * @return a string representation of this transaction
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L101">        return String.format(&quot;%-10s %10s %8.2f&quot;, who, when, amount);</span>
+    }
+
+    /**
+     * Compares two transactions by amount.
+     *
+     * @param  that the other transaction
+     * @return { a negative integer, zero, a positive integer}, depending
+     *         on whether the amount of this transaction is { less than,
+     *         equal to, or greater than } the amount of that transaction
+     */
+    public int compareTo(Transaction that) {
+<span class="nc" id="L113">        return Double.compare(this.amount, that.amount);</span>
+    }    
+
+    /**
+     * Compares this transaction to the specified object.
+     *
+     * @param  other the other transaction
+     * @return true if this transaction is equal to {@code other}; false otherwise
+     */
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L127">        Transaction that = (Transaction) other;</span>
+<span class="nc bnc" id="L128" title="All 4 branches missed.">        return (this.amount == that.amount) &amp;&amp; (this.who.equals(that.who))</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                                            &amp;&amp; (this.when.equals(that.when));</span>
+    }
+
+
+    /**
+     * Returns a hash code for this transaction.
+     *
+     * @return a hash code for this transaction
+     */
+    public int hashCode() {
+<span class="nc" id="L139">        int hash = 1;</span>
+<span class="nc" id="L140">        hash = 31*hash + who.hashCode();</span>
+<span class="nc" id="L141">        hash = 31*hash + when.hashCode();</span>
+<span class="nc" id="L142">        hash = 31*hash + ((Double) amount).hashCode();</span>
+<span class="nc" id="L143">        return hash;</span>
+        // return Objects.hash(who, when, amount);
+    }
+
+    /**
+     * Compares two transactions by customer name.
+     */
+<span class="nc" id="L150">    public static class WhoOrder implements Comparator&lt;Transaction&gt; {</span>
+
+        @Override
+        public int compare(Transaction v, Transaction w) {
+<span class="nc" id="L154">            return v.who.compareTo(w.who);</span>
+        }
+    }
+
+    /**
+     * Compares two transactions by date.
+     */
+<span class="nc" id="L161">    public static class WhenOrder implements Comparator&lt;Transaction&gt; {</span>
+
+        @Override
+        public int compare(Transaction v, Transaction w) {
+<span class="nc" id="L165">            return v.when.compareTo(w.when);</span>
+        }
+    }
+
+    /**
+     * Compares two transactions by amount.
+     */
+<span class="nc" id="L172">    public static class HowMuchOrder implements Comparator&lt;Transaction&gt; {</span>
+
+        @Override
+        public int compare(Transaction v, Transaction w) {
+<span class="nc" id="L176">            return Double.compare(v.amount, w.amount);</span>
+        }
+    }
+
+
+    /**
+     * Unit tests the {@code Transaction} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L187">        Transaction[] a = new Transaction[4];</span>
+<span class="nc" id="L188">        a[0] = new Transaction(&quot;Turing   6/17/1990  644.08&quot;);</span>
+<span class="nc" id="L189">        a[1] = new Transaction(&quot;Tarjan   3/26/2002 4121.85&quot;);</span>
+<span class="nc" id="L190">        a[2] = new Transaction(&quot;Knuth    6/14/1999  288.34&quot;);</span>
+<span class="nc" id="L191">        a[3] = new Transaction(&quot;Dijkstra 8/22/2007 2678.40&quot;);</span>
+
+<span class="nc" id="L193">        StdOut.println(&quot;Unsorted&quot;);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L195">            StdOut.println(a[i]);</span>
+<span class="nc" id="L196">        StdOut.println();</span>
+        
+<span class="nc" id="L198">        StdOut.println(&quot;Sort by date&quot;);</span>
+<span class="nc" id="L199">        Arrays.sort(a, new Transaction.WhenOrder());</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L201">            StdOut.println(a[i]);</span>
+<span class="nc" id="L202">        StdOut.println();</span>
+
+<span class="nc" id="L204">        StdOut.println(&quot;Sort by customer&quot;);</span>
+<span class="nc" id="L205">        Arrays.sort(a, new Transaction.WhoOrder());</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L207">            StdOut.println(a[i]);</span>
+<span class="nc" id="L208">        StdOut.println();</span>
+
+<span class="nc" id="L210">        StdOut.println(&quot;Sort by amount&quot;);</span>
+<span class="nc" id="L211">        Arrays.sort(a, new Transaction.HowMuchOrder());</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L213">            StdOut.println(a[i]);</span>
+<span class="nc" id="L214">        StdOut.println();</span>
+<span class="nc" id="L215">    }</span>
+
+}
+
+
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

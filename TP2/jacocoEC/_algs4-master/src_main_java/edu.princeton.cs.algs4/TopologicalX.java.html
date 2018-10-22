@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>TopologicalX.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">TopologicalX.java</span></div><h1>TopologicalX.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac TopologicalX.java
+ *  Execution:    java TopologicalX V E F
+ *  Dependencies: Queue.java Digraph.java
+ *
+ *  Compute topological ordering of a DAG using queue-based algorithm.
+ *  Runs in O(E + V) time.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code TopologicalX} class represents a data type for 
+ *  determining a topological order of a directed acyclic graph (DAG).
+ *  Recall, a digraph has a topological order if and only if it is a DAG.
+ *  The &lt;em&gt;hasOrder&lt;/em&gt; operation determines whether the digraph has
+ *  a topological order, and if so, the &lt;em&gt;order&lt;/em&gt; operation
+ *  returns one.
+ *  &lt;p&gt;
+ *  This implementation uses a nonrecursive, queue-based algorithm.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;hasOrder&lt;/em&gt; and &lt;em&gt;rank&lt;/em&gt; operations takes constant time;
+ *  the &lt;em&gt;order&lt;/em&gt; operation takes time proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  See {@link DirectedCycle}, {@link DirectedCycleX}, and
+ *  {@link EdgeWeightedDirectedCycle} to compute a
+ *  directed cycle if the digraph is not a DAG.
+ *  See {@link Topological} for a recursive version that uses depth-first search.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L40" title="All 2 branches missed.">public class TopologicalX {</span>
+    private Queue&lt;Integer&gt; order;     // vertices in topological order
+    private int[] ranks;              // ranks[v] = order where vertex v appers in order
+
+    /**
+     * Determines whether the digraph {@code G} has a topological order and, if so,
+     * finds such a topological order.
+     * @param G the digraph
+     */
+<span class="nc" id="L49">    public TopologicalX(Digraph G) {</span>
+
+        // indegrees of remaining vertices
+<span class="nc" id="L52">        int[] indegree = new int[G.V()];</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L54">            indegree[v] = G.indegree(v);</span>
+        }
+
+        // initialize 
+<span class="nc" id="L58">        ranks = new int[G.V()]; </span>
+<span class="nc" id="L59">        order = new Queue&lt;Integer&gt;();</span>
+<span class="nc" id="L60">        int count = 0;</span>
+
+        // initialize queue to contain all vertices with indegree = 0
+<span class="nc" id="L63">        Queue&lt;Integer&gt; queue = new Queue&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (indegree[v] == 0) queue.enqueue(v);</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        while (!queue.isEmpty()) {</span>
+<span class="nc" id="L68">            int v = queue.dequeue();</span>
+<span class="nc" id="L69">            order.enqueue(v);</span>
+<span class="nc" id="L70">            ranks[v] = count++;</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc" id="L72">                indegree[w]--;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                if (indegree[w] == 0) queue.enqueue(w);</span>
+            }
+        }
+
+        // there is a directed cycle in subgraph of vertices with indegree &gt;= 1.
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (count != G.V()) {</span>
+<span class="nc" id="L79">            order = null;</span>
+        }
+
+<span class="nc bnc" id="L82" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Determines whether the edge-weighted digraph {@code G} has a
+     * topological order and, if so, finds such a topological order.
+     * @param G the digraph
+     */
+<span class="nc" id="L90">    public TopologicalX(EdgeWeightedDigraph G) {</span>
+
+        // indegrees of remaining vertices
+<span class="nc" id="L93">        int[] indegree = new int[G.V()];</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L95">            indegree[v] = G.indegree(v);</span>
+        }
+
+        // initialize 
+<span class="nc" id="L99">        ranks = new int[G.V()]; </span>
+<span class="nc" id="L100">        order = new Queue&lt;Integer&gt;();</span>
+<span class="nc" id="L101">        int count = 0;</span>
+
+        // initialize queue to contain all vertices with indegree = 0
+<span class="nc" id="L104">        Queue&lt;Integer&gt; queue = new Queue&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">            if (indegree[v] == 0) queue.enqueue(v);</span>
+
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        while (!queue.isEmpty()) {</span>
+<span class="nc" id="L109">            int v = queue.dequeue();</span>
+<span class="nc" id="L110">            order.enqueue(v);</span>
+<span class="nc" id="L111">            ranks[v] = count++;</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            for (DirectedEdge e : G.adj(v)) {</span>
+<span class="nc" id="L113">                int w = e.to();</span>
+<span class="nc" id="L114">                indegree[w]--;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">                if (indegree[w] == 0) queue.enqueue(w);</span>
+            }
+        }
+
+        // there is a directed cycle in subgraph of vertices with indegree &gt;= 1.
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (count != G.V()) {</span>
+<span class="nc" id="L121">            order = null;</span>
+        }
+
+<span class="nc bnc" id="L124" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L125">    }</span>
+
+    /**
+     * Returns a topological order if the digraph has a topologial order,
+     * and {@code null} otherwise.
+     * @return a topological order of the vertices (as an interable) if the
+     *    digraph has a topological order (or equivalently, if the digraph is a DAG),
+     *    and {@code null} otherwise
+     */
+    public Iterable&lt;Integer&gt; order() {
+<span class="nc" id="L135">        return order;</span>
+    }
+
+    /**
+     * Does the digraph have a topological order?
+     * @return {@code true} if the digraph has a topological order (or equivalently,
+     *    if the digraph is a DAG), and {@code false} otherwise
+     */
+    public boolean hasOrder() {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        return order != null;</span>
+    }
+
+    /**
+     * The the rank of vertex {@code v} in the topological order;
+     * -1 if the digraph is not a DAG
+     *
+     * @param v vertex
+     * @return the position of vertex {@code v} in a topological order
+     *    of the digraph; -1 if the digraph is not a DAG
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int rank(int v) {
+<span class="nc" id="L157">        validateVertex(v);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        if (hasOrder()) return ranks[v];</span>
+<span class="nc" id="L159">        else            return -1;</span>
+    }
+
+    // certify that digraph is acyclic
+    private boolean check(Digraph G) {
+
+        // digraph is acyclic
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (hasOrder()) {</span>
+            // check that ranks are a permutation of 0 to V-1
+<span class="nc" id="L168">            boolean[] found = new boolean[G.V()];</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            for (int i = 0; i &lt; G.V(); i++) {</span>
+<span class="nc" id="L170">                found[rank(i)] = true;</span>
+            }
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            for (int i = 0; i &lt; G.V(); i++) {</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">                if (!found[i]) {</span>
+<span class="nc" id="L174">                    System.err.println(&quot;No vertex with rank &quot; + i);</span>
+<span class="nc" id="L175">                    return false;</span>
+                }
+            }
+
+            // check that ranks provide a valid topological order
+<span class="nc bnc" id="L180" title="All 2 branches missed.">            for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                    if (rank(v) &gt; rank(w)) {</span>
+<span class="nc" id="L183">                        System.err.printf(&quot;%d-%d: rank(%d) = %d, rank(%d) = %d\n&quot;,</span>
+<span class="nc" id="L184">                                          v, w, v, rank(v), w, rank(w));</span>
+<span class="nc" id="L185">                        return false;</span>
+                    }
+                }
+            }
+
+            // check that order() is consistent with rank()
+<span class="nc" id="L191">            int r = 0;</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">            for (int v : order()) {</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                if (rank(v) != r) {</span>
+<span class="nc" id="L194">                    System.err.println(&quot;order() and rank() inconsistent&quot;);</span>
+<span class="nc" id="L195">                    return false;</span>
+                }
+<span class="nc" id="L197">                r++;</span>
+            }
+        }
+
+
+<span class="nc" id="L202">        return true;</span>
+    }
+
+    // certify that digraph is acyclic
+    private boolean check(EdgeWeightedDigraph G) {
+
+        // digraph is acyclic
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (hasOrder()) {</span>
+            // check that ranks are a permutation of 0 to V-1
+<span class="nc" id="L211">            boolean[] found = new boolean[G.V()];</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">            for (int i = 0; i &lt; G.V(); i++) {</span>
+<span class="nc" id="L213">                found[rank(i)] = true;</span>
+            }
+<span class="nc bnc" id="L215" title="All 2 branches missed.">            for (int i = 0; i &lt; G.V(); i++) {</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                if (!found[i]) {</span>
+<span class="nc" id="L217">                    System.err.println(&quot;No vertex with rank &quot; + i);</span>
+<span class="nc" id="L218">                    return false;</span>
+                }
+            }
+
+            // check that ranks provide a valid topological order
+<span class="nc bnc" id="L223" title="All 2 branches missed.">            for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">                for (DirectedEdge e : G.adj(v)) {</span>
+<span class="nc" id="L225">                    int w = e.to();</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">                    if (rank(v) &gt; rank(w)) {</span>
+<span class="nc" id="L227">                        System.err.printf(&quot;%d-%d: rank(%d) = %d, rank(%d) = %d\n&quot;,</span>
+<span class="nc" id="L228">                                          v, w, v, rank(v), w, rank(w));</span>
+<span class="nc" id="L229">                        return false;</span>
+                    }
+                }
+            }
+
+            // check that order() is consistent with rank()
+<span class="nc" id="L235">            int r = 0;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">            for (int v : order()) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                if (rank(v) != r) {</span>
+<span class="nc" id="L238">                    System.err.println(&quot;order() and rank() inconsistent&quot;);</span>
+<span class="nc" id="L239">                    return false;</span>
+                }
+<span class="nc" id="L241">                r++;</span>
+            }
+        }
+
+
+<span class="nc" id="L246">        return true;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L251">        int V = ranks.length;</span>
+<span class="nc bnc" id="L252" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L253">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L254">    }</span>
+
+    /**
+     * Unit tests the {@code TopologicalX} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // create random DAG with V vertices and E edges; then add F random edges
+<span class="nc" id="L264">        int V = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L265">        int E = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L266">        int F = Integer.parseInt(args[2]);</span>
+
+<span class="nc" id="L268">        Digraph G1 = DigraphGenerator.dag(V, E);</span>
+
+        // corresponding edge-weighted digraph
+<span class="nc" id="L271">        EdgeWeightedDigraph G2 = new EdgeWeightedDigraph(V);</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        for (int v = 0; v &lt; G1.V(); v++)</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">            for (int w : G1.adj(v))</span>
+<span class="nc" id="L274">                G2.addEdge(new DirectedEdge(v, w, 0.0));</span>
+
+        // add F extra edges
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        for (int i = 0; i &lt; F; i++) {</span>
+<span class="nc" id="L278">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L279">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L280">            G1.addEdge(v, w);</span>
+<span class="nc" id="L281">            G2.addEdge(new DirectedEdge(v, w, 0.0));</span>
+        }
+
+<span class="nc" id="L284">        StdOut.println(G1);</span>
+<span class="nc" id="L285">        StdOut.println();</span>
+<span class="nc" id="L286">        StdOut.println(G2);</span>
+
+        // find a directed cycle
+<span class="nc" id="L289">        TopologicalX topological1 = new TopologicalX(G1);</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        if (!topological1.hasOrder()) {</span>
+<span class="nc" id="L291">            StdOut.println(&quot;Not a DAG&quot;);</span>
+<span class="nc" id="L292">        }</span>
+
+        // or give topologial sort
+        else {
+<span class="nc" id="L296">            StdOut.print(&quot;Topological order: &quot;);</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">            for (int v : topological1.order()) {</span>
+<span class="nc" id="L298">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L300">            StdOut.println();</span>
+        }
+
+        // find a directed cycle
+<span class="nc" id="L304">        TopologicalX topological2 = new TopologicalX(G2);</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        if (!topological2.hasOrder()) {</span>
+<span class="nc" id="L306">            StdOut.println(&quot;Not a DAG&quot;);</span>
+<span class="nc" id="L307">        }</span>
+
+        // or give topologial sort
+        else {
+<span class="nc" id="L311">            StdOut.print(&quot;Topological order: &quot;);</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">            for (int v : topological2.order()) {</span>
+<span class="nc" id="L313">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L315">            StdOut.println();</span>
+        }
+<span class="nc" id="L317">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

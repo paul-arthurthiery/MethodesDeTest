@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Inversions.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Inversions.java</span></div><h1>Inversions.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Inversions.java
+ *  Execution:    java Inversions &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  
+ *  Read array of n integers and count number of inversions in n log n time.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Inversions} class provides static methods to count the 
+ *  number of &lt;em&gt;inversions&lt;/em&gt; in either an array of integers or comparables.
+ *  An inversion in an array {@code a[]} is a pair of indicies {@code i} and
+ *  {@code j} such that {@code i &lt; j} and {@code a[i] &gt; a[j]}.
+ *  &lt;p&gt;
+ *  This implementation uses a generalization of mergesort. The &lt;em&gt;count&lt;/em&gt;
+ *  operation takes time proportional to &lt;em&gt;n&lt;/em&gt; log &lt;em&gt;n&lt;/em&gt;,
+ *  where &lt;em&gt;n&lt;/em&gt; is the number of keys in the array.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/22mergesort&quot;&gt;Section 2.2&lt;/a&gt;
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L28" title="All 2 branches missed.">public class Inversions {</span>
+
+    // do not instantiate
+<span class="nc" id="L31">    private Inversions() { }</span>
+
+    // merge and count
+    private static long merge(int[] a, int[] aux, int lo, int mid, int hi) {
+<span class="nc" id="L35">        long inversions = 0;</span>
+
+        // copy to aux[]
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        for (int k = lo; k &lt;= hi; k++) {</span>
+<span class="nc" id="L39">            aux[k] = a[k]; </span>
+        }
+
+        // merge back to a[]
+<span class="nc" id="L43">        int i = lo, j = mid+1;</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        for (int k = lo; k &lt;= hi; k++) {</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if      (i &gt; mid)           a[k] = aux[j++];</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">            else if (j &gt; hi)            a[k] = aux[i++];</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            else if (aux[j] &lt; aux[i]) { a[k] = aux[j++]; inversions += (mid - i + 1); }</span>
+<span class="nc" id="L48">            else                        a[k] = aux[i++];</span>
+        }
+<span class="nc" id="L50">        return inversions;</span>
+    }
+
+    // return the number of inversions in the subarray b[lo..hi]
+    // side effect b[lo..hi] is rearranged in ascending order
+    private static long count(int[] a, int[] b, int[] aux, int lo, int hi) {
+<span class="nc" id="L56">        long inversions = 0;</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (hi &lt;= lo) return 0;</span>
+<span class="nc" id="L58">        int mid = lo + (hi - lo) / 2;</span>
+<span class="nc" id="L59">        inversions += count(a, b, aux, lo, mid);  </span>
+<span class="nc" id="L60">        inversions += count(a, b, aux, mid+1, hi);</span>
+<span class="nc" id="L61">        inversions += merge(b, aux, lo, mid, hi);</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">        assert inversions == brute(a, lo, hi);</span>
+<span class="nc" id="L63">        return inversions;</span>
+    }
+
+
+    /**
+     * Returns the number of inversions in the integer array.
+     * The argument array is not modified.
+     * @param  a the array
+     * @return the number of inversions in the array. An inversion is a pair of 
+     *         indicies {@code i} and {@code j} such that {@code i &lt; j}
+     *         and {@code a[i] &gt; a[j]}.
+     */
+    public static long count(int[] a) {
+<span class="nc" id="L76">        int[] b   = new int[a.length];</span>
+<span class="nc" id="L77">        int[] aux = new int[a.length];</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L79">            b[i] = a[i];</span>
+<span class="nc" id="L80">        long inversions = count(a, b, aux, 0, a.length - 1);</span>
+<span class="nc" id="L81">        return inversions;</span>
+    }
+
+
+
+    // merge and count (Comparable version)
+    private static &lt;Key extends Comparable&lt;Key&gt;&gt; long merge(Key[] a, Key[] aux, int lo, int mid, int hi) {
+<span class="nc" id="L88">        long inversions = 0;</span>
+
+        // copy to aux[]
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        for (int k = lo; k &lt;= hi; k++) {</span>
+<span class="nc" id="L92">            aux[k] = a[k]; </span>
+        }
+
+        // merge back to a[]
+<span class="nc" id="L96">        int i = lo, j = mid+1;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        for (int k = lo; k &lt;= hi; k++) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if      (i &gt; mid)                a[k] = aux[j++];</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            else if (j &gt; hi)                 a[k] = aux[i++];</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            else if (less(aux[j], aux[i])) { a[k] = aux[j++]; inversions += (mid - i + 1); }</span>
+<span class="nc" id="L101">            else                             a[k] = aux[i++];</span>
+        }
+<span class="nc" id="L103">        return inversions;</span>
+    }
+
+    // return the number of inversions in the subarray b[lo..hi]
+    // side effect b[lo..hi] is rearranged in ascending order
+    private static &lt;Key extends Comparable&lt;Key&gt;&gt; long count(Key[] a, Key[] b, Key[] aux, int lo, int hi) {
+<span class="nc" id="L109">        long inversions = 0;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (hi &lt;= lo) return 0;</span>
+<span class="nc" id="L111">        int mid = lo + (hi - lo) / 2;</span>
+<span class="nc" id="L112">        inversions += count(a, b, aux, lo, mid);  </span>
+<span class="nc" id="L113">        inversions += count(a, b, aux, mid+1, hi);</span>
+<span class="nc" id="L114">        inversions += merge(b, aux, lo, mid, hi);</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        assert inversions == brute(a, lo, hi);</span>
+<span class="nc" id="L116">        return inversions;</span>
+    }
+
+
+    /**
+     * Returns the number of inversions in the comparable array.
+     * The argument array is not modified.
+     * @param  a the array
+     * @param &lt;Key&gt; the inferred type of the elements in the array
+     * @return the number of inversions in the array. An inversion is a pair of 
+     *         indicies {@code i} and {@code j} such that {@code i &lt; j}
+     *         and {@code a[i].compareTo(a[j]) &gt; 0}.
+     */
+    public static &lt;Key extends Comparable&lt;Key&gt;&gt; long count(Key[] a) {
+<span class="nc" id="L130">        Key[] b   = a.clone();</span>
+<span class="nc" id="L131">        Key[] aux = a.clone();</span>
+<span class="nc" id="L132">        long inversions = count(a, b, aux, 0, a.length - 1);</span>
+<span class="nc" id="L133">        return inversions;</span>
+    }
+
+
+    // is v &lt; w ?
+    private static &lt;Key extends Comparable&lt;Key&gt;&gt; boolean less(Key v, Key w) {
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        return (v.compareTo(w) &lt; 0);</span>
+    }
+
+    // count number of inversions in a[lo..hi] via brute force (for debugging only)
+    private static &lt;Key extends Comparable&lt;Key&gt;&gt; long brute(Key[] a, int lo, int hi) {
+<span class="nc" id="L144">        long inversions = 0;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            for (int j = i + 1; j &lt;= hi; j++)</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                if (less(a[j], a[i])) inversions++;</span>
+<span class="nc" id="L148">        return inversions;</span>
+    }
+
+    // count number of inversions in a[lo..hi] via brute force (for debugging only)
+    private static long brute(int[] a, int lo, int hi) {
+<span class="nc" id="L153">        long inversions = 0;</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            for (int j = i + 1; j &lt;= hi; j++)</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                if (a[j] &lt; a[i]) inversions++;</span>
+<span class="nc" id="L157">        return inversions;</span>
+    }
+
+    /**
+     * Reads a sequence of integers from standard input and
+     * prints the number of inversions to standard output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L167">        int[] a = StdIn.readAllInts();</span>
+<span class="nc" id="L168">        int n = a.length;</span>
+<span class="nc" id="L169">        Integer[] b = new Integer[n];</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L171">            b[i] = a[i];</span>
+<span class="nc" id="L172">        StdOut.println(Inversions.count(a));</span>
+<span class="nc" id="L173">        StdOut.println(Inversions.count(b));</span>
+<span class="nc" id="L174">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DoublingRatio.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DoublingRatio.java</span></div><h1>DoublingRatio.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DoublingRatio.java
+ *  Execution:    java DoublingRatio
+ *  Dependencies: ThreeSum.java Stopwatch.java StdRandom.java StdOut.java
+ *
+ *
+ *  % java DoublingRatio
+ *      250     0.0   2.7
+ *      500     0.0   4.8
+ *     1000     0.1   6.9
+ *     2000     0.6   7.7
+ *     4000     4.5   8.0
+ *     8000    35.7   8.0
+ *     4000     3.9   6.6
+ *  ...
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code DoublingRatio} class provides a client for measuring
+ *  the running time of a method using a doubling ratio test.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/14analysis&quot;&gt;Section 1.4&lt;/a&gt;
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class DoublingRatio {
+    private static final int MAXIMUM_INTEGER = 1000000;
+
+    // This class should not be instantiated.
+<span class="nc" id="L35">    private DoublingRatio() { }</span>
+
+    /**
+     * Returns the amount of time to call {@code ThreeSum.count()} with &lt;em&gt;n&lt;/em&gt;
+     * random 6-digit integers.
+     * @param n the number of integers
+     * @return amount of time (in seconds) to call {@code ThreeSum.count()}
+     *   with &lt;em&gt;n&lt;/em&gt; random 6-digit integers
+     */
+    public static double timeTrial(int n) {
+<span class="nc" id="L45">        int[] a = new int[n];</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L47">            a[i] = StdRandom.uniform(-MAXIMUM_INTEGER, MAXIMUM_INTEGER);</span>
+        }
+<span class="nc" id="L49">        Stopwatch timer = new Stopwatch();</span>
+<span class="nc" id="L50">        ThreeSum.count(a);</span>
+<span class="nc" id="L51">        return timer.elapsedTime();</span>
+    }
+
+    /**
+     * Prints table of running times to call {@code ThreeSum.count()}
+     * for arrays of size 250, 500, 1000, 2000, and so forth, along
+     * with ratios of running times between successive array sizes.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L62">        double prev = timeTrial(125);</span>
+<span class="nc" id="L63">        for (int n = 250; true; n += n) {</span>
+<span class="nc" id="L64">            double time = timeTrial(n);</span>
+<span class="nc" id="L65">            StdOut.printf(&quot;%7d %7.1f %5.1f\n&quot;, n, time, time/prev);</span>
+<span class="nc" id="L66">            prev = time;</span>
+        } 
+    } 
+} 
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

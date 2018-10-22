@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>SET.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">SET.java</span></div><h1>SET.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac SET.java
+ *  Execution:    java SET
+ *  Dependencies: StdOut.java
+ *  
+ *  Set implementation using Java's TreeSet library.
+ *  Does not allow duplicates.
+ *
+ *  % java SET
+ *  128.112.136.11
+ *  208.216.181.15
+ *  null
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.TreeSet;
+
+/**
+ *  The {@code SET} class represents an ordered set of comparable keys.
+ *  It supports the usual &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, and &lt;em&gt;delete&lt;/em&gt;
+ *  methods. It also provides ordered methods for finding the &lt;em&gt;minimum&lt;/em&gt;,
+ *  &lt;em&gt;maximum&lt;/em&gt;, &lt;em&gt;floor&lt;/em&gt;, and &lt;em&gt;ceiling&lt;/em&gt; and set methods
+ *  for &lt;em&gt;union&lt;/em&gt;, &lt;em&gt;intersection&lt;/em&gt;, and &lt;em&gt;equality&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  Even though this implementation include the method {@code equals()}, it
+ *  does not support the method {@code hashCode()} because sets are mutable.
+ *  &lt;p&gt;
+ *  This implementation uses a balanced binary search tree. It requires that
+ *  the key type implements the {@code Comparable} interface and calls the
+ *  {@code compareTo()} and method to compare two keys. It does not call either
+ *  {@code equals()} or {@code hashCode()}.
+ *  The &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;minimum&lt;/em&gt;,
+ *  &lt;em&gt;maximum&lt;/em&gt;, &lt;em&gt;ceiling&lt;/em&gt;, and &lt;em&gt;floor&lt;/em&gt; methods take
+ *  logarithmic time in the worst case.
+ *  The &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; operations take constant time.
+ *  Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://algs4.cs.princeton.edu/35applications&quot;&gt;Section 3.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms in Java, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *
+ *  @param &lt;Key&gt; the generic type of a key in this set
+ */
+
+public class SET&lt;Key extends Comparable&lt;Key&gt;&gt; implements Iterable&lt;Key&gt; {
+    private TreeSet&lt;Key&gt; set;
+
+    /**
+     * Initializes an empty set.
+     */
+<span class="fc" id="L58">    public SET() {</span>
+<span class="fc" id="L59">        set = new TreeSet&lt;Key&gt;();</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Initializes a new set that is an independent copy of the specified set.
+     *
+     * @param x the set to copy
+     */
+<span class="nc" id="L67">    public SET(SET&lt;Key&gt; x) {</span>
+<span class="nc" id="L68">        set = new TreeSet&lt;Key&gt;(x.set);</span>
+<span class="nc" id="L69">    }</span>
+
+    /**
+     * Adds the key to this set (if it is not already present).
+     *
+     * @param  key the key to add
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void add(Key key) {
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called add() with a null key&quot;);</span>
+<span class="fc" id="L79">        set.add(key);</span>
+<span class="fc" id="L80">    }</span>
+
+
+    /**
+     * Returns true if this set contains the given key.
+     *
+     * @param  key the key
+     * @return {@code true} if this set contains {@code key};
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(Key key) {
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called contains() with a null key&quot;);</span>
+<span class="fc" id="L93">        return set.contains(key);</span>
+    }
+
+    /**
+     * Removes the specified key from this set (if the set contains the specified key).
+     *
+     * @param  key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(Key key) {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called delete() with a null key&quot;);</span>
+<span class="nc" id="L104">        set.remove(key);</span>
+<span class="nc" id="L105">    }</span>
+
+    /**
+     * Returns the number of keys in this set.
+     *
+     * @return the number of keys in this set
+     */
+    public int size() {
+<span class="nc" id="L113">        return set.size();</span>
+    }
+
+    /**
+     * Returns true if this set is empty.
+     *
+     * @return {@code true} if this set is empty;
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+ 
+    /**
+     * Returns all of the keys in this set, as an iterator.
+     * To iterate over all of the keys in a set named {@code set}, use the
+     * foreach notation: {@code for (Key key : set)}.
+     *
+     * @return an iterator to all of the keys in this set
+     */
+    public Iterator&lt;Key&gt; iterator() {
+<span class="nc" id="L134">        return set.iterator();</span>
+    }
+
+    /**
+     * Returns the largest key in this set.
+     *
+     * @return the largest key in this set
+     * @throws NoSuchElementException if this set is empty
+     */
+    public Key max() {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;called max() with empty set&quot;);</span>
+<span class="nc" id="L145">        return set.last();</span>
+    }
+
+    /**
+     * Returns the smallest key in this set.
+     *
+     * @return the smallest key in this set
+     * @throws NoSuchElementException if this set is empty
+     */
+    public Key min() {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;called min() with empty set&quot;);</span>
+<span class="nc" id="L156">        return set.first();</span>
+    }
+
+
+    /**
+     * Returns the smallest key in this set greater than or equal to {@code key}.
+     *
+     * @param  key the key
+     * @return the smallest key in this set greater than or equal to {@code key}
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws NoSuchElementException if there is no such key
+     */
+    public Key ceiling(Key key) {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called ceiling() with a null key&quot;);</span>
+<span class="nc" id="L170">        Key k = set.ceiling(key);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (k == null) throw new NoSuchElementException(&quot;all keys are less than &quot; + key);</span>
+<span class="nc" id="L172">        return k;</span>
+    }
+
+    /**
+     * Returns the largest key in this set less than or equal to {@code key}.
+     *
+     * @param  key the key
+     * @return the largest key in this set table less than or equal to {@code key}
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws NoSuchElementException if there is no such key
+     */
+    public Key floor(Key key) {
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called floor() with a null key&quot;);</span>
+<span class="nc" id="L185">        Key k = set.floor(key);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (k == null) throw new NoSuchElementException(&quot;all keys are greater than &quot; + key);</span>
+<span class="nc" id="L187">        return k;</span>
+    }
+
+    /**
+     * Returns the union of this set and that set.
+     *
+     * @param  that the other set
+     * @return the union of this set and that set
+     * @throws IllegalArgumentException if {@code that} is {@code null}
+     */
+    public SET&lt;Key&gt; union(SET&lt;Key&gt; that) {
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (that == null) throw new IllegalArgumentException(&quot;called union() with a null argument&quot;);</span>
+<span class="nc" id="L199">        SET&lt;Key&gt; c = new SET&lt;Key&gt;();</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        for (Key x : this) {</span>
+<span class="nc" id="L201">            c.add(x);</span>
+        }
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        for (Key x : that) {</span>
+<span class="nc" id="L204">            c.add(x);</span>
+        }
+<span class="nc" id="L206">        return c;</span>
+    }
+
+    /**
+     * Returns the intersection of this set and that set.
+     *
+     * @param  that the other set
+     * @return the intersection of this set and that set
+     * @throws IllegalArgumentException if {@code that} is {@code null}
+     */
+    public SET&lt;Key&gt; intersects(SET&lt;Key&gt; that) {
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (that == null) throw new IllegalArgumentException(&quot;called intersects() with a null argument&quot;);</span>
+<span class="nc" id="L218">        SET&lt;Key&gt; c = new SET&lt;Key&gt;();</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (this.size() &lt; that.size()) {</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">            for (Key x : this) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                if (that.contains(x)) c.add(x);</span>
+            }
+<span class="nc" id="L223">        }</span>
+        else {
+<span class="nc bnc" id="L225" title="All 2 branches missed.">            for (Key x : that) {</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">                if (this.contains(x)) c.add(x);</span>
+            }
+        }
+<span class="nc" id="L229">        return c;</span>
+    }
+
+    /**       
+     * Compares this set to the specified set.
+     * &lt;p&gt;
+     * Note that this method declares two empty sets to be equal
+     * even if they are parameterized by different generic types.
+     * This is consistent with the behavior of {@code equals()} 
+     * within Java's Collections framework.
+     *       
+     * @param  other the other set
+     * @return {@code true} if this set equals {@code other};
+     *         {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L249">        SET that = (SET) other;</span>
+<span class="nc" id="L250">        return this.set.equals(that.set);</span>
+    }
+
+    /**
+     * This operation is not supported because sets are mutable.
+     *
+     * @return does not return a value
+     * @throws UnsupportedOperationException if called
+     */
+    @Override
+    public int hashCode() {
+<span class="nc" id="L261">        throw new UnsupportedOperationException(&quot;hashCode() is not supported because sets are mutable&quot;);</span>
+    }
+
+    /**
+     * Returns a string representation of this set.
+     *
+     * @return a string representation of this set, enclosed in curly braces,
+     *         with adjacent keys separated by a comma and a space
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L272">        String s = set.toString();</span>
+<span class="nc" id="L273">        return &quot;{ &quot; + s.substring(1, s.length() - 1) + &quot; }&quot;;</span>
+    }
+
+    /**
+     * Unit tests the {@code SET} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L282">        SET&lt;String&gt; set = new SET&lt;String&gt;();</span>
+<span class="nc" id="L283">        StdOut.println(&quot;set = &quot; + set);</span>
+
+        // insert some keys
+<span class="nc" id="L286">        set.add(&quot;www.cs.princeton.edu&quot;);</span>
+<span class="nc" id="L287">        set.add(&quot;www.cs.princeton.edu&quot;);    // overwrite old value</span>
+<span class="nc" id="L288">        set.add(&quot;www.princeton.edu&quot;);</span>
+<span class="nc" id="L289">        set.add(&quot;www.math.princeton.edu&quot;);</span>
+<span class="nc" id="L290">        set.add(&quot;www.yale.edu&quot;);</span>
+<span class="nc" id="L291">        set.add(&quot;www.amazon.com&quot;);</span>
+<span class="nc" id="L292">        set.add(&quot;www.simpsons.com&quot;);</span>
+<span class="nc" id="L293">        set.add(&quot;www.stanford.edu&quot;);</span>
+<span class="nc" id="L294">        set.add(&quot;www.google.com&quot;);</span>
+<span class="nc" id="L295">        set.add(&quot;www.ibm.com&quot;);</span>
+<span class="nc" id="L296">        set.add(&quot;www.apple.com&quot;);</span>
+<span class="nc" id="L297">        set.add(&quot;www.slashdot.com&quot;);</span>
+<span class="nc" id="L298">        set.add(&quot;www.whitehouse.gov&quot;);</span>
+<span class="nc" id="L299">        set.add(&quot;www.espn.com&quot;);</span>
+<span class="nc" id="L300">        set.add(&quot;www.snopes.com&quot;);</span>
+<span class="nc" id="L301">        set.add(&quot;www.movies.com&quot;);</span>
+<span class="nc" id="L302">        set.add(&quot;www.cnn.com&quot;);</span>
+<span class="nc" id="L303">        set.add(&quot;www.iitb.ac.in&quot;);</span>
+
+
+<span class="nc" id="L306">        StdOut.println(set.contains(&quot;www.cs.princeton.edu&quot;));</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        StdOut.println(!set.contains(&quot;www.harvardsucks.com&quot;));</span>
+<span class="nc" id="L308">        StdOut.println(set.contains(&quot;www.simpsons.com&quot;));</span>
+<span class="nc" id="L309">        StdOut.println();</span>
+
+<span class="nc" id="L311">        StdOut.println(&quot;ceiling(www.simpsonr.com) = &quot; + set.ceiling(&quot;www.simpsonr.com&quot;));</span>
+<span class="nc" id="L312">        StdOut.println(&quot;ceiling(www.simpsons.com) = &quot; + set.ceiling(&quot;www.simpsons.com&quot;));</span>
+<span class="nc" id="L313">        StdOut.println(&quot;ceiling(www.simpsont.com) = &quot; + set.ceiling(&quot;www.simpsont.com&quot;));</span>
+<span class="nc" id="L314">        StdOut.println(&quot;floor(www.simpsonr.com)   = &quot; + set.floor(&quot;www.simpsonr.com&quot;));</span>
+<span class="nc" id="L315">        StdOut.println(&quot;floor(www.simpsons.com)   = &quot; + set.floor(&quot;www.simpsons.com&quot;));</span>
+<span class="nc" id="L316">        StdOut.println(&quot;floor(www.simpsont.com)   = &quot; + set.floor(&quot;www.simpsont.com&quot;));</span>
+<span class="nc" id="L317">        StdOut.println();</span>
+
+<span class="nc" id="L319">        StdOut.println(&quot;set = &quot; + set);</span>
+<span class="nc" id="L320">        StdOut.println();</span>
+
+        // print out all keys in this set in lexicographic order
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        for (String s : set) {</span>
+<span class="nc" id="L324">            StdOut.println(s);</span>
+        }
+
+<span class="nc" id="L327">        StdOut.println();</span>
+<span class="nc" id="L328">        SET&lt;String&gt; set2 = new SET&lt;String&gt;(set);</span>
+<span class="nc" id="L329">        StdOut.println(set.equals(set2));</span>
+<span class="nc" id="L330">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

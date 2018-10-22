@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Knuth.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Knuth.java</span></div><h1>Knuth.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Knuth.java
+ *  Execution:    java Knuth &lt; list.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/11model/cards.txt
+ *                https://algs4.cs.princeton.edu/11model/cardsUnicode.txt
+ *  
+ *  Reads in a list of strings and prints them in random order.
+ *  The Knuth (or Fisher-Yates) shuffling algorithm guarantees
+ *  to rearrange the elements in uniformly random order, under
+ *  the assumption that Math.random() generates independent and
+ *  uniformly distributed numbers between 0 and 1.
+ *
+ *  % more cards.txt
+ *  2C 3C 4C 5C 6C 7C 8C 9C 10C JC QC KC AC
+ *  2D 3D 4D 5D 6D 7D 8D 9D 10D JD QD KD AD
+ *  2H 3H 4H 5H 6H 7H 8H 9H 10H JH QH KH AH
+ *  2S 3S 4S 5S 6S 7S 8S 9S 10S JS QS KS AS
+ *
+ *  % java Knuth &lt; cards.txt
+ *  6H
+ *  9C
+ *  8H
+ *  7C
+ *  JS
+ *  ...
+ *  KH
+ *
+ *  % more cardsUnicode.txt
+ *  2♣ 3♣ 4♣ 5♣ 6♣ 7♣ 8♣ 9♣ 10♣ J♣ Q♣ K♣ A♣ 
+ *  2♦ 3♦ 4♦ 5♦ 6♦ 7♦ 8♦ 9♦ 10♦ J♦ Q♦ K♦ A♦ 
+ *  2♥ 3♥ 4♥ 5♥ 6♥ 7♥ 8♥ 9♥ 10♥ J♥ Q♥ K♥ A♥ 
+ *  2♠ 3♠ 4♠ 5♠ 6♠ 7♠ 8♠ 9♠ 10♠ J♠ Q♠ K♠ A♠ 
+ * 
+ *  % java Knuth &lt; cardsUnicode.txt
+ *  2♠
+ *  K♥
+ *  6♥
+ *  5♣
+ *  J♣
+ *  ...
+ *  A♦
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Knuth} class provides a client for reading in a 
+ *  sequence of strings and &lt;em&gt;shuffling&lt;/em&gt; them using the Knuth (or Fisher-Yates)
+ *  shuffling algorithm. This algorithm guarantees to rearrange the
+ *  elements in uniformly random order, under
+ *  the assumption that Math.random() generates independent and
+ *  uniformly distributed numbers between 0 and 1.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/11model&quot;&gt;Section 1.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  See {@link StdRandom} for versions that shuffle arrays and
+ *  subarrays of objects, doubles, and ints.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Knuth { 
+
+    // this class should not be instantiated
+<span class="nc" id="L68">    private Knuth() { }</span>
+
+    /**
+     * Rearranges an array of objects in uniformly random order
+     * (under the assumption that {@code Math.random()} generates independent
+     * and uniformly distributed numbers between 0 and 1).
+     * @param a the array to be shuffled
+     */
+    public static void shuffle(Object[] a) {
+<span class="nc" id="L77">        int n = a.length;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+            // choose index uniformly in [0, i]
+<span class="nc" id="L80">            int r = (int) (Math.random() * (i + 1));</span>
+<span class="nc" id="L81">            Object swap = a[r];</span>
+<span class="nc" id="L82">            a[r] = a[i];</span>
+<span class="nc" id="L83">            a[i] = swap;</span>
+        }
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Rearranges an array of objects in uniformly random order
+     * (under the assumption that {@code Math.random()} generates independent
+     * and uniformly distributed numbers between 0 and 1).
+     * @param a the array to be shuffled
+     */
+    public static void shuffleAlternate(Object[] a) {
+<span class="nc" id="L94">        int n = a.length;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+            // choose index uniformly in [i, n-1]
+<span class="nc" id="L97">            int r = i + (int) (Math.random() * (n - i));</span>
+<span class="nc" id="L98">            Object swap = a[r];</span>
+<span class="nc" id="L99">            a[r] = a[i];</span>
+<span class="nc" id="L100">            a[i] = swap;</span>
+        }
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Reads in a sequence of strings from standard input, shuffles
+     * them, and prints out the results.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // read in the data
+<span class="nc" id="L113">        String[] a = StdIn.readAllStrings();</span>
+
+        // shuffle the array
+<span class="nc" id="L116">        Knuth.shuffle(a);</span>
+
+        // print results.
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L120">            StdOut.println(a[i]);</span>
+<span class="nc" id="L121">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

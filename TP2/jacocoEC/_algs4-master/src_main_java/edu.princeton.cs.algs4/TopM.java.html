@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>TopM.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">TopM.java</span></div><h1>TopM.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac TopM.java
+ *  Execution:    java TopM m &lt; input.txt
+ *  Dependencies: MinPQ.java Transaction.java StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/24pq/tinyBatch.txt
+ * 
+ *  Given an integer m from the command line and an input stream where
+ *  each line contains a String and a long value, this MinPQ client
+ *  prints the m lines whose numbers are the highest.
+ * 
+ *  % java TopM 5 &lt; tinyBatch.txt 
+ *  Thompson    2/27/2000  4747.08
+ *  vonNeumann  2/12/1994  4732.35
+ *  vonNeumann  1/11/1999  4409.74
+ *  Hoare       8/18/1992  4381.21
+ *  vonNeumann  3/26/2002  4121.85
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code TopM} class provides a client that reads a sequence of
+ *  transactions from standard input and prints the &lt;em&gt;m&lt;/em&gt; largest ones
+ *  to standard output. This implementation uses a {@link MinPQ} of size
+ *  at most &lt;em&gt;m&lt;/em&gt; + 1 to identify the &lt;em&gt;M&lt;/em&gt; largest transactions
+ *  and a {@link Stack} to output them in the proper order.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/24pq&quot;&gt;Section 2.4&lt;/a&gt;
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class TopM {   
+
+    // This class should not be instantiated.
+<span class="nc" id="L38">    private TopM() { }</span>
+
+    /**
+     *  Reads a sequence of transactions from standard input; takes a
+     *  command-line integer m; prints to standard output the m largest
+     *  transactions in descending order.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L48">        int m = Integer.parseInt(args[0]); </span>
+<span class="nc" id="L49">        MinPQ&lt;Transaction&gt; pq = new MinPQ&lt;Transaction&gt;(m+1);</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        while (StdIn.hasNextLine()) {</span>
+            // Create an entry from the next line and put on the PQ. 
+<span class="nc" id="L53">            String line = StdIn.readLine();</span>
+<span class="nc" id="L54">            Transaction transaction = new Transaction(line);</span>
+<span class="nc" id="L55">            pq.insert(transaction); </span>
+
+            // remove minimum if m+1 entries on the PQ
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (pq.size() &gt; m) </span>
+<span class="nc" id="L59">                pq.delMin();</span>
+        }   // top m entries are on the PQ
+
+        // print entries on PQ in reverse order
+<span class="nc" id="L63">        Stack&lt;Transaction&gt; stack = new Stack&lt;Transaction&gt;();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        for (Transaction transaction : pq)</span>
+<span class="nc" id="L65">            stack.push(transaction);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        for (Transaction transaction : stack)</span>
+<span class="nc" id="L67">            StdOut.println(transaction);</span>
+<span class="nc" id="L68">    } </span>
+} 
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

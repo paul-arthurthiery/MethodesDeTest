@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>SymbolGraph.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">SymbolGraph.java</span></div><h1>SymbolGraph.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac SymbolGraph.java
+ *  Execution:    java SymbolGraph filename.txt delimiter
+ *  Dependencies: ST.java Graph.java In.java StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/41graph/routes.txt
+ *                https://algs4.cs.princeton.edu/41graph/movies.txt
+ *                https://algs4.cs.princeton.edu/41graph/moviestiny.txt
+ *                https://algs4.cs.princeton.edu/41graph/moviesG.txt
+ *                https://algs4.cs.princeton.edu/41graph/moviestopGrossing.txt
+ *  
+ *  %  java SymbolGraph routes.txt &quot; &quot;
+ *  JFK
+ *     MCO
+ *     ATL
+ *     ORD
+ *  LAX
+ *     PHX
+ *     LAS
+ *
+ *  % java SymbolGraph movies.txt &quot;/&quot;
+ *  Tin Men (1987)
+ *     Hershey, Barbara
+ *     Geppi, Cindy
+ *     Jones, Kathy (II)
+ *     Herr, Marcia
+ *     ...
+ *     Blumenfeld, Alan
+ *     DeBoy, David
+ *  Bacon, Kevin
+ *     Woodsman, The (2004)
+ *     Wild Things (1998)
+ *     Where the Truth Lies (2005)
+ *     Tremors (1990)
+ *     ...
+ *     Apollo 13 (1995)
+ *     Animal House (1978)
+ *
+ * 
+ *  Assumes that input file is encoded using UTF-8.
+ *  % iconv -f ISO-8859-1 -t UTF-8 movies-iso8859.txt &gt; movies.txt
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code SymbolGraph} class represents an undirected graph, where the
+ *  vertex names are arbitrary strings.
+ *  By providing mappings between string vertex names and integers,
+ *  it serves as a wrapper around the
+ *  {@link Graph} data type, which assumes the vertex names are integers
+ *  between 0 and &lt;em&gt;V&lt;/em&gt; - 1.
+ *  It also supports initializing a symbol graph from a file.
+ *  &lt;p&gt;
+ *  This implementation uses an {@link ST} to map from strings to integers,
+ *  an array to map from integers to strings, and a {@link Graph} to store
+ *  the underlying graph.
+ *  The &lt;em&gt;indexOf&lt;/em&gt; and &lt;em&gt;contains&lt;/em&gt; operations take time 
+ *  proportional to log &lt;em&gt;V&lt;/em&gt;, where &lt;em&gt;V&lt;/em&gt; is the number of vertices.
+ *  The &lt;em&gt;nameOf&lt;/em&gt; operation takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/41graph&quot;&gt;Section 4.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class SymbolGraph {
+    private ST&lt;String, Integer&gt; st;  // string -&gt; index
+    private String[] keys;           // index  -&gt; string
+    private Graph graph;             // the underlying graph
+
+    /**  
+     * Initializes a graph from a file using the specified delimiter.
+     * Each line in the file contains
+     * the name of a vertex, followed by a list of the names
+     * of the vertices adjacent to that vertex, separated by the delimiter.
+     * @param filename the name of the file
+     * @param delimiter the delimiter between fields
+     */
+<span class="nc" id="L81">    public SymbolGraph(String filename, String delimiter) {</span>
+<span class="nc" id="L82">        st = new ST&lt;String, Integer&gt;();</span>
+
+        // First pass builds the index by reading strings to associate
+        // distinct strings with an index
+<span class="nc" id="L86">        In in = new In(filename);</span>
+        // while (in.hasNextLine()) {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        while (!in.isEmpty()) {</span>
+<span class="nc" id="L89">            String[] a = in.readLine().split(delimiter);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            for (int i = 0; i &lt; a.length; i++) {</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                if (!st.contains(a[i]))</span>
+<span class="nc" id="L92">                    st.put(a[i], st.size());</span>
+            }
+        }
+
+        // inverted index to get string keys in an array
+<span class="nc" id="L97">        keys = new String[st.size()];</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (String name : st.keys()) {</span>
+<span class="nc" id="L99">            keys[st.get(name)] = name;</span>
+        }
+
+        // second pass builds the graph by connecting first vertex on each
+        // line to all others
+<span class="nc" id="L104">        graph = new Graph(st.size());</span>
+<span class="nc" id="L105">        in = new In(filename);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        while (in.hasNextLine()) {</span>
+<span class="nc" id="L107">            String[] a = in.readLine().split(delimiter);</span>
+<span class="nc" id="L108">            int v = st.get(a[0]);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            for (int i = 1; i &lt; a.length; i++) {</span>
+<span class="nc" id="L110">                int w = st.get(a[i]);</span>
+<span class="nc" id="L111">                graph.addEdge(v, w);</span>
+            }
+        }
+<span class="nc" id="L114">    }</span>
+
+    /**
+     * Does the graph contain the vertex named {@code s}?
+     * @param s the name of a vertex
+     * @return {@code true} if {@code s} is the name of a vertex, and {@code false} otherwise
+     */
+    public boolean contains(String s) {
+<span class="nc" id="L122">        return st.contains(s);</span>
+    }
+
+    /**
+     * Returns the integer associated with the vertex named {@code s}.
+     * @param s the name of a vertex
+     * @return the integer (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) associated with the vertex named {@code s}
+     * @deprecated Replaced by {@link #indexOf(String)}.
+     */
+    @Deprecated
+    public int index(String s) {
+<span class="nc" id="L133">        return st.get(s);</span>
+    }
+
+
+    /**
+     * Returns the integer associated with the vertex named {@code s}.
+     * @param s the name of a vertex
+     * @return the integer (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) associated with the vertex named {@code s}
+     */
+    public int indexOf(String s) {
+<span class="nc" id="L143">        return st.get(s);</span>
+    }
+
+    /**
+     * Returns the name of the vertex associated with the integer {@code v}.
+     * @param  v the integer corresponding to a vertex (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) 
+     * @return the name of the vertex associated with the integer {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @deprecated Replaced by {@link #nameOf(int)}.
+     */
+    @Deprecated
+    public String name(int v) {
+<span class="nc" id="L155">        validateVertex(v);</span>
+<span class="nc" id="L156">        return keys[v];</span>
+    }
+
+    /**
+     * Returns the name of the vertex associated with the integer {@code v}.
+     * @param  v the integer corresponding to a vertex (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) 
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @return the name of the vertex associated with the integer {@code v}
+     */
+    public String nameOf(int v) {
+<span class="nc" id="L166">        validateVertex(v);</span>
+<span class="nc" id="L167">        return keys[v];</span>
+    }
+
+    /**
+     * Returns the graph assoicated with the symbol graph. It is the client's responsibility
+     * not to mutate the graph.
+     * @return the graph associated with the symbol graph
+     * @deprecated Replaced by {@link #graph()}.
+     */
+    @Deprecated
+    public Graph G() {
+<span class="nc" id="L178">        return graph;</span>
+    }
+
+    /**
+     * Returns the graph assoicated with the symbol graph. It is the client's responsibility
+     * not to mutate the graph.
+     * @return the graph associated with the symbol graph
+     */
+    public Graph graph() {
+<span class="nc" id="L187">        return graph;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L192">        int V = graph.V();</span>
+<span class="nc bnc" id="L193" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L194">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L195">    }</span>
+
+
+    /**
+     * Unit tests the {@code SymbolGraph} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L204">        String filename  = args[0];</span>
+<span class="nc" id="L205">        String delimiter = args[1];</span>
+<span class="nc" id="L206">        SymbolGraph sg = new SymbolGraph(filename, delimiter);</span>
+<span class="nc" id="L207">        Graph graph = sg.graph();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        while (StdIn.hasNextLine()) {</span>
+<span class="nc" id="L209">            String source = StdIn.readLine();</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (sg.contains(source)) {</span>
+<span class="nc" id="L211">                int s = sg.index(source);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                for (int v : graph.adj(s)) {</span>
+<span class="nc" id="L213">                    StdOut.println(&quot;   &quot; + sg.name(v));</span>
+                }
+<span class="nc" id="L215">            }</span>
+            else {
+<span class="nc" id="L217">                StdOut.println(&quot;input not contain '&quot; + source + &quot;'&quot;);</span>
+            }
+        }
+<span class="nc" id="L220">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

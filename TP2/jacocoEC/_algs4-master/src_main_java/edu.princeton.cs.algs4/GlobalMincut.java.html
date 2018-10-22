@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>GlobalMincut.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">GlobalMincut.java</span></div><h1>GlobalMincut.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac GlobalMincut.java
+ *  Execution:    java  GlobalMincut filename.txt
+ *  Dependencies: EdgeWeightedGraph.java Edge.java UF.java 
+ *                IndexMaxPQ.java FlowNetwork.java FlowEdge.java 
+ *                FordFulkerson.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/43mst/tinyEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/mediumEWG.txt
+ *
+ *  Computes a minimum cut using Stoer-Wagner's algorithm.
+ *
+ *  % java GlobalMincut tinyEWG.txt 
+ *    Min cut: 5 
+ *    Min cut weight = 0.9500000000000001
+ *    
+ *  % java GlobalMincut mediumEWG.txt 
+ *    Min cut: 25 60 63 96 199 237 
+ *    Min cut weight = 0.14021
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ * The {@code GlobalMincut} class represents a data type for computing a
+ * &lt;em&gt;global minimum cut&lt;/em&gt; in an edge-weighted graph where the edge
+ * weights are nonnegative. A &lt;em&gt;cut&lt;/em&gt; is a partition of the set
+ * of vertices of a graph into two nonempty subsets. An edge that has one
+ * endpoint in each subset of a cut is a &lt;em&gt;crossing edge&lt;/em&gt;. The weight
+ * of a cut is the sum of the weights of its crossing edges.
+ * A &lt;em&gt;global minimum cut&lt;/em&gt; is a cut for which the weight is not
+ * larger than the weight of any other cut.
+ * &lt;p&gt;
+ * The {@code weight()} method returns the weight of the minimum cut and the
+ * {@code cut(int v)} method determines if a vertex {@code v} is on the first or
+ * on the second subset of vertices of the minimum cut.
+ * &lt;p&gt;
+ * This is an implementation of &lt;em&gt;Stoer–Wagner's algorithm&lt;/em&gt; using an index
+ * priority queue and the union-find data type in order to simplify dealing with
+ * contracting edges. Precisely, the index priority queue is an instance of
+ * {@link IndexMaxPQ} which is based on a binary heap. As a consequence, the
+ * constructor takes &lt;em&gt;O&lt;/em&gt;(&lt;em&gt;V&lt;/em&gt; (&lt;em&gt;V&lt;/em&gt; + &lt;em&gt; E&lt;/em&gt; ) log &lt;em&gt;
+ * V &lt;/em&gt;) time and &lt;em&gt;O&lt;/em&gt;(&lt;em&gt;V&lt;/em&gt;) extra space (not including the
+ * graph), where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the
+ * number of edges. However, this time can be reduced to &lt;em&gt;O&lt;/em&gt;(&lt;em&gt;V E&lt;/em&gt;
+ * + &lt;em&gt; V&lt;sup&gt;2&lt;/sup&gt;&lt;/em&gt; log &lt;em&gt;V&lt;/em&gt;) by using an index priority queue
+ * implemented using Fibonacci heaps.
+ * &lt;p&gt;
+ * Afterwards, the {@code weight()} and {@code cut(int v)} methods take constant
+ * time.
+ * &lt;p&gt;
+ * For additional documentation, see
+ * &lt;ul&gt;
+ * &lt;li&gt;M. Stoer and F. Wagner (1997). A simple min-cut algorithm. &lt;em&gt;Journal of
+ * the ACM &lt;/em&gt;, 44(4):585-591.
+ * &lt;/ul&gt;
+ * 
+ * @author Marcelo Silva
+ */
+<span class="nc bnc" id="L60" title="All 2 branches missed.">public class GlobalMincut {</span>
+<span class="nc" id="L61">    private static final double FLOATING_POINT_EPSILON = 1E-11;</span>
+
+    // the weight of the minimum cut
+<span class="nc" id="L64">    private double weight = Double.POSITIVE_INFINITY;</span>
+
+    // cut[v] = true if v is on the first subset of vertices of the minimum cut;
+    // or false if v is on the second subset
+    private boolean[] cut;
+
+    // number of vertices
+    private int V;
+
+    /**
+     * This helper class represents the &lt;em&gt;cut-of-the-phase&lt;/em&gt;. The
+     * cut-of-the-phase is a &lt;em&gt;minimum s-t-cut&lt;/em&gt; in the current graph,
+     * where {@code s} and {@code t} are the two vertices added last in the
+     * phase.
+     */
+    private class CutPhase {
+        private double weight; // the weight of the minimum s-t cut
+        private int s;         // the vertex s
+        private int t;         // the vertex t
+
+<span class="nc" id="L84">        public CutPhase(double weight, int s, int t) {</span>
+<span class="nc" id="L85">            this.weight = weight;</span>
+<span class="nc" id="L86">            this.s = s;</span>
+<span class="nc" id="L87">            this.t = t;</span>
+<span class="nc" id="L88">        }</span>
+    }
+
+    /**
+     * Computes a minimum cut of an edge-weighted graph.
+     * 
+     * @param G the edge-weighted graph
+     * @throws IllegalArgumentException if the number of vertices of {@code G}
+     *             is less than {@code 2} or if anny edge weight is negative
+     */
+<span class="nc" id="L98">    public GlobalMincut(EdgeWeightedGraph G) {</span>
+<span class="nc" id="L99">        V = G.V();</span>
+<span class="nc" id="L100">        validate(G);</span>
+<span class="nc" id="L101">        minCut(G, 0);</span>
+<span class="nc bnc" id="L102" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L103">    }</span>
+
+    /**
+     * Validates the edge-weighted graph.
+     * 
+     * @param G the edge-weighted graph
+     * @throws IllegalArgumentException if the number of vertices of {@code G}
+     *             is less than {@code 2} or if any edge weight is negative
+     */
+    private void validate(EdgeWeightedGraph G) {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (G.V() &lt; 2) throw new IllegalArgumentException(&quot;number of vertices of G is less than 2&quot;);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (Edge e : G.edges()) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (e.weight() &lt; 0) throw new IllegalArgumentException(&quot;edge &quot; + e + &quot; has negative weight&quot;);</span>
+        }
+<span class="nc" id="L117">    }</span>
+
+    /**
+     * Returns the weight of the minimum cut.
+     * 
+     * @return the weight of the minimum cut
+     */
+    public double weight() {
+<span class="nc" id="L125">        return weight;</span>
+    }
+
+    /**
+     * Returns {@code true} if the vertex {@code v} is on the first subset of
+     * vertices of the minimum cut; or {@code false} if the vertex {@code v} is
+     * on the second subset.
+     * 
+     * @param v the vertex to check
+     * @return {@code true} if the vertex {@code v} is on the first subset of
+     *         vertices of the minimum cut; or {@code false} if the vertex
+     *         {@code v} is on the second subset.
+     * @throws IllegalArgumentException unless vertex {@code v} is between
+     *             {@code 0} and {@code (G.V() - 1)}
+     */
+    public boolean cut(int v) {
+<span class="nc" id="L141">        validateVertex(v);</span>
+<span class="nc" id="L142">        return cut[v];</span>
+    }
+
+    /**
+     * Makes a cut for the current edge-weighted graph by partitioning its set
+     * of vertices into two nonempty subsets. The vertices connected to the
+     * vertex {@code t} belong to the first subset. Other vertices not connected
+     * to {@code t} belong to the second subset.
+     * 
+     * @param t the vertex {@code t}
+     * @param uf the union-find data type
+     */
+    private void makeCut(int t, UF uf) {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        for (int v = 0; v &lt; cut.length; v++) {</span>
+<span class="nc" id="L156">            cut[v] = uf.connected(v, t);</span>
+        }
+<span class="nc" id="L158">    }</span>
+
+    /**
+     * Computes a minimum cut of the edge-weighted graph. Precisely, it computes
+     * the lightest of the cuts-of-the-phase which yields the desired minimum
+     * cut.
+     * 
+     * @param G the edge-weighted graph
+     * @param a the starting vertex
+     */
+    private void minCut(EdgeWeightedGraph G, int a) {
+<span class="nc" id="L169">        UF uf = new UF(G.V());</span>
+<span class="nc" id="L170">        boolean[] marked = new boolean[G.V()];</span>
+<span class="nc" id="L171">        cut = new boolean[G.V()];</span>
+<span class="nc" id="L172">        CutPhase cp = new CutPhase(0.0, a, a);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        for (int v = G.V(); v &gt; 1; v--) {</span>
+<span class="nc" id="L174">            cp = minCutPhase(G, marked, cp);</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (cp.weight &lt; weight) {</span>
+<span class="nc" id="L176">                weight = cp.weight;</span>
+<span class="nc" id="L177">                makeCut(cp.t, uf);</span>
+            }
+<span class="nc" id="L179">            G = contractEdge(G, cp.s, cp.t);</span>
+<span class="nc" id="L180">            marked[cp.t] = true;</span>
+<span class="nc" id="L181">            uf.union(cp.s, cp.t);</span>
+        }
+<span class="nc" id="L183">    }</span>
+
+    /**
+     * Returns the cut-of-the-phase. The cut-of-the-phase is a minimum s-t-cut
+     * in the current graph, where {@code s} and {@code t} are the two vertices
+     * added last in the phase. This algorithm is known in the literature as
+     * &lt;em&gt;maximum adjacency search&lt;/em&gt; or &lt;em&gt;maximum cardinality search&lt;/em&gt;.
+     * 
+     * @param G the edge-weighted graph
+     * @param marked the array of contracted vertices, where {@code marked[v]}
+     *            is {@code true} if the vertex {@code v} was already
+     *            contracted; or {@code false} otherwise
+     * @param cp the previous cut-of-the-phase
+     * @return the cut-of-the-phase
+     */
+    private CutPhase minCutPhase(EdgeWeightedGraph G, boolean[] marked, CutPhase cp) {
+<span class="nc" id="L199">        IndexMaxPQ&lt;Double&gt; pq = new IndexMaxPQ&lt;Double&gt;(G.V());</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L201" title="All 4 branches missed.">            if (v != cp.s &amp;&amp; !marked[v]) pq.insert(v, 0.0);</span>
+        }
+<span class="nc" id="L203">        pq.insert(cp.s, Double.POSITIVE_INFINITY);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        while (!pq.isEmpty()) {</span>
+<span class="nc" id="L205">            int v = pq.delMax();</span>
+<span class="nc" id="L206">            cp.s = cp.t;</span>
+<span class="nc" id="L207">            cp.t = v;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">            for (Edge e : G.adj(v)) {</span>
+<span class="nc" id="L209">                int w = e.other(v);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                if (pq.contains(w)) pq.increaseKey(w, pq.keyOf(w) + e.weight());</span>
+            }
+        }
+<span class="nc" id="L213">        cp.weight = 0.0;</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        for (Edge e : G.adj(cp.t)) {</span>
+<span class="nc" id="L215">            cp.weight += e.weight();</span>
+        }
+<span class="nc" id="L217">        return cp;</span>
+    }
+
+    /**
+     * Contracts the edges incidents on the vertices {@code s} and {@code t} of
+     * the given edge-weighted graph.
+     * 
+     * @param G the edge-weighted graph
+     * @param s the vertex {@code s}
+     * @param t the vertex {@code t}
+     * @return a new edge-weighted graph for which the edges incidents on the
+     *         vertices {@code s} and {@code t} were contracted
+     */
+    private EdgeWeightedGraph contractEdge(EdgeWeightedGraph G, int s, int t) {
+<span class="nc" id="L231">        EdgeWeightedGraph H = new EdgeWeightedGraph(G.V());</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">            for (Edge e : G.adj(v)) {</span>
+<span class="nc" id="L234">                int w = e.other(v);</span>
+<span class="nc bnc" id="L235" title="All 8 branches missed.">                if (v == s &amp;&amp; w == t || v == t &amp;&amp; w == s) continue;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">                if (v &lt; w) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                    if (w == t)      H.addEdge(new Edge(v, s, e.weight()));</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">                    else if (v == t) H.addEdge(new Edge(w, s, e.weight()));</span>
+<span class="nc" id="L239">                    else             H.addEdge(new Edge(v, w, e.weight()));</span>
+                }
+            }
+        }
+<span class="nc" id="L243">        return H;</span>
+    }
+
+    /**
+     * Checks optimality conditions.
+     * 
+     * @param G the edge-weighted graph
+     * @return {@code true} if optimality conditions are fine
+     */
+    private boolean check(EdgeWeightedGraph G) {
+
+        // compute min st-cut for all pairs s and t
+        // shortcut: s must appear on one side of global mincut,
+        // so it suffices to try all pairs s-v for some fixed s
+<span class="nc" id="L257">        double value = Double.POSITIVE_INFINITY;</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        for (int s = 0, t = 1; t &lt; G.V(); t++) {</span>
+<span class="nc" id="L259">            FlowNetwork F = new FlowNetwork(G.V());</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            for (Edge e : G.edges()) {</span>
+<span class="nc" id="L261">                int v = e.either(), w = e.other(v);</span>
+<span class="nc" id="L262">                F.addEdge(new FlowEdge(v, w, e.weight()));</span>
+<span class="nc" id="L263">                F.addEdge(new FlowEdge(w, v, e.weight()));</span>
+            }
+<span class="nc" id="L265">            FordFulkerson maxflow = new FordFulkerson(F, s, t);</span>
+<span class="nc" id="L266">            value = Math.min(value, maxflow.value());</span>
+        }
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        if (Math.abs(weight - value) &gt; FLOATING_POINT_EPSILON) {</span>
+<span class="nc" id="L269">            System.err.println(&quot;Min cut weight = &quot; + weight + &quot; , max flow value = &quot; + value);</span>
+<span class="nc" id="L270">            return false;</span>
+        }
+<span class="nc" id="L272">        return true;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc bnc" id="L277" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L278">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L279">    }</span>
+
+
+    /**
+     * Unit tests the {@code GlobalMincut} data type.
+     * 
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L288">        In in = new In(args[0]);</span>
+<span class="nc" id="L289">        EdgeWeightedGraph G = new EdgeWeightedGraph(in);</span>
+<span class="nc" id="L290">        GlobalMincut mc = new GlobalMincut(G);</span>
+<span class="nc" id="L291">        StdOut.print(&quot;Min cut: &quot;);</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">            if (mc.cut(v)) StdOut.print(v + &quot; &quot;);</span>
+        }
+<span class="nc" id="L295">        StdOut.println();</span>
+<span class="nc" id="L296">        StdOut.println(&quot;Min cut weight = &quot; + mc.weight());</span>
+<span class="nc" id="L297">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

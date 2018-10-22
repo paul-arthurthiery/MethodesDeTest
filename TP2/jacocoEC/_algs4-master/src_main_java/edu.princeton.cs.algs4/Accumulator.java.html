@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Accumulator.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Accumulator.java</span></div><h1>Accumulator.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Accumulator.java
+ *  Execution:    java Accumulator &lt; input.txt
+ *  Dependencies: StdOut.java StdIn.java
+ *
+ *  Mutable data type that calculates the mean, sample standard
+ *  deviation, and sample variance of a stream of real numbers
+ *  use a stable, one-pass algorithm.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+/**
+ *  The {@code Accumulator} class is a data type for computing the running
+ *  mean, sample standard deviation, and sample variance of a stream of real
+ *  numbers. It provides an example of a mutable data type and a streaming
+ *  algorithm.
+ *  &lt;p&gt;
+ *  This implementation uses a one-pass algorithm that is less susceptible
+ *  to floating-point roundoff error than the more straightforward
+ *  implementation based on saving the sum of the squares of the numbers.
+ *  This technique is due to
+ *  &lt;a href = &quot;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm&quot;&gt;B. P. Welford&lt;/a&gt;.
+ *  Each operation takes constant time in the worst case.
+ *  The amount of memory is constant - the data values are not stored.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Accumulator {
+<span class="nc" id="L37">    private int n = 0;          // number of data values</span>
+<span class="nc" id="L38">    private double sum = 0.0;   // sample variance * (n-1)</span>
+<span class="nc" id="L39">    private double mu = 0.0;    // sample mean</span>
+
+    /**
+     * Initializes an accumulator.
+     */
+<span class="nc" id="L44">    public Accumulator() {</span>
+<span class="nc" id="L45">    }</span>
+
+    /**
+     * Adds the specified data value to the accumulator.
+     * @param  x the data value
+     */
+    public void addDataValue(double x) {
+<span class="nc" id="L52">        n++;</span>
+<span class="nc" id="L53">        double delta = x - mu;</span>
+<span class="nc" id="L54">        mu  += delta / n;</span>
+<span class="nc" id="L55">        sum += (double) (n - 1) / n * delta * delta;</span>
+<span class="nc" id="L56">    }</span>
+
+    /**
+     * Returns the mean of the data values.
+     * @return the mean of the data values
+     */
+    public double mean() {
+<span class="nc" id="L63">        return mu;</span>
+    }
+
+    /**
+     * Returns the sample variance of the data values.
+     * @return the sample variance of the data values
+     */
+    public double var() {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (n &lt;= 1) return Double.NaN;</span>
+<span class="nc" id="L72">        return sum / (n - 1);</span>
+    }
+
+    /**
+     * Returns the sample standard deviation of the data values.
+     * @return the sample standard deviation of the data values
+     */
+    public double stddev() {
+<span class="nc" id="L80">        return Math.sqrt(this.var());</span>
+    }
+
+    /**
+     * Returns the number of data values.
+     * @return the number of data values
+     */
+    public int count() {
+<span class="nc" id="L88">        return n;</span>
+    }
+
+    /**
+     * Returns a string representation of this accumulator.
+     * @return a string representation of this accumulator
+     */
+    public String toString() {
+<span class="nc" id="L96">        return &quot;n = &quot; + n + &quot;, mean = &quot; + mean() + &quot;, stddev = &quot; + stddev();</span>
+    }
+
+    /**
+     * Unit tests the {@code Accumulator} data type.
+     * Reads in a stream of real number from standard input;
+     * adds them to the accumulator; and prints the mean,
+     * sample standard deviation, and sample variance to standard
+     * output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L109">        Accumulator stats = new Accumulator();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L111">            double x = StdIn.readDouble();</span>
+<span class="nc" id="L112">            stats.addDataValue(x);</span>
+        }
+
+<span class="nc" id="L115">        StdOut.printf(&quot;n      = %d\n&quot;,   stats.count());</span>
+<span class="nc" id="L116">        StdOut.printf(&quot;mean   = %.5f\n&quot;, stats.mean());</span>
+<span class="nc" id="L117">        StdOut.printf(&quot;stddev = %.5f\n&quot;, stats.stddev());</span>
+<span class="nc" id="L118">        StdOut.printf(&quot;var    = %.5f\n&quot;, stats.var());</span>
+<span class="nc" id="L119">        StdOut.println(stats);</span>
+<span class="nc" id="L120">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

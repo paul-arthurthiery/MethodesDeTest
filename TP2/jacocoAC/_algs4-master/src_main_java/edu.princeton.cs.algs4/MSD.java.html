@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>MSD.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">MSD.java</span></div><h1>MSD.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation: javac MSD.java
+ *  Execution:   java MSD &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java 
+ *  Data files:   https://algs4.cs.princeton.edu/51radix/words3.txt
+ *                https://algs4.cs.princeton.edu/51radix/shells.txt
+ *
+ *  Sort an array of strings or integers using MSD radix sort.
+ *
+ *  % java MSD &lt; shells.txt 
+ *  are
+ *  by
+ *  sea
+ *  seashells
+ *  seashells
+ *  sells
+ *  sells
+ *  she
+ *  she
+ *  shells
+ *  shore
+ *  surely
+ *  the
+ *  the
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code MSD} class provides static methods for sorting an
+ *  array of extended ASCII strings or integers using MSD radix sort.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/51radix&quot;&gt;Section 5.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L41" title="All 2 branches missed.">public class MSD {</span>
+    private static final int BITS_PER_BYTE =   8;
+    private static final int BITS_PER_INT  =  32;   // each Java int is 32 bits 
+    private static final int R             = 256;   // extended ASCII alphabet size
+<span class="nc" id="L45">    private static final int CUTOFF        =  15;   // cutoff to insertion sort</span>
+
+    // do not instantiate
+<span class="nc" id="L48">    private MSD() { } </span>
+
+   /**
+     * Rearranges the array of extended ASCII strings in ascending order.
+     *
+     * @param a the array to be sorted
+     */
+    public static void sort(String[] a) {
+<span class="nc" id="L56">        int n = a.length;</span>
+<span class="nc" id="L57">        String[] aux = new String[n];</span>
+<span class="nc" id="L58">        sort(a, 0, n-1, 0, aux);</span>
+<span class="nc" id="L59">    }</span>
+
+    // return dth character of s, -1 if d = length of string
+    private static int charAt(String s, int d) {
+<span class="nc bnc" id="L63" title="All 6 branches missed.">        assert d &gt;= 0 &amp;&amp; d &lt;= s.length();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (d == s.length()) return -1;</span>
+<span class="nc" id="L65">        return s.charAt(d);</span>
+    }
+
+    // sort from a[lo] to a[hi], starting at the dth character
+    private static void sort(String[] a, int lo, int hi, int d, String[] aux) {
+
+        // cutoff to insertion sort for small subarrays
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (hi &lt;= lo + CUTOFF) {</span>
+<span class="nc" id="L73">            insertion(a, lo, hi, d);</span>
+<span class="nc" id="L74">            return;</span>
+        }
+
+        // compute frequency counts
+<span class="nc" id="L78">        int[] count = new int[R+2];</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++) {</span>
+<span class="nc" id="L80">            int c = charAt(a[i], d);</span>
+<span class="nc" id="L81">            count[c+2]++;</span>
+        }
+
+        // transform counts to indicies
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (int r = 0; r &lt; R+1; r++)</span>
+<span class="nc" id="L86">            count[r+1] += count[r];</span>
+
+        // distribute
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++) {</span>
+<span class="nc" id="L90">            int c = charAt(a[i], d);</span>
+<span class="nc" id="L91">            aux[count[c+1]++] = a[i];</span>
+        }
+
+        // copy back
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++) </span>
+<span class="nc" id="L96">            a[i] = aux[i - lo];</span>
+
+
+        // recursively sort for each character (excludes sentinel -1)
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        for (int r = 0; r &lt; R; r++)</span>
+<span class="nc" id="L101">            sort(a, lo + count[r], lo + count[r+1] - 1, d+1, aux);</span>
+<span class="nc" id="L102">    }</span>
+
+
+    // insertion sort a[lo..hi], starting at dth character
+    private static void insertion(String[] a, int lo, int hi, int d) {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L108" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(a[j], a[j-1], d); j--)</span>
+<span class="nc" id="L109">                exch(a, j, j-1);</span>
+<span class="nc" id="L110">    }</span>
+
+    // exchange a[i] and a[j]
+    private static void exch(String[] a, int i, int j) {
+<span class="nc" id="L114">        String temp = a[i];</span>
+<span class="nc" id="L115">        a[i] = a[j];</span>
+<span class="nc" id="L116">        a[j] = temp;</span>
+<span class="nc" id="L117">    }</span>
+
+    // is v less than w, starting at character d
+    private static boolean less(String v, String w, int d) {
+        // assert v.substring(0, d).equals(w.substring(0, d));
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        for (int i = d; i &lt; Math.min(v.length(), w.length()); i++) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            if (v.charAt(i) &lt; w.charAt(i)) return true;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (v.charAt(i) &gt; w.charAt(i)) return false;</span>
+        }
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        return v.length() &lt; w.length();</span>
+    }
+
+
+   /**
+     * Rearranges the array of 32-bit integers in ascending order.
+     * Currently assumes that the integers are nonnegative.
+     *
+     * @param a the array to be sorted
+     */
+    public static void sort(int[] a) {
+<span class="nc" id="L137">        int n = a.length;</span>
+<span class="nc" id="L138">        int[] aux = new int[n];</span>
+<span class="nc" id="L139">        sort(a, 0, n-1, 0, aux);</span>
+<span class="nc" id="L140">    }</span>
+
+    // MSD sort from a[lo] to a[hi], starting at the dth byte
+    private static void sort(int[] a, int lo, int hi, int d, int[] aux) {
+
+        // cutoff to insertion sort for small subarrays
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (hi &lt;= lo + CUTOFF) {</span>
+<span class="nc" id="L147">            insertion(a, lo, hi, d);</span>
+<span class="nc" id="L148">            return;</span>
+        }
+
+        // compute frequency counts (need R = 256)
+<span class="nc" id="L152">        int[] count = new int[R+1];</span>
+<span class="nc" id="L153">        int mask = R - 1;   // 0xFF;</span>
+<span class="nc" id="L154">        int shift = BITS_PER_INT - BITS_PER_BYTE*d - BITS_PER_BYTE;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++) {</span>
+<span class="nc" id="L156">            int c = (a[i] &gt;&gt; shift) &amp; mask;</span>
+<span class="nc" id="L157">            count[c + 1]++;</span>
+        }
+
+        // transform counts to indicies
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        for (int r = 0; r &lt; R; r++)</span>
+<span class="nc" id="L162">            count[r+1] += count[r];</span>
+
+/************* BUGGGY CODE.
+        // for most significant byte, 0x80-0xFF comes before 0x00-0x7F
+        if (d == 0) {
+            int shift1 = count[R] - count[R/2];
+            int shift2 = count[R/2];
+            for (int r = 0; r &lt; R/2; r++)
+                count[r] += shift1;
+            for (int r = R/2; r &lt; R; r++)
+                count[r] -= shift2;
+        }
+************************************/
+        // distribute
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++) {</span>
+<span class="nc" id="L177">            int c = (a[i] &gt;&gt; shift) &amp; mask;</span>
+<span class="nc" id="L178">            aux[count[c]++] = a[i];</span>
+        }
+
+        // copy back
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++) </span>
+<span class="nc" id="L183">            a[i] = aux[i - lo];</span>
+
+        // no more bits
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (d == 4) return;</span>
+
+        // recursively sort for each character
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (count[0] &gt; 0)</span>
+<span class="nc" id="L190">            sort(a, lo, lo + count[0] - 1, d+1, aux);</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        for (int r = 0; r &lt; R; r++)</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">            if (count[r+1] &gt; count[r])</span>
+<span class="nc" id="L193">                sort(a, lo + count[r], lo + count[r+1] - 1, d+1, aux);</span>
+<span class="nc" id="L194">    }</span>
+
+    // TODO: insertion sort a[lo..hi], starting at dth character
+    private static void insertion(int[] a, int lo, int hi, int d) {
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L199" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; a[j] &lt; a[j-1]; j--)</span>
+<span class="nc" id="L200">                exch(a, j, j-1);</span>
+<span class="nc" id="L201">    }</span>
+
+    // exchange a[i] and a[j]
+    private static void exch(int[] a, int i, int j) {
+<span class="nc" id="L205">        int temp = a[i];</span>
+<span class="nc" id="L206">        a[i] = a[j];</span>
+<span class="nc" id="L207">        a[j] = temp;</span>
+<span class="nc" id="L208">    }</span>
+
+
+    /**
+     * Reads in a sequence of extended ASCII strings from standard input;
+     * MSD radix sorts them;
+     * and prints them to standard output in ascending order.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L219">        String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L220">        int n = a.length;</span>
+<span class="nc" id="L221">        sort(a);</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L223">            StdOut.println(a[i]);</span>
+<span class="nc" id="L224">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

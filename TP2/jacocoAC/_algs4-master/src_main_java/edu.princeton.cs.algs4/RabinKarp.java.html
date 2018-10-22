@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>RabinKarp.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">RabinKarp.java</span></div><h1>RabinKarp.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac RabinKarp.java
+ *  Execution:    java RabinKarp pat txt
+ *  Dependencies: StdOut.java
+ *
+ *  Reads in two strings, the pattern and the input text, and
+ *  searches for the pattern in the input text using the
+ *  Las Vegas version of the Rabin-Karp algorithm.
+ *
+ *  % java RabinKarp abracadabra abacadabrabracabracadabrabrabracad
+ *  pattern: abracadabra
+ *  text:    abacadabrabracabracadabrabrabracad 
+ *  match:                 abracadabra          
+ *
+ *  % java RabinKarp rab abacadabrabracabracadabrabrabracad
+ *  pattern: rab
+ *  text:    abacadabrabracabracadabrabrabracad 
+ *  match:           rab                         
+ *
+ *  % java RabinKarp bcara abacadabrabracabracadabrabrabracad
+ *  pattern: bcara
+ *  text:         abacadabrabracabracadabrabrabracad 
+ *
+ *  %  java RabinKarp rabrabracad abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad
+ *  pattern:                        rabrabracad
+ *
+ *  % java RabinKarp abacad abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad
+ *  pattern: abacad
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.math.BigInteger;
+import java.util.Random;
+
+/**
+ *  The {@code RabinKarp} class finds the first occurrence of a pattern string
+ *  in a text string.
+ *  &lt;p&gt;
+ *  This implementation uses the Rabin-Karp algorithm.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/53substring&quot;&gt;Section 5.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+public class RabinKarp {
+    private String pat;      // the pattern  // needed only for Las Vegas
+    private long patHash;    // pattern hash value
+    private int m;           // pattern length
+    private long q;          // a large prime, small enough to avoid long overflow
+    private int R;           // radix
+    private long RM;         // R^(M-1) % Q
+
+    /**
+     * Preprocesses the pattern string.
+     *
+     * @param pattern the pattern string
+     * @param R the alphabet size
+     */
+<span class="nc" id="L63">    public RabinKarp(char[] pattern, int R) {</span>
+<span class="nc" id="L64">        this.pat = String.valueOf(pattern);</span>
+<span class="nc" id="L65">        this.R = R;        </span>
+<span class="nc" id="L66">        throw new UnsupportedOperationException(&quot;Operation not supported yet&quot;);</span>
+    }
+
+    /**
+     * Preprocesses the pattern string.
+     *
+     * @param pat the pattern string
+     */
+<span class="nc" id="L74">    public RabinKarp(String pat) {</span>
+<span class="nc" id="L75">        this.pat = pat;      // save pattern (needed only for Las Vegas)</span>
+<span class="nc" id="L76">        R = 256;</span>
+<span class="nc" id="L77">        m = pat.length();</span>
+<span class="nc" id="L78">        q = longRandomPrime();</span>
+
+        // precompute R^(m-1) % q for use in removing leading digit
+<span class="nc" id="L81">        RM = 1;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        for (int i = 1; i &lt;= m-1; i++)</span>
+<span class="nc" id="L83">            RM = (R * RM) % q;</span>
+<span class="nc" id="L84">        patHash = hash(pat, m);</span>
+<span class="nc" id="L85">    } </span>
+
+    // Compute hash for key[0..m-1]. 
+    private long hash(String key, int m) { 
+<span class="nc" id="L89">        long h = 0; </span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        for (int j = 0; j &lt; m; j++) </span>
+<span class="nc" id="L91">            h = (R * h + key.charAt(j)) % q;</span>
+<span class="nc" id="L92">        return h;</span>
+    }
+
+    // Las Vegas version: does pat[] match txt[i..i-m+1] ?
+    private boolean check(String txt, int i) {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        for (int j = 0; j &lt; m; j++) </span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (pat.charAt(j) != txt.charAt(i + j)) </span>
+<span class="nc" id="L99">                return false; </span>
+<span class="nc" id="L100">        return true;</span>
+    }
+
+    // Monte Carlo version: always return true
+    // private boolean check(int i) {
+    //    return true;
+    //}
+ 
+    /**
+     * Returns the index of the first occurrrence of the pattern string
+     * in the text string.
+     *
+     * @param  txt the text string
+     * @return the index of the first occurrence of the pattern string
+     *         in the text string; n if no such match
+     */
+    public int search(String txt) {
+<span class="nc" id="L117">        int n = txt.length(); </span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (n &lt; m) return n;</span>
+<span class="nc" id="L119">        long txtHash = hash(txt, m); </span>
+
+        // check for match at offset 0
+<span class="nc bnc" id="L122" title="All 4 branches missed.">        if ((patHash == txtHash) &amp;&amp; check(txt, 0))</span>
+<span class="nc" id="L123">            return 0;</span>
+
+        // check for hash match; if hash match, check for exact match
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        for (int i = m; i &lt; n; i++) {</span>
+            // Remove leading digit, add trailing digit, check for match. 
+<span class="nc" id="L128">            txtHash = (txtHash + q - RM*txt.charAt(i-m) % q) % q; </span>
+<span class="nc" id="L129">            txtHash = (txtHash*R + txt.charAt(i)) % q; </span>
+
+            // match
+<span class="nc" id="L132">            int offset = i - m + 1;</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">            if ((patHash == txtHash) &amp;&amp; check(txt, offset))</span>
+<span class="nc" id="L134">                return offset;</span>
+        }
+
+        // no match
+<span class="nc" id="L138">        return n;</span>
+    }
+
+
+    // a random 31-bit prime
+    private static long longRandomPrime() {
+<span class="nc" id="L144">        BigInteger prime = BigInteger.probablePrime(31, new Random());</span>
+<span class="nc" id="L145">        return prime.longValue();</span>
+    }
+
+    /** 
+     * Takes a pattern string and an input string as command-line arguments;
+     * searches for the pattern string in the text string; and prints
+     * the first occurrence of the pattern string in the text string.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L156">        String pat = args[0];</span>
+<span class="nc" id="L157">        String txt = args[1];</span>
+
+<span class="nc" id="L159">        RabinKarp searcher = new RabinKarp(pat);</span>
+<span class="nc" id="L160">        int offset = searcher.search(txt);</span>
+
+        // print results
+<span class="nc" id="L163">        StdOut.println(&quot;text:    &quot; + txt);</span>
+
+        // from brute force search method 1
+<span class="nc" id="L166">        StdOut.print(&quot;pattern: &quot;);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        for (int i = 0; i &lt; offset; i++)</span>
+<span class="nc" id="L168">            StdOut.print(&quot; &quot;);</span>
+<span class="nc" id="L169">        StdOut.println(pat);</span>
+<span class="nc" id="L170">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

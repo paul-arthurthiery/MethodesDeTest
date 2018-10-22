@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>StaticSETofInts.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">StaticSETofInts.java</span></div><h1>StaticSETofInts.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac StaticSetOfInts.java
+ *  Execution:    none
+ *  Dependencies: StdOut.java
+ *  
+ *  Data type to store a set of integers.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+
+/**
+ *  The {@code StaticSETofInts} class represents a set of integers.
+ *  It supports searching for a given integer is in the set. It accomplishes
+ *  this by keeping the set of integers in a sorted array and using
+ *  binary search to find the given integer.
+ *  &lt;p&gt;
+ *  The &lt;em&gt;rank&lt;/em&gt; and &lt;em&gt;contains&lt;/em&gt; operations take
+ *  logarithmic time in the worst case.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class StaticSETofInts {
+    private int[] a;
+
+    /**
+     * Initializes a set of integers specified by the integer array.
+     * @param keys the array of integers
+     * @throws IllegalArgumentException if the array contains duplicate integers
+     */
+<span class="nc" id="L37">    public StaticSETofInts(int[] keys) {</span>
+
+        // defensive copy
+<span class="nc" id="L40">        a = new int[keys.length];</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        for (int i = 0; i &lt; keys.length; i++)</span>
+<span class="nc" id="L42">            a[i] = keys[i];</span>
+
+        // sort the integers
+<span class="nc" id="L45">        Arrays.sort(a);</span>
+
+        // check for duplicates
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        for (int i = 1; i &lt; a.length; i++)</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">            if (a[i] == a[i-1])</span>
+<span class="nc" id="L50">                throw new IllegalArgumentException(&quot;Argument arrays contains duplicate keys.&quot;);</span>
+<span class="nc" id="L51">    }</span>
+
+    /**
+     * Is the key in this set of integers?
+     * @param key the search key
+     * @return true if the set of integers contains the key; false otherwise
+     */
+    public boolean contains(int key) {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        return rank(key) != -1;</span>
+    }
+
+    /**
+     * Returns either the index of the search key in the sorted array
+     * (if the key is in the set) or -1 (if the key is not in the set).
+     * @param key the search key
+     * @return the number of keys in this set less than the key (if the key is in the set)
+     * or -1 (if the key is not in the set).
+     */
+    public int rank(int key) {
+<span class="nc" id="L70">        int lo = 0;</span>
+<span class="nc" id="L71">        int hi = a.length - 1;</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        while (lo &lt;= hi) {</span>
+            // Key is in a[lo..hi] or not present.
+<span class="nc" id="L74">            int mid = lo + (hi - lo) / 2;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if      (key &lt; a[mid]) hi = mid - 1;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            else if (key &gt; a[mid]) lo = mid + 1;</span>
+<span class="nc" id="L77">            else return mid;</span>
+        }
+<span class="nc" id="L79">        return -1;</span>
+    }
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

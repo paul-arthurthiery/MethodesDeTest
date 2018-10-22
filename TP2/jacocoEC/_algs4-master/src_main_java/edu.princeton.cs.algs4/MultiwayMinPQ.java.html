@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>MultiwayMinPQ.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">MultiwayMinPQ.java</span></div><h1>MultiwayMinPQ.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation: javac MultiwayMinPQ.java   
+ *  Execution:
+ *  
+ *  A multiway heap.
+ *  
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+
+/**
+ *  The MultiwayMinPQ class represents a priority queue of generic keys.
+ *  It supports the usual insert and delete-the-minimum operations.
+ *  It also supports methods for peeking at the minimum key,
+ *  testing if the priority queue is empty, and iterating through
+ *  the keys.
+ *  It is possible to build the priority queue using a Comparator.
+ *  If not, the natural order relation between the keys will be used.
+ *  
+ *  This implementation uses a multiway heap.
+ *  For simplified notations, logarithm in base d will be referred as log-d
+ *  The delete-the-minimum operation takes time proportional to d*log-d(n)
+ *  The insert takes time proportional to log-d(n)
+ *  The is-empty, min-key and size operations take constant time.
+ *  Constructor takes time proportional to the specified capacity.
+ *
+ *  @author Tristan Claverie
+ */
+public class MultiwayMinPQ&lt;Key&gt; implements Iterable&lt;Key&gt; {
+	private final int d; 				//Dimension of the heap
+	private int n;						//Number of keys currently in the heap
+	private int order;					//Number of levels of the tree
+	private Key[] keys;					//Array of keys
+	private final Comparator&lt;Key&gt; comp;	//Comparator over the keys
+	
+	
+    /**
+     * Initializes an empty priority queue
+     * Worst case is O(d)
+     *
+     * @param  d dimension of the heap
+     * @throws java.lang.IllegalArgumentException if {@code d &lt; 2}
+     */
+<span class="nc" id="L48">	public MultiwayMinPQ(int d) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">		if (d &lt; 2) throw new IllegalArgumentException(&quot;Dimension should be 2 or over&quot;);</span>
+<span class="nc" id="L50">		this.d = d;</span>
+<span class="nc" id="L51">		order = 1;</span>
+<span class="nc" id="L52">		keys = (Key[]) new Comparable[d &lt;&lt; 1];</span>
+<span class="nc" id="L53">		comp = new MyComparator();</span>
+<span class="nc" id="L54">	}</span>
+	
+    /**
+     * Initializes an empty priority queue
+     * Worst case is O(d)
+     *
+     * @param  d dimension of the heap
+     * @param  comparator a Comparator over the keys
+     * @throws java.lang.IllegalArgumentException if {@code d &lt; 2}
+     */
+<span class="nc" id="L64">	public MultiwayMinPQ(Comparator&lt;Key&gt; comparator, int d) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">		if (d &lt; 2) throw new IllegalArgumentException(&quot;Dimension should be 2 or over&quot;);</span>
+<span class="nc" id="L66">		this.d = d;</span>
+<span class="nc" id="L67">		order = 1;</span>
+<span class="nc" id="L68">		keys = (Key[]) new Comparable[d &lt;&lt; 1];</span>
+<span class="nc" id="L69">		comp = comparator;</span>
+<span class="nc" id="L70">	}</span>
+	
+    /**
+     * Initializes a priority queue with given indexes
+     * Worst case is O(n*log-d(n))
+     *
+     * @param  d dimension of the heap
+     * @param  a an array of keys
+     * @throws java.lang.IllegalArgumentException if {@code d &lt; 2}
+     */
+<span class="nc" id="L80">	public MultiwayMinPQ(Key[] a, int d) {</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">		if (d &lt; 2) throw new IllegalArgumentException(&quot;Dimension should be 2 or over&quot;);</span>
+<span class="nc" id="L82">		this.d = d;</span>
+<span class="nc" id="L83">		order = 1;</span>
+<span class="nc" id="L84">		keys = (Key[]) new Comparable[d &lt;&lt; 1];</span>
+<span class="nc" id="L85">		comp = new MyComparator();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">		for (Key key : a) insert(key);</span>
+<span class="nc" id="L87">	}</span>
+	
+    /**
+     * Initializes a priority queue with given indexes
+     * Worst case is O(a*log-d(n))
+     *
+     * @param  d dimension of the heap
+     * @param  comparator a Comparator over the keys
+     * @param  a an array of keys
+     * @throws java.lang.IllegalArgumentException if {@code d &lt; 2}
+     */
+<span class="nc" id="L98">	public MultiwayMinPQ(Comparator&lt;Key&gt; comparator, Key[] a, int d) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">		if (d &lt; 2) throw new IllegalArgumentException(&quot;Dimension should be 2 or over&quot;);</span>
+<span class="nc" id="L100">		this.d = d;</span>
+<span class="nc" id="L101">		order = 1;</span>
+<span class="nc" id="L102">		keys = (Key[]) new Comparable[d &lt;&lt; 1];</span>
+<span class="nc" id="L103">		comp = comparator;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">		for (Key key : a) insert(key);</span>
+<span class="nc" id="L105">	}</span>
+
+        /**
+	 * Whether the priority queue is empty
+	 * Worst case is O(1)
+	 * @return true if the priority queue is empty, false if not
+	 */
+	public boolean isEmpty() {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">		return n == 0;</span>
+	}
+
+	/**
+	 * Number of elements currently on the priority queue
+	 * Worst case is O(1)
+	 * @return the number of elements on the priority queue
+	 */
+	public int size() {
+<span class="nc" id="L122">		return n;</span>
+	}
+
+	/**
+	 * Puts a Key on the priority queue
+	 * Worst case is O(log-d(n))
+	 * @param key a Key
+	 */
+	public void insert(Key key) {
+<span class="nc" id="L131">		keys[n+d] = key;</span>
+<span class="nc" id="L132">		swim(n++);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">		if (n == keys.length-d) {</span>
+<span class="nc" id="L134">			resize(getN(order+1)+d);</span>
+<span class="nc" id="L135">			order++;</span>
+		}
+<span class="nc" id="L137">	}</span>
+
+	/**
+	 * Gets the minimum key currently in the queue
+	 * Worst case is O(1)
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the minimum key currently in the priority queue
+	 */
+	public Key minKey() {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L147">		return keys[d];</span>
+	}
+
+	/**
+	 * Deletes the minimum key
+	 * Worst case is O(d*log-d(n))
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the minimum key
+	 */
+	public Key delMin() {
+<span class="nc bnc" id="L157" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L158">		exch(0, --n);</span>
+<span class="nc" id="L159">		sink(0);</span>
+<span class="nc" id="L160">		Key min = keys[n+d];</span>
+<span class="nc" id="L161">		keys[n+d] = null;</span>
+<span class="nc" id="L162">		int number = getN(order-2);</span>
+<span class="nc bnc" id="L163" title="All 4 branches missed.">		if(order &gt; 1 &amp;&amp; n == number)  {</span>
+<span class="nc" id="L164">			resize(number+(int)Math.pow(d, order-1)+d);</span>
+<span class="nc" id="L165">			order--;</span>
+		}
+<span class="nc" id="L167">		return min;</span>
+	}
+	
+	/***************************
+	 * General helper functions
+	 **************************/
+	
+	//Compares two keys
+	private boolean greater(int x, int y) {
+<span class="nc" id="L176">		int i = x+d, j = y+d;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">		if (keys[i] == null) return false;</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">		if (keys[j] == null) return true;</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">		return comp.compare(keys[i], keys[j]) &gt; 0;</span>
+	}
+	
+	//Exchanges the position of two keys
+	private void exch(int x, int y) {
+<span class="nc" id="L184">		int i = x+d, j = y+d;</span>
+<span class="nc" id="L185">		Key swap = keys[i];</span>
+<span class="nc" id="L186">		keys[i] = keys[j];</span>
+<span class="nc" id="L187">		keys[j] = swap;</span>
+<span class="nc" id="L188">	}</span>
+	
+	//Gets the maximum number of keys in the heap, given the number of levels of the tree
+	private int getN(int order) {
+<span class="nc" id="L192">		return (1-((int)Math.pow(d, order+1)))/(1-d);</span>
+	}
+	
+	/***************************
+	 * Functions for moving upward or downward
+	 **************************/
+	
+	//Moves upward
+	private void swim(int i) {
+<span class="nc bnc" id="L201" title="All 4 branches missed.">		if (i &gt; 0 &amp;&amp; greater((i-1)/d, i)) {</span>
+<span class="nc" id="L202">			exch(i, (i-1)/d);</span>
+<span class="nc" id="L203">			swim((i-1)/d);</span>
+		}
+<span class="nc" id="L205">	}</span>
+	
+	//Moves downward
+	private void sink(int i) {
+<span class="nc" id="L209">		int child = d*i+1;</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">		if (child &gt;= n) return;</span>
+<span class="nc" id="L211">		int min = minChild(i);</span>
+<span class="nc bnc" id="L212" title="All 4 branches missed.">		while (min &lt; n &amp;&amp; greater(i, min)) {</span>
+<span class="nc" id="L213">			exch(i, min);</span>
+<span class="nc" id="L214">			i = min;</span>
+<span class="nc" id="L215">			min = minChild(i);</span>
+		}
+<span class="nc" id="L217">	}</span>
+	
+	/***************************
+	 * Deletes the minimum child
+	 **************************/
+	
+	//Return the minimum child of i
+	private int minChild(int i) {
+<span class="nc" id="L225">		int loBound = d*i+1, hiBound = d*i+d;</span>
+<span class="nc" id="L226">		int min = loBound;</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">		for (int cur = loBound; cur &lt;= hiBound; cur++) {</span>
+<span class="nc bnc" id="L228" title="All 4 branches missed.">			if (cur &lt; n &amp;&amp; greater(min, cur)) min = cur;</span>
+		}
+<span class="nc" id="L230">		return min;</span>
+	}
+	
+	/***************************
+	 * Resize the priority queue
+	 **************************/
+	
+	//Resizes the array containing the keys
+	//If the heap is full, it adds one floor
+	//If the heap has two floors empty, it removes one
+	private void resize(int N) {
+<span class="nc" id="L241">		Key[] array = (Key[]) new Comparable[N];</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">		for (int i = 0; i &lt; Math.min(keys.length, array.length); i++) {</span>
+<span class="nc" id="L243">			array[i] = keys[i];</span>
+<span class="nc" id="L244">			keys[i] = null;</span>
+		}
+<span class="nc" id="L246">		keys = array;</span>
+<span class="nc" id="L247">	}</span>
+	
+	/***************************
+	 * Iterator
+	 **************************/
+	
+	/**
+	 * Gets an Iterator over the keys in the priority queue in ascending order
+	 * The Iterator does not implement the remove() method
+	 * iterator() : Worst case is O(n)
+	 * next() : 	Worst case is O(d*log-d(n))
+	 * hasNext() : 	Worst case is O(1)
+	 * @return an Iterator over the keys in the priority queue in ascending order
+	 */
+	
+	public Iterator&lt;Key&gt; iterator() {
+<span class="nc" id="L263">		return new MyIterator();</span>
+	}
+	
+	//Constructs an Iterator over the keys in linear time
+	private class MyIterator implements Iterator&lt;Key&gt; {
+		MultiwayMinPQ&lt;Key&gt; data;
+		
+<span class="nc" id="L270">		public MyIterator() {</span>
+<span class="nc" id="L271">			data = new MultiwayMinPQ&lt;Key&gt;(comp, d);</span>
+<span class="nc" id="L272">			data.keys = (Key[]) new Comparable[keys.length];</span>
+<span class="nc" id="L273">			data.n = n;</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">			for (int i = 0; i &lt; keys.length; i++) {</span>
+<span class="nc" id="L275">				data.keys[i] = keys[i];</span>
+			}
+<span class="nc" id="L277">		}</span>
+
+		public boolean hasNext() {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">			return !data.isEmpty();</span>
+		}
+		
+		public Key next() {
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                        if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L285">			return data.delMin();</span>
+		}
+		
+		public void remove() {
+<span class="nc" id="L289">			throw new UnsupportedOperationException();</span>
+		}
+	}
+	
+	/***************************
+	 * Comparator
+	 **************************/
+	
+	//default Comparator
+<span class="nc" id="L298">	private class MyComparator implements Comparator&lt;Key&gt; {</span>
+		@Override
+		public int compare(Key key1, Key key2) {
+<span class="nc" id="L301">			return ((Comparable&lt;Key&gt;) key1).compareTo(key2);</span>
+		}
+	}
+	
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

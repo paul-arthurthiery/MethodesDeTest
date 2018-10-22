@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>SuffixArray.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">SuffixArray.java</span></div><h1>SuffixArray.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac SuffixArray.java
+ *  Execution:    java SuffixArray &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/63suffix/abra.txt
+ *
+ *  A data type that computes the suffix array of a string.
+ *
+ *   % java SuffixArray &lt; abra.txt
+ *    i ind lcp rnk  select
+ *   ---------------------------
+ *    0  11   -   0  &quot;!&quot;
+ *    1  10   0   1  &quot;A!&quot;
+ *    2   7   1   2  &quot;ABRA!&quot;
+ *    3   0   4   3  &quot;ABRACADABRA!&quot;
+ *    4   3   1   4  &quot;ACADABRA!&quot;
+ *    5   5   1   5  &quot;ADABRA!&quot;
+ *    6   8   0   6  &quot;BRA!&quot;
+ *    7   1   3   7  &quot;BRACADABRA!&quot;
+ *    8   4   0   8  &quot;CADABRA!&quot;
+ *    9   6   0   9  &quot;DABRA!&quot;
+ *   10   9   0  10  &quot;RA!&quot;
+ *   11   2   2  11  &quot;RACADABRA!&quot;
+ *
+ *  See SuffixArrayX.java for an optimized version that uses 3-way
+ *  radix quicksort and does not use the nested class Suffix.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+
+/**
+ *  The {@code SuffixArray} class represents a suffix array of a string of
+ *  length &lt;em&gt;n&lt;/em&gt;.
+ *  It supports the &lt;em&gt;selecting&lt;/em&gt; the &lt;em&gt;i&lt;/em&gt;th smallest suffix,
+ *  getting the &lt;em&gt;index&lt;/em&gt; of the &lt;em&gt;i&lt;/em&gt;th smallest suffix,
+ *  computing the length of the &lt;em&gt;longest common prefix&lt;/em&gt; between the
+ *  &lt;em&gt;i&lt;/em&gt;th smallest suffix and the &lt;em&gt;i&lt;/em&gt;-1st smallest suffix,
+ *  and determining the &lt;em&gt;rank&lt;/em&gt; of a query string (which is the number
+ *  of suffixes strictly less than the query string).
+ *  &lt;p&gt;
+ *  This implementation uses a nested class {@code Suffix} to represent
+ *  a suffix of a string (using constant time and space) and
+ *  {@code Arrays.sort()} to sort the array of suffixes.
+ *  The &lt;em&gt;index&lt;/em&gt; and &lt;em&gt;length&lt;/em&gt; operations takes constant time 
+ *  in the worst case. The &lt;em&gt;lcp&lt;/em&gt; operation takes time proportional to the
+ *  length of the longest common prefix.
+ *  The &lt;em&gt;select&lt;/em&gt; operation takes time proportional
+ *  to the length of the suffix and should be used primarily for debugging.
+ *  &lt;p&gt;
+ *  For alternate implementations of the same API, see
+ *  {@link SuffixArrayX}, which is faster in practice (uses 3-way radix quicksort)
+ *  and uses less memory (does not create {@code Suffix} objects)
+ *  and &lt;a href = &quot;https://algs4.cs.princeton.edu/63suffix/SuffixArrayJava6.java.html&quot;&gt;SuffixArrayJava6.java&lt;/a&gt;,
+ *  which relies on the constant-time substring extraction method that existed
+ *  in Java 6.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/63suffix&quot;&gt;Section 6.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+<span class="nc bnc" id="L63" title="All 2 branches missed.">public class SuffixArray {</span>
+    private Suffix[] suffixes;
+
+    /**
+     * Initializes a suffix array for the given {@code text} string.
+     * @param text the input string
+     */
+<span class="nc" id="L70">    public SuffixArray(String text) {</span>
+<span class="nc" id="L71">        int n = text.length();</span>
+<span class="nc" id="L72">        this.suffixes = new Suffix[n];</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L74">            suffixes[i] = new Suffix(text, i);</span>
+<span class="nc" id="L75">        Arrays.sort(suffixes);</span>
+<span class="nc" id="L76">    }</span>
+
+    private static class Suffix implements Comparable&lt;Suffix&gt; {
+        private final String text;
+        private final int index;
+
+<span class="nc" id="L82">        private Suffix(String text, int index) {</span>
+<span class="nc" id="L83">            this.text = text;</span>
+<span class="nc" id="L84">            this.index = index;</span>
+<span class="nc" id="L85">        }</span>
+        private int length() {
+<span class="nc" id="L87">            return text.length() - index;</span>
+        }
+        private char charAt(int i) {
+<span class="nc" id="L90">            return text.charAt(index + i);</span>
+        }
+
+        public int compareTo(Suffix that) {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (this == that) return 0;  // optimization</span>
+<span class="nc" id="L95">            int n = Math.min(this.length(), that.length());</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                if (this.charAt(i) &lt; that.charAt(i)) return -1;</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                if (this.charAt(i) &gt; that.charAt(i)) return +1;</span>
+            }
+<span class="nc" id="L100">            return this.length() - that.length();</span>
+        }
+
+        public String toString() {
+<span class="nc" id="L104">            return text.substring(index);</span>
+        }
+    }
+
+    /**
+     * Returns the length of the input string.
+     * @return the length of the input string
+     */
+    public int length() {
+<span class="nc" id="L113">        return suffixes.length;</span>
+    }
+
+
+    /**
+     * Returns the index into the original string of the &lt;em&gt;i&lt;/em&gt;th smallest suffix.
+     * That is, {@code text.substring(sa.index(i))} is the &lt;em&gt;i&lt;/em&gt;th smallest suffix.
+     * @param i an integer between 0 and &lt;em&gt;n&lt;/em&gt;-1
+     * @return the index into the original string of the &lt;em&gt;i&lt;/em&gt;th smallest suffix
+     * @throws java.lang.IllegalArgumentException unless {@code 0 &lt;= i &lt; n}
+     */
+    public int index(int i) {
+<span class="nc bnc" id="L125" title="All 4 branches missed.">        if (i &lt; 0 || i &gt;= suffixes.length) throw new IllegalArgumentException();</span>
+<span class="nc" id="L126">        return suffixes[i].index;</span>
+    }
+
+
+    /**
+     * Returns the length of the longest common prefix of the &lt;em&gt;i&lt;/em&gt;th
+     * smallest suffix and the &lt;em&gt;i&lt;/em&gt;-1st smallest suffix.
+     * @param i an integer between 1 and &lt;em&gt;n&lt;/em&gt;-1
+     * @return the length of the longest common prefix of the &lt;em&gt;i&lt;/em&gt;th
+     * smallest suffix and the &lt;em&gt;i&lt;/em&gt;-1st smallest suffix.
+     * @throws java.lang.IllegalArgumentException unless {@code 1 &lt;= i &lt; n}
+     */
+    public int lcp(int i) {
+<span class="nc bnc" id="L139" title="All 4 branches missed.">        if (i &lt; 1 || i &gt;= suffixes.length) throw new IllegalArgumentException();</span>
+<span class="nc" id="L140">        return lcpSuffix(suffixes[i], suffixes[i-1]);</span>
+    }
+
+    // longest common prefix of s and t
+    private static int lcpSuffix(Suffix s, Suffix t) {
+<span class="nc" id="L145">        int n = Math.min(s.length(), t.length());</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (s.charAt(i) != t.charAt(i)) return i;</span>
+        }
+<span class="nc" id="L149">        return n;</span>
+    }
+
+    /**
+     * Returns the &lt;em&gt;i&lt;/em&gt;th smallest suffix as a string.
+     * @param i the index
+     * @return the &lt;em&gt;i&lt;/em&gt; smallest suffix as a string
+     * @throws java.lang.IllegalArgumentException unless {@code 0 &lt;= i &lt; n}
+     */
+    public String select(int i) {
+<span class="nc bnc" id="L159" title="All 4 branches missed.">        if (i &lt; 0 || i &gt;= suffixes.length) throw new IllegalArgumentException();</span>
+<span class="nc" id="L160">        return suffixes[i].toString();</span>
+    }
+
+    /**
+     * Returns the number of suffixes strictly less than the {@code query} string.
+     * We note that {@code rank(select(i))} equals {@code i} for each {@code i}
+     * between 0 and &lt;em&gt;n&lt;/em&gt;-1.
+     * @param query the query string
+     * @return the number of suffixes strictly less than {@code query}
+     */
+    public int rank(String query) {
+<span class="nc" id="L171">        int lo = 0, hi = suffixes.length - 1;</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        while (lo &lt;= hi) {</span>
+<span class="nc" id="L173">            int mid = lo + (hi - lo) / 2;</span>
+<span class="nc" id="L174">            int cmp = compare(query, suffixes[mid]);</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (cmp &lt; 0) hi = mid - 1;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            else if (cmp &gt; 0) lo = mid + 1;</span>
+<span class="nc" id="L177">            else return mid;</span>
+        }
+<span class="nc" id="L179">        return lo;</span>
+    }
+
+    // compare query string to suffix
+    private static int compare(String query, Suffix suffix) {
+<span class="nc" id="L184">        int n = Math.min(query.length(), suffix.length());</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            if (query.charAt(i) &lt; suffix.charAt(i)) return -1;</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (query.charAt(i) &gt; suffix.charAt(i)) return +1;</span>
+        }
+<span class="nc" id="L189">        return query.length() - suffix.length();</span>
+    }
+
+    /**
+     * Unit tests the {@code SuffixArray} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L198">        String s = StdIn.readAll().replaceAll(&quot;\\s+&quot;, &quot; &quot;).trim();</span>
+<span class="nc" id="L199">        SuffixArray suffix = new SuffixArray(s);</span>
+
+        // StdOut.println(&quot;rank(&quot; + args[0] + &quot;) = &quot; + suffix.rank(args[0]));
+
+<span class="nc" id="L203">        StdOut.println(&quot;  i ind lcp rnk select&quot;);</span>
+<span class="nc" id="L204">        StdOut.println(&quot;---------------------------&quot;);</span>
+
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        for (int i = 0; i &lt; s.length(); i++) {</span>
+<span class="nc" id="L207">            int index = suffix.index(i);</span>
+<span class="nc" id="L208">            String ith = &quot;\&quot;&quot; + s.substring(index, Math.min(index + 50, s.length())) + &quot;\&quot;&quot;;</span>
+<span class="nc bnc" id="L209" title="All 4 branches missed.">            assert s.substring(index).equals(suffix.select(i));</span>
+<span class="nc" id="L210">            int rank = suffix.rank(s.substring(index));</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            if (i == 0) {</span>
+<span class="nc" id="L212">                StdOut.printf(&quot;%3d %3d %3s %3d %s\n&quot;, i, index, &quot;-&quot;, rank, ith);</span>
+<span class="nc" id="L213">            }</span>
+            else {
+<span class="nc" id="L215">                int lcp = suffix.lcp(i);</span>
+<span class="nc" id="L216">                StdOut.printf(&quot;%3d %3d %3d %3d %s\n&quot;, i, index, lcp, rank, ith);</span>
+            }
+        }
+<span class="nc" id="L219">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

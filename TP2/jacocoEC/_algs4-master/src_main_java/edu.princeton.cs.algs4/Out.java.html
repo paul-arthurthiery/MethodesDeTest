@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Out.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Out.java</span></div><h1>Out.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Out.java
+ *  Execution:    java Out
+ *  Dependencies: none
+ *
+ *  Writes data of various types to: stdout, file, or socket.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Locale;
+
+/**
+ *  This class provides methods for writing strings and numbers to
+ *  various output streams, including standard output, file, and sockets.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://introcs.cs.princeton.edu/31datatype&quot;&gt;Section 3.1&lt;/a&gt; of
+ *  &lt;i&gt;Computer Science: An Interdisciplinary Approach&lt;/i&gt;
+ *  by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Out {
+
+    // force Unicode UTF-8 encoding; otherwise it's system dependent
+    private static final String CHARSET_NAME = &quot;UTF-8&quot;;
+
+    // assume language = English, country = US for consistency with In
+<span class="nc" id="L39">    private static final Locale LOCALE = Locale.US;</span>
+
+    private PrintWriter out;
+
+   /**
+     * Initializes an output stream from a {@link OutputStream}.
+     *
+     * @param  os the {@code OutputStream}
+     */
+<span class="nc" id="L48">    public Out(OutputStream os) {</span>
+        try {
+<span class="nc" id="L50">            OutputStreamWriter osw = new OutputStreamWriter(os, CHARSET_NAME);</span>
+<span class="nc" id="L51">            out = new PrintWriter(osw, true);</span>
+<span class="nc" id="L52">        }</span>
+<span class="nc" id="L53">        catch (IOException e) {</span>
+<span class="nc" id="L54">            e.printStackTrace();</span>
+        }
+<span class="nc" id="L56">    }</span>
+
+   /**
+     * Initializes an output stream from standard output.
+     */
+    public Out() {
+<span class="nc" id="L62">        this(System.out);</span>
+<span class="nc" id="L63">    }</span>
+
+   /**
+     * Initializes an output stream from a socket.
+     *
+     * @param  socket the socket
+     */
+<span class="nc" id="L70">    public Out(Socket socket) {</span>
+        try {
+<span class="nc" id="L72">            OutputStream os = socket.getOutputStream();</span>
+<span class="nc" id="L73">            OutputStreamWriter osw = new OutputStreamWriter(os, CHARSET_NAME);</span>
+<span class="nc" id="L74">            out = new PrintWriter(osw, true);</span>
+<span class="nc" id="L75">        }</span>
+<span class="nc" id="L76">        catch (IOException e) {</span>
+<span class="nc" id="L77">            e.printStackTrace();</span>
+        }
+<span class="nc" id="L79">    }</span>
+
+   /**
+     * Initializes an output stream from a file.
+     *
+     * @param  filename the name of the file
+     */
+<span class="nc" id="L86">    public Out(String filename) {</span>
+        try {
+<span class="nc" id="L88">            OutputStream os = new FileOutputStream(filename);</span>
+<span class="nc" id="L89">            OutputStreamWriter osw = new OutputStreamWriter(os, CHARSET_NAME);</span>
+<span class="nc" id="L90">            out = new PrintWriter(osw, true);</span>
+<span class="nc" id="L91">        }</span>
+<span class="nc" id="L92">        catch (IOException e) {</span>
+<span class="nc" id="L93">            e.printStackTrace();</span>
+        }
+<span class="nc" id="L95">    }</span>
+
+   /**
+     * Closes the output stream.
+     */
+    public void close() {
+<span class="nc" id="L101">        out.close();</span>
+<span class="nc" id="L102">    }</span>
+
+   /**
+     * Terminates the current line by printing the line-separator string.
+     */
+    public void println() {
+<span class="nc" id="L108">        out.println();</span>
+<span class="nc" id="L109">    }</span>
+
+   /**
+     * Prints an object to this output stream and then terminates the line.
+     *
+     * @param x the object to print
+     */
+    public void println(Object x) {
+<span class="nc" id="L117">        out.println(x);</span>
+<span class="nc" id="L118">    }</span>
+
+   /**
+     * Prints a boolean to this output stream and then terminates the line.
+     *
+     * @param x the boolean to print
+     */
+    public void println(boolean x) {
+<span class="nc" id="L126">        out.println(x);</span>
+<span class="nc" id="L127">    }</span>
+
+   /**
+     * Prints a character to this output stream and then terminates the line.
+     *
+     * @param x the character to print
+     */
+    public void println(char x) {
+<span class="nc" id="L135">        out.println(x);</span>
+<span class="nc" id="L136">    }</span>
+
+   /**
+     * Prints a double to this output stream and then terminates the line.
+     *
+     * @param x the double to print
+     */
+    public void println(double x) {
+<span class="nc" id="L144">        out.println(x);</span>
+<span class="nc" id="L145">    }</span>
+
+   /**
+     * Prints a float to this output stream and then terminates the line.
+     *
+     * @param x the float to print
+     */
+    public void println(float x) {
+<span class="nc" id="L153">        out.println(x);</span>
+<span class="nc" id="L154">    }</span>
+
+   /**
+     * Prints an integer to this output stream and then terminates the line.
+     *
+     * @param x the integer to print
+     */
+    public void println(int x) {
+<span class="nc" id="L162">        out.println(x);</span>
+<span class="nc" id="L163">    }</span>
+
+   /**
+     * Prints a long to this output stream and then terminates the line.
+     *
+     * @param x the long to print
+     */
+    public void println(long x) {
+<span class="nc" id="L171">        out.println(x);</span>
+<span class="nc" id="L172">    }</span>
+
+   /**
+     * Prints a byte to this output stream and then terminates the line.
+     * &lt;p&gt;
+     * To write binary data, see {@link BinaryOut}.
+     *
+     * @param x the byte to print
+     */
+    public void println(byte x) {
+<span class="nc" id="L182">        out.println(x);</span>
+<span class="nc" id="L183">    }</span>
+
+
+
+   /**
+     * Flushes this output stream.
+     */
+    public void print() {
+<span class="nc" id="L191">        out.flush();</span>
+<span class="nc" id="L192">    }</span>
+
+   /**
+     * Prints an object to this output stream and flushes this output stream.
+     * 
+     * @param x the object to print
+     */
+    public void print(Object x) {
+<span class="nc" id="L200">        out.print(x);</span>
+<span class="nc" id="L201">        out.flush();</span>
+<span class="nc" id="L202">    }</span>
+
+   /**
+     * Prints a boolean to this output stream and flushes this output stream.
+     * 
+     * @param x the boolean to print
+     */
+    public void print(boolean x) {
+<span class="nc" id="L210">        out.print(x);</span>
+<span class="nc" id="L211">        out.flush();</span>
+<span class="nc" id="L212">    }</span>
+
+   /**
+     * Prints a character to this output stream and flushes this output stream.
+     * 
+     * @param x the character to print
+     */
+    public void print(char x) {
+<span class="nc" id="L220">        out.print(x);</span>
+<span class="nc" id="L221">        out.flush();</span>
+<span class="nc" id="L222">    }</span>
+
+   /**
+     * Prints a double to this output stream and flushes this output stream.
+     * 
+     * @param x the double to print
+     */
+    public void print(double x) {
+<span class="nc" id="L230">        out.print(x);</span>
+<span class="nc" id="L231">        out.flush();</span>
+<span class="nc" id="L232">    }</span>
+
+   /**
+     * Prints a float to this output stream and flushes this output stream.
+     * 
+     * @param x the float to print
+     */
+    public void print(float x) {
+<span class="nc" id="L240">        out.print(x);</span>
+<span class="nc" id="L241">        out.flush();</span>
+<span class="nc" id="L242">    }</span>
+
+   /**
+     * Prints an integer to this output stream and flushes this output stream.
+     * 
+     * @param x the integer to print
+     */
+    public void print(int x) {
+<span class="nc" id="L250">        out.print(x);</span>
+<span class="nc" id="L251">        out.flush();</span>
+<span class="nc" id="L252">    }</span>
+
+   /**
+     * Prints a long integer to this output stream and flushes this output stream.
+     * 
+     * @param x the long integer to print
+     */
+    public void print(long x) {
+<span class="nc" id="L260">        out.print(x);</span>
+<span class="nc" id="L261">        out.flush();</span>
+<span class="nc" id="L262">    }</span>
+
+   /**
+     * Prints a byte to this output stream and flushes this output stream.
+     * 
+     * @param x the byte to print
+     */
+    public void print(byte x) {
+<span class="nc" id="L270">        out.print(x);</span>
+<span class="nc" id="L271">        out.flush();</span>
+<span class="nc" id="L272">    }</span>
+
+   /**
+     * Prints a formatted string to this output stream, using the specified format
+     * string and arguments, and then flushes this output stream.
+     *
+     * @param format the format string
+     * @param args   the arguments accompanying the format string
+     */
+    public void printf(String format, Object... args) {
+<span class="nc" id="L282">        out.printf(LOCALE, format, args);</span>
+<span class="nc" id="L283">        out.flush();</span>
+<span class="nc" id="L284">    }</span>
+
+   /**
+     * Prints a formatted string to this output stream, using the specified
+     * locale, format string, and arguments, and then flushes this output stream.
+     *
+     * @param locale the locale
+     * @param format the format string
+     * @param args   the arguments accompanying the format string
+     */
+    public void printf(Locale locale, String format, Object... args) {
+<span class="nc" id="L295">        out.printf(locale, format, args);</span>
+<span class="nc" id="L296">        out.flush();</span>
+<span class="nc" id="L297">    }</span>
+
+
+   /**
+     * A test client.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+        Out out;
+
+        // write to stdout
+<span class="nc" id="L309">        out = new Out();</span>
+<span class="nc" id="L310">        out.println(&quot;Test 1&quot;);</span>
+<span class="nc" id="L311">        out.close();</span>
+
+        // write to a file
+<span class="nc" id="L314">        out = new Out(&quot;test.txt&quot;);</span>
+<span class="nc" id="L315">        out.println(&quot;Test 2&quot;);</span>
+<span class="nc" id="L316">        out.close();</span>
+<span class="nc" id="L317">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

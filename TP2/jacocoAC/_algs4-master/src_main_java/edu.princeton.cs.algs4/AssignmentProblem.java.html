@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>AssignmentProblem.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">AssignmentProblem.java</span></div><h1>AssignmentProblem.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac AssignmentProblem.java
+ *  Execution:    java AssignmentProblem n
+ *  Dependencies: DijkstraSP.java DirectedEdge.java
+ *
+ *  Solve an n-by-n assignment problem in n^3 log n time using the
+ *  successive shortest path algorithm.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code AssignmentProblem} class represents a data type for computing
+ *  an optimal solution to an &lt;em&gt;n&lt;/em&gt;-by-&lt;em&gt;n&lt;/em&gt; &lt;em&gt;assignment problem&lt;/em&gt;.
+ *  The assignment problem is to find a minimum weight matching in an
+ *  edge-weighted complete bipartite graph.
+ *  &lt;p&gt;
+ *  The data type supplies methods for determining the optimal solution
+ *  and the corresponding dual solution.
+ *  &lt;p&gt;
+ *  This implementation uses the &lt;em&gt;successive shortest paths algorithm&lt;/em&gt;.
+ *  The order of growth of the running time in the worst case is
+ *  O(&lt;em&gt;n&lt;/em&gt;^3 log &lt;em&gt;n&lt;/em&gt;) to solve an &lt;em&gt;n&lt;/em&gt;-by-&lt;em&gt;n&lt;/em&gt;
+ *  instance.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://algs4.cs.princeton.edu/65reductions&quot;&gt;Section 6.5&lt;/a&gt;
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L34" title="All 2 branches missed.">public class AssignmentProblem {</span>
+    private static final double FLOATING_POINT_EPSILON = 1E-14;
+<span class="nc" id="L36">    private static final int UNMATCHED = -1;</span>
+
+    private int n;              // number of rows and columns
+    private double[][] weight;  // the n-by-n cost matrix
+    private double minWeight;   // minimum value of any weight
+    private double[] px;        // px[i] = dual variable for row i
+    private double[] py;        // py[j] = dual variable for col j
+    private int[] xy;           // xy[i] = j means i-j is a match
+    private int[] yx;           // yx[j] = i means i-j is a match
+
+    /**
+     * Determines an optimal solution to the assignment problem.
+     *
+     * @param  weight the &lt;em&gt;n&lt;/em&gt;-by-&lt;em&gt;n&lt;/em&gt; matrix of weights
+     * @throws IllegalArgumentException unless all weights are nonnegative
+     * @throws IllegalArgumentException if {@code weight} is {@code null}
+     */ 
+<span class="nc" id="L53">    public AssignmentProblem(double[][] weight) {</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (weight == null) throw new IllegalArgumentException(&quot;constructor argument is null&quot;);</span>
+
+<span class="nc" id="L56">        n = weight.length;</span>
+<span class="nc" id="L57">        this.weight = new double[n][n];</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                if (Double.isNaN(weight[i][j]))</span>
+<span class="nc" id="L61">                    throw new IllegalArgumentException(&quot;weight &quot; + i + &quot;-&quot; + j  + &quot; is NaN&quot;);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                if (weight[i][j] &lt; minWeight) minWeight = weight[i][j];</span>
+<span class="nc" id="L63">                this.weight[i][j] = weight[i][j];</span>
+            }
+        }
+
+        // dual variables
+<span class="nc" id="L68">        px = new double[n];</span>
+<span class="nc" id="L69">        py = new double[n];</span>
+
+        // initial matching is empty
+<span class="nc" id="L72">        xy = new int[n];</span>
+<span class="nc" id="L73">        yx = new int[n];</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L75">             xy[i] = UNMATCHED;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++)</span>
+<span class="nc" id="L77">             yx[j] = UNMATCHED;</span>
+
+        // add n edges to matching
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        for (int k = 0; k &lt; n; k++) {</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">            assert isDualFeasible();</span>
+<span class="nc bnc" id="L82" title="All 4 branches missed.">            assert isComplementarySlack();</span>
+<span class="nc" id="L83">            augment();</span>
+        }
+<span class="nc bnc" id="L85" title="All 4 branches missed.">        assert certifySolution();</span>
+<span class="nc" id="L86">    }</span>
+
+    // find shortest augmenting path and upate
+    private void augment() {
+
+        // build residual graph
+<span class="nc" id="L92">        EdgeWeightedDigraph G = new EdgeWeightedDigraph(2*n+2);</span>
+<span class="nc" id="L93">        int s = 2*n, t = 2*n+1;</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            if (xy[i] == UNMATCHED)</span>
+<span class="nc" id="L96">                G.addEdge(new DirectedEdge(s, i, 0.0));</span>
+        }
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (yx[j] == UNMATCHED)</span>
+<span class="nc" id="L100">                G.addEdge(new DirectedEdge(n+j, t, py[j]));</span>
+        }
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">                if (xy[i] == j) G.addEdge(new DirectedEdge(n+j, i, 0.0));</span>
+<span class="nc" id="L105">                else            G.addEdge(new DirectedEdge(i, n+j, reducedCost(i, j)));</span>
+            }
+        }
+
+        // compute shortest path from s to every other vertex
+<span class="nc" id="L110">        DijkstraSP spt = new DijkstraSP(G, s);</span>
+
+        // augment along alternating path
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (DirectedEdge e : spt.pathTo(t)) {</span>
+<span class="nc" id="L114">            int i = e.from(), j = e.to() - n;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (i &lt; n) {</span>
+<span class="nc" id="L116">                xy[i] = j;</span>
+<span class="nc" id="L117">                yx[j] = i;</span>
+            }
+        }
+
+        // update dual variables
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L123">            px[i] += spt.distTo(i);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++)</span>
+<span class="nc" id="L125">            py[j] += spt.distTo(n+j);</span>
+<span class="nc" id="L126">    }</span>
+
+    // reduced cost of i-j
+    // (subtracting off minWeight reweights all weights to be non-negative)
+    private double reducedCost(int i, int j) {
+<span class="nc" id="L131">        double reducedCost = (weight[i][j] - minWeight) + px[i] - py[j];</span>
+
+        // to avoid issues with floating-point precision
+<span class="nc" id="L134">        double magnitude = Math.abs(weight[i][j]) + Math.abs(px[i]) + Math.abs(py[j]);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (Math.abs(reducedCost) &lt;= FLOATING_POINT_EPSILON * magnitude) return 0.0;</span>
+
+<span class="nc bnc" id="L137" title="All 4 branches missed.">        assert reducedCost &gt;= 0.0;</span>
+<span class="nc" id="L138">        return reducedCost;</span>
+    }
+
+    /**
+     * Returns the dual optimal value for the specified row.
+     *
+     * @param  i the row index
+     * @return the dual optimal value for row {@code i}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; n}
+     *
+     */
+    // dual variable for row i
+    public double dualRow(int i) {
+<span class="nc" id="L151">        validate(i);</span>
+<span class="nc" id="L152">        return px[i];</span>
+    }
+
+    /**
+     * Returns the dual optimal value for the specified column.
+     *
+     * @param  j the column index
+     * @return the dual optimal value for column {@code j}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= j &lt; n}
+     *
+     */
+    public double dualCol(int j) {
+<span class="nc" id="L164">        validate(j);</span>
+<span class="nc" id="L165">        return py[j];</span>
+    }
+
+    /**
+     * Returns the column associated with the specified row in the optimal solution.
+     *
+     * @param  i the row index
+     * @return the column matched to row {@code i} in the optimal solution
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; n}
+     *
+     */
+    public int sol(int i) {
+<span class="nc" id="L177">        validate(i);</span>
+<span class="nc" id="L178">        return xy[i];</span>
+    }
+
+    /**
+     * Returns the total weight of the optimal solution
+     *
+     * @return the total weight of the optimal solution
+     *
+     */
+    public double weight() {
+<span class="nc" id="L188">        double total = 0.0;</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            if (xy[i] != UNMATCHED)</span>
+<span class="nc" id="L191">                total += weight[i][xy[i]];</span>
+        }
+<span class="nc" id="L193">        return total;</span>
+    }
+
+    private void validate(int i) {
+<span class="nc bnc" id="L197" title="All 4 branches missed.">        if (i &lt; 0 || i &gt;= n) throw new IllegalArgumentException(&quot;index is not between 0 and &quot; + (n-1) + &quot;: &quot; + i);</span>
+<span class="nc" id="L198">    }</span>
+
+
+    /**************************************************************************
+     *
+     *  The code below is solely for testing correctness of the data type.
+     *
+     **************************************************************************/
+
+    // check that dual variables are feasible
+    private boolean isDualFeasible() {
+        // check that all edges have &gt;= 0 reduced cost
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                if (reducedCost(i, j) &lt; 0) {</span>
+<span class="nc" id="L213">                    StdOut.println(&quot;Dual variables are not feasible&quot;);</span>
+<span class="nc" id="L214">                    return false;</span>
+                }
+            }
+        }
+<span class="nc" id="L218">        return true;</span>
+    }
+
+    // check that primal and dual variables are complementary slack
+    private boolean isComplementarySlack() {
+
+        // check that all matched edges have 0-reduced cost
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">            if ((xy[i] != UNMATCHED) &amp;&amp; (reducedCost(i, xy[i]) != 0)) {</span>
+<span class="nc" id="L227">                StdOut.println(&quot;Primal and dual variables are not complementary slack&quot;);</span>
+<span class="nc" id="L228">                return false;</span>
+            }
+        }
+<span class="nc" id="L231">        return true;</span>
+    }
+
+    // check that primal variables are a perfect matching
+    private boolean isPerfectMatching() {
+
+        // check that xy[] is a perfect matching
+<span class="nc" id="L238">        boolean[] perm = new boolean[n];</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">            if (perm[xy[i]]) {</span>
+<span class="nc" id="L241">                StdOut.println(&quot;Not a perfect matching&quot;);</span>
+<span class="nc" id="L242">                return false;</span>
+            }
+<span class="nc" id="L244">            perm[xy[i]] = true;</span>
+        }
+
+        // check that xy[] and yx[] are inverses
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            if (xy[yx[j]] != j) {</span>
+<span class="nc" id="L250">                StdOut.println(&quot;xy[] and yx[] are not inverses&quot;);</span>
+<span class="nc" id="L251">                return false;</span>
+            }
+        }
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">            if (yx[xy[i]] != i) {</span>
+<span class="nc" id="L256">                StdOut.println(&quot;xy[] and yx[] are not inverses&quot;);</span>
+<span class="nc" id="L257">                return false;</span>
+            }
+        }
+
+<span class="nc" id="L261">        return true;</span>
+    }
+
+    // check optimality conditions
+    private boolean certifySolution() {
+<span class="nc bnc" id="L266" title="All 6 branches missed.">        return isPerfectMatching() &amp;&amp; isDualFeasible() &amp;&amp; isComplementarySlack();</span>
+    }
+
+    /**
+     * Unit tests the {@code AssignmentProblem} data type.
+     * Takes a command-line argument n; creates a random n-by-n matrix;
+     * solves the n-by-n assignment problem; and prints the optimal
+     * solution.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // create random n-by-n matrix
+<span class="nc" id="L280">        int n = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L281">        double[][] weight = new double[n][n];</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L284">                weight[i][j] = StdRandom.uniform(900) + 100;  // 3 digits</span>
+            }
+        }
+
+        // solve assignment problem
+<span class="nc" id="L289">        AssignmentProblem assignment = new AssignmentProblem(weight);</span>
+<span class="nc" id="L290">        StdOut.printf(&quot;weight = %.0f\n&quot;, assignment.weight());</span>
+<span class="nc" id="L291">        StdOut.println();</span>
+
+        // print n-by-n matrix and optimal solution
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        if (n &gt;= 20) return;</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">                if (j == assignment.sol(i))</span>
+<span class="nc" id="L298">                    StdOut.printf(&quot;*%.0f &quot;, weight[i][j]);</span>
+                else
+<span class="nc" id="L300">                    StdOut.printf(&quot; %.0f &quot;, weight[i][j]);</span>
+            }
+<span class="nc" id="L302">            StdOut.println();</span>
+        }
+<span class="nc" id="L304">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

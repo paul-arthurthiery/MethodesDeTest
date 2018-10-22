@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>ST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">ST.java</span></div><h1>ST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac ST.java
+ *  Execution:    java ST &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/35applications/tinyST.txt
+ *  
+ *  Sorted symbol table implementation using a java.util.TreeMap.
+ *  Does not allow duplicates.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
+
+/**
+ *  The {@code ST} class represents an ordered symbol table of generic
+ *  key-value pairs.
+ *  It supports the usual &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; methods.
+ *  It also provides ordered methods for finding the &lt;em&gt;minimum&lt;/em&gt;,
+ *  &lt;em&gt;maximum&lt;/em&gt;, &lt;em&gt;floor&lt;/em&gt;, and &lt;em&gt;ceiling&lt;/em&gt;.
+ *  It also provides a &lt;em&gt;keys&lt;/em&gt; method for iterating over all of the keys.
+ *  A symbol table implements the &lt;em&gt;associative array&lt;/em&gt; abstraction:
+ *  when associating a value with a key that is already in the symbol table,
+ *  the convention is to replace the old value with the new value.
+ *  Unlike {@link java.util.Map}, this class uses the convention that
+ *  values cannot be {@code null}—setting the
+ *  value associated with a key to {@code null} is equivalent to deleting the key
+ *  from the symbol table.
+ *  &lt;p&gt;
+ *  This implementation uses a balanced binary search tree. It requires that
+ *  the key type implements the {@code Comparable} interface and calls the
+ *  {@code compareTo()} and method to compare two keys. It does not call either
+ *  {@code equals()} or {@code hashCode()}.
+ *  The &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, &lt;em&gt;remove&lt;/em&gt;, &lt;em&gt;minimum&lt;/em&gt;,
+ *  &lt;em&gt;maximum&lt;/em&gt;, &lt;em&gt;ceiling&lt;/em&gt;, and &lt;em&gt;floor&lt;/em&gt; operations each take
+ *  logarithmic time in the worst case.
+ *  The &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; operations take constant time.
+ *  Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/35applications&quot;&gt;Section 3.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *
+ *  @param &lt;Key&gt; the generic type of keys in this symbol table
+ *  @param &lt;Value&gt; the generic type of values in this symbol table
+ */
+public class ST&lt;Key extends Comparable&lt;Key&gt;, Value&gt; implements Iterable&lt;Key&gt; {
+
+    private TreeMap&lt;Key, Value&gt; st;
+
+    /**
+     * Initializes an empty symbol table.
+     */
+<span class="nc" id="L60">    public ST() {</span>
+<span class="nc" id="L61">        st = new TreeMap&lt;Key, Value&gt;();</span>
+<span class="nc" id="L62">    }</span>
+
+
+    /**
+     * Returns the value associated with the given key in this symbol table.
+     *
+     * @param  key the key
+     * @return the value associated with the given key if the key is in this symbol table;
+     *         {@code null} if the key is not in this symbol table
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Value get(Key key) {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;calls get() with null key&quot;);</span>
+<span class="nc" id="L75">        return st.get(key);</span>
+    }
+
+    /**
+     * Inserts the specified key-value pair into the symbol table, overwriting the old 
+     * value with the new value if the symbol table already contains the specified key.
+     * Deletes the specified key (and its associated value) from this symbol table
+     * if the specified value is {@code null}.
+     *
+     * @param  key the key
+     * @param  val the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(Key key, Value val) {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;calls put() with null key&quot;);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (val == null) st.remove(key);</span>
+<span class="nc" id="L91">        else             st.put(key, val);</span>
+<span class="nc" id="L92">    }</span>
+
+    /**
+     * Removes the specified key and its associated value from this symbol table     
+     * (if the key is in this symbol table).
+     *
+     * @param  key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(Key key) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;calls delete() with null key&quot;);</span>
+<span class="nc" id="L103">        st.remove(key);</span>
+<span class="nc" id="L104">    }</span>
+
+    /**
+     * Returns true if this symbol table contain the given key.
+     *
+     * @param  key the key
+     * @return {@code true} if this symbol table contains {@code key} and
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(Key key) {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;calls contains() with null key&quot;);</span>
+<span class="nc" id="L116">        return st.containsKey(key);</span>
+    }
+
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     *
+     * @return the number of key-value pairs in this symbol table
+     */
+    public int size() {
+<span class="nc" id="L125">        return st.size();</span>
+    }
+
+    /**
+     * Returns true if this symbol table is empty.
+     *
+     * @return {@code true} if this symbol table is empty and {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns all keys in this symbol table.
+     * &lt;p&gt;
+     * To iterate over all of the keys in the symbol table named {@code st},
+     * use the foreach notation: {@code for (Key key : st.keys())}.
+     *
+     * @return all keys in this symbol table
+     */
+    public Iterable&lt;Key&gt; keys() {
+<span class="nc" id="L146">        return st.keySet();</span>
+    }
+
+    /**
+     * Returns all of the keys in this symbol table.
+     * To iterate over all of the keys in a symbol table named {@code st}, use the
+     * foreach notation: {@code for (Key key : st)}.
+     * &lt;p&gt;
+     * This method is provided for backward compatibility with the version from
+     * &lt;em&gt;Introduction to Programming in Java: An Interdisciplinary Approach.&lt;/em&gt;
+     *
+     * @return     an iterator to all of the keys in this symbol table
+     * @deprecated Replaced by {@link #keys()}.
+     */
+    @Deprecated
+    public Iterator&lt;Key&gt; iterator() {
+<span class="nc" id="L162">        return st.keySet().iterator();</span>
+    }
+
+    /**
+     * Returns the smallest key in this symbol table.
+     *
+     * @return the smallest key in this symbol table
+     * @throws NoSuchElementException if this symbol table is empty
+     */
+    public Key min() {
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;calls min() with empty symbol table&quot;);</span>
+<span class="nc" id="L173">        return st.firstKey();</span>
+    }
+
+    /**
+     * Returns the largest key in this symbol table.
+     *
+     * @return the largest key in this symbol table
+     * @throws NoSuchElementException if this symbol table is empty
+     */
+    public Key max() {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;calls max() with empty symbol table&quot;);</span>
+<span class="nc" id="L184">        return st.lastKey();</span>
+    }
+
+    /**
+     * Returns the smallest key in this symbol table greater than or equal to {@code key}.
+     *
+     * @param  key the key
+     * @return the smallest key in this symbol table greater than or equal to {@code key}
+     * @throws NoSuchElementException if there is no such key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Key ceiling(Key key) {
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to ceiling() is null&quot;);</span>
+<span class="nc" id="L197">        Key k = st.ceilingKey(key);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (k == null) throw new NoSuchElementException(&quot;all keys are less than &quot; + key);</span>
+<span class="nc" id="L199">        return k;</span>
+    }
+
+    /**
+     * Returns the largest key in this symbol table less than or equal to {@code key}.
+     *
+     * @param  key the key
+     * @return the largest key in this symbol table less than or equal to {@code key}
+     * @throws NoSuchElementException if there is no such key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Key floor(Key key) {
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to floor() is null&quot;);</span>
+<span class="nc" id="L212">        Key k = st.floorKey(key);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (k == null) throw new NoSuchElementException(&quot;all keys are greater than &quot; + key);</span>
+<span class="nc" id="L214">        return k;</span>
+    }
+
+    /**
+     * Unit tests the {@code ST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L223">        ST&lt;String, Integer&gt; st = new ST&lt;String, Integer&gt;();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        for (int i = 0; !StdIn.isEmpty(); i++) {</span>
+<span class="nc" id="L225">            String key = StdIn.readString();</span>
+<span class="nc" id="L226">            st.put(key, i);</span>
+        }
+<span class="nc bnc" id="L228" title="All 2 branches missed.">        for (String s : st.keys())</span>
+<span class="nc" id="L229">            StdOut.println(s + &quot; &quot; + st.get(s));</span>
+<span class="nc" id="L230">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

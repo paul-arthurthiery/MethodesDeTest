@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>FarthestPair.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">FarthestPair.java</span></div><h1>FarthestPair.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac FarthestPair.java
+ *  Execution:    java FarthestPair &lt; input.txt
+ *  Dependencies: GrahamScan.java Point2D.java
+ *  Data files:   https://algs4.cs.princeton.edu/99hull/rs1423.txt
+ *                https://algs4.cs.princeton.edu/99hull/kw1260.txt
+ *  
+ *  Given a set of n points in the plane, find the farthest pair
+ *  (equivalently, compute the diameter of the set of points).
+ *
+ *  Computes the convex hull of the set of points and using the
+ *  rotating calipers method to find all antipodal point pairs
+ *  and the farthest pair.
+ *
+ *  % java FarthestPair &lt; input100.txt
+ *  42697.98170874122 from (32011.0, 3140.0) to (822.0, 32301.0)
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code FarthestPair} data type computes the farthest pair of points
+ *  in a set of &lt;em&gt;n&lt;/em&gt; points in the plane and provides accessor methods
+ *  for getting the farthest pair of points and the distance between them.
+ *  The distance between two points is their Euclidean distance.
+ *  &lt;p&gt;
+ *  This implementation computes the convex hull of the set of points and
+ *  uses the rotating calipers method to find all antipodal point pairs
+ *  and the farthest pair.
+ *  It runs in O(&lt;em&gt;n&lt;/em&gt; log &lt;em&gt;n&lt;/em&gt;) time in the worst case and uses
+ *  O(&lt;em&gt;N&lt;/em&gt;) extra space.
+ *  See also {@link ClosestPair} and {@link GrahamScan}.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/99hull&quot;&gt;Section 9.9&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class FarthestPair {
+
+    // farthest pair of points and distance
+    private Point2D best1, best2;
+<span class="nc" id="L45">    private double bestDistanceSquared = Double.NEGATIVE_INFINITY;</span>
+
+    /**
+     * Computes the farthest pair of points in the specified array of points.
+     *
+     * @param  points the array of points
+     * @throws IllegalArgumentException if {@code points} is {@code null} or if any
+     *         entry in {@code points[]} is {@code null}
+     */
+<span class="nc" id="L54">    public FarthestPair(Point2D[] points) {</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (points == null) throw new IllegalArgumentException(&quot;constructor argument is null&quot;);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        for (int i = 0; i &lt; points.length; i++) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            if (points[i] == null) throw new IllegalArgumentException(&quot;array element &quot; + i + &quot; is null&quot;);</span>
+        }
+
+<span class="nc" id="L60">        GrahamScan graham = new GrahamScan(points);</span>
+
+        // single point
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (points.length &lt;= 1) return;</span>
+
+        // number of points on the hull
+<span class="nc" id="L66">        int m = 0;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (Point2D p : graham.hull())</span>
+<span class="nc" id="L68">            m++;</span>
+
+        // the hull, in counterclockwise order hull[1] to hull[m]
+<span class="nc" id="L71">        Point2D[] hull = new Point2D[m+1];</span>
+<span class="nc" id="L72">        m = 1;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (Point2D p : graham.hull()) {</span>
+<span class="nc" id="L74">            hull[m++] = p;</span>
+        }
+<span class="nc" id="L76">        m--;</span>
+
+        // all points are equal
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (m == 1) return;</span>
+
+        // points are collinear
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (m == 2) {</span>
+<span class="nc" id="L83">            best1 = hull[1];</span>
+<span class="nc" id="L84">            best2 = hull[2];</span>
+<span class="nc" id="L85">            bestDistanceSquared = best1.distanceSquaredTo(best2);</span>
+<span class="nc" id="L86">            return;</span>
+        }
+
+        // k = farthest vertex from edge from hull[1] to hull[m]
+<span class="nc" id="L90">        int k = 2;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        while (Point2D.area2(hull[m], hull[1], hull[k+1]) &gt; Point2D.area2(hull[m], hull[1], hull[k])) {</span>
+<span class="nc" id="L92">            k++;</span>
+        }
+
+<span class="nc" id="L95">        int j = k;</span>
+<span class="nc bnc" id="L96" title="All 4 branches missed.">        for (int i = 1; i &lt;= k &amp;&amp; j &lt;= m; i++) {</span>
+            // StdOut.println(&quot;hull[i] + &quot; and &quot; + hull[j] + &quot; are antipodal&quot;);
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (hull[i].distanceSquaredTo(hull[j]) &gt; bestDistanceSquared) {</span>
+<span class="nc" id="L99">                best1 = hull[i];</span>
+<span class="nc" id="L100">                best2 = hull[j];</span>
+<span class="nc" id="L101">                bestDistanceSquared = hull[i].distanceSquaredTo(hull[j]);</span>
+            }
+<span class="nc bnc" id="L103" title="All 4 branches missed.">            while ((j &lt; m) &amp;&amp; Point2D.area2(hull[i], hull[i+1], hull[j+1]) &gt; Point2D.area2(hull[i], hull[i+1], hull[j])) {</span>
+<span class="nc" id="L104">                j++;</span>
+                // StdOut.println(hull[i] + &quot; and &quot; + hull[j] + &quot; are antipodal&quot;);
+<span class="nc" id="L106">                double distanceSquared = hull[i].distanceSquaredTo(hull[j]);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                if (distanceSquared &gt; bestDistanceSquared) {</span>
+<span class="nc" id="L108">                    best1 = hull[i];</span>
+<span class="nc" id="L109">                    best2 = hull[j];</span>
+<span class="nc" id="L110">                    bestDistanceSquared = hull[i].distanceSquaredTo(hull[j]);</span>
+                }
+            }
+        }
+<span class="nc" id="L114">    }</span>
+
+    /**
+     * Returns one of the points in the farthest pair of points.
+     *
+     * @return one of the two points in the farthest pair of points;
+     *         {@code null} if no such point (because there are fewer than 2 points)
+     */
+    public Point2D either() {
+<span class="nc" id="L123">        return best1;</span>
+    }
+
+    /**
+     * Returns the other point in the farthest pair of points.
+     *
+     * @return the other point in the farthest pair of points
+     *         {@code null} if no such point (because there are fewer than 2 points)
+     */
+    public Point2D other() {
+<span class="nc" id="L133">        return best2;</span>
+    }
+
+    /**
+     * Returns the Eucliden distance between the farthest pair of points.
+     * This quantity is also known as the &lt;em&gt;diameter&lt;/em&gt; of the set of points.
+     *
+     * @return the Euclidean distance between the farthest pair of points
+     *         {@code Double.POSITIVE_INFINITY} if no such pair of points
+     *         exist (because there are fewer than 2 points)
+     */
+    public double distance() {
+<span class="nc" id="L145">        return Math.sqrt(bestDistanceSquared);</span>
+    }
+
+   /**
+     * Unit tests the {@code FarthestPair} data type.
+     * Reads in an integer {@code n} and {@code n} points (specified by
+     * their &lt;em&gt;x&lt;/em&gt;- and &lt;em&gt;y&lt;/em&gt;-coordinates) from standard input;
+     * computes a farthest pair of points; and prints the pair to standard
+     * output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L158">        int n = StdIn.readInt();</span>
+<span class="nc" id="L159">        Point2D[] points = new Point2D[n];</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L161">            int x = StdIn.readInt();</span>
+<span class="nc" id="L162">            int y = StdIn.readInt();</span>
+<span class="nc" id="L163">            points[i] = new Point2D(x, y);</span>
+        }
+<span class="nc" id="L165">        FarthestPair farthest = new FarthestPair(points);</span>
+<span class="nc" id="L166">        StdOut.println(farthest.distance() + &quot; from &quot; + farthest.either() + &quot; to &quot; + farthest.other());</span>
+<span class="nc" id="L167">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

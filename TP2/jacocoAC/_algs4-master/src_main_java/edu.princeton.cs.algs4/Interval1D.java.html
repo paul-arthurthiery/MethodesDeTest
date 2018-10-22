@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Interval1D.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Interval1D.java</span></div><h1>Interval1D.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Interval1D.java
+ *  Execution:    java Interval1D
+ *  Dependencies: StdOut.java
+ *  
+ *  1-dimensional interval data type.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+/**
+ *  The {@code Interval1D} class represents a one-dimensional interval.
+ *  The interval is &lt;em&gt;closed&lt;/em&gt;—it contains both endpoints.
+ *  Intervals are immutable: their values cannot be changed after they are created.
+ *  The class {@code Interval1D} includes methods for checking whether
+ *  an interval contains a point and determining whether two intervals intersect.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Interval1D {
+
+    /**
+     * Compares two intervals by min endpoint.
+     */
+<span class="nc" id="L34">    public static final Comparator&lt;Interval1D&gt; MIN_ENDPOINT_ORDER  = new MinEndpointComparator();</span>
+
+    /**
+     * Compares two intervals by max endpoint.
+     */
+<span class="nc" id="L39">    public static final Comparator&lt;Interval1D&gt; MAX_ENDPOINT_ORDER = new MaxEndpointComparator();</span>
+
+    /**
+     * Compares two intervals by length.
+     */
+<span class="nc" id="L44">    public static final Comparator&lt;Interval1D&gt; LENGTH_ORDER = new LengthComparator();</span>
+
+    private final double min;
+    private final double max;
+
+    /**
+     * Initializes a closed interval [min, max].
+     *
+     * @param  min the smaller endpoint
+     * @param  max the larger endpoint
+     * @throws IllegalArgumentException if the min endpoint is greater than the max endpoint
+     * @throws IllegalArgumentException if either {@code min} or {@code max}
+     *         is {@code Double.NaN}, {@code Double.POSITIVE_INFINITY} or
+     *         {@code Double.NEGATIVE_INFINITY}
+
+     */
+<span class="nc" id="L60">    public Interval1D(double min, double max) {</span>
+<span class="nc bnc" id="L61" title="All 4 branches missed.">        if (Double.isInfinite(min) || Double.isInfinite(max))</span>
+<span class="nc" id="L62">            throw new IllegalArgumentException(&quot;Endpoints must be finite&quot;);</span>
+<span class="nc bnc" id="L63" title="All 4 branches missed.">        if (Double.isNaN(min) || Double.isNaN(max))</span>
+<span class="nc" id="L64">            throw new IllegalArgumentException(&quot;Endpoints cannot be NaN&quot;);</span>
+
+        // convert -0.0 to +0.0
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (min == 0.0) min = 0.0;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (max == 0.0) max = 0.0;</span>
+
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (min &lt;= max) {</span>
+<span class="nc" id="L71">            this.min = min;</span>
+<span class="nc" id="L72">            this.max = max;</span>
+<span class="nc" id="L73">        }</span>
+<span class="nc" id="L74">        else throw new IllegalArgumentException(&quot;Illegal interval&quot;);</span>
+<span class="nc" id="L75">    }</span>
+
+    /**
+     * Returns the left endpoint of this interval.
+     *
+     * @return the left endpoint of this interval
+     * @deprecated Replaced by {@link #min()}.
+     */
+    @Deprecated
+    public double left() { 
+<span class="nc" id="L85">        return min;</span>
+    }
+
+    /**
+     * Returns the right endpoint of this interval.
+     * @return the right endpoint of this interval
+     * @deprecated Replaced by {@link #max()}.
+     */
+    @Deprecated
+    public double right() { 
+<span class="nc" id="L95">        return max;</span>
+    }
+
+    /**
+     * Returns the min endpoint of this interval.
+     *
+     * @return the min endpoint of this interval
+     */
+    public double min() { 
+<span class="nc" id="L104">        return min;</span>
+    }
+
+    /**
+     * Returns the max endpoint of this interval.
+     *
+     * @return the max endpoint of this interval
+     */
+    public double max() { 
+<span class="nc" id="L113">        return max;</span>
+    }
+
+    /**
+     * Returns true if this interval intersects the specified interval.
+     *
+     * @param  that the other interval
+     * @return {@code true} if this interval intersects the argument interval;
+     *         {@code false} otherwise
+     */
+    public boolean intersects(Interval1D that) {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (this.max &lt; that.min) return false;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (that.max &lt; this.min) return false;</span>
+<span class="nc" id="L126">        return true;</span>
+    }
+
+    /**
+     * Returns true if this interval contains the specified value.
+     *
+     * @param x the value
+     * @return {@code true} if this interval contains the value {@code x};
+     *         {@code false} otherwise
+     */
+    public boolean contains(double x) {
+<span class="nc bnc" id="L137" title="All 4 branches missed.">        return (min &lt;= x) &amp;&amp; (x &lt;= max);</span>
+    }
+
+    /**
+     * Returns the length of this interval.
+     *
+     * @return the length of this interval (max - min)
+     */
+    public double length() {
+<span class="nc" id="L146">        return max - min;</span>
+    }
+
+    /**
+     * Returns a string representation of this interval.
+     *
+     * @return a string representation of this interval in the form [min, max]
+     */
+    public String toString() {
+<span class="nc" id="L155">        return &quot;[&quot; + min + &quot;, &quot; + max + &quot;]&quot;;</span>
+    }
+
+    /**
+     * Compares this transaction to the specified object.
+     *
+     * @param  other the other interval
+     * @return {@code true} if this interval equals the other interval;
+     *         {@code false} otherwise
+     */
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L169">        Interval1D that = (Interval1D) other;</span>
+<span class="nc bnc" id="L170" title="All 4 branches missed.">        return this.min == that.min &amp;&amp; this.max == that.max;</span>
+    }
+
+    /**
+     * Returns an integer hash code for this interval.
+     *
+     * @return an integer hash code for this interval
+     */
+    public int hashCode() {
+<span class="nc" id="L179">        int hash1 = ((Double) min).hashCode();</span>
+<span class="nc" id="L180">        int hash2 = ((Double) max).hashCode();</span>
+<span class="nc" id="L181">        return 31*hash1 + hash2;</span>
+    }
+
+    // ascending order of min endpoint, breaking ties by max endpoint
+<span class="nc" id="L185">    private static class MinEndpointComparator implements Comparator&lt;Interval1D&gt; {</span>
+        public int compare(Interval1D a, Interval1D b) {
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if      (a.min &lt; b.min) return -1;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">            else if (a.min &gt; b.min) return +1;</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            else if (a.max &lt; b.max) return -1;</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            else if (a.max &gt; b.max) return +1;</span>
+<span class="nc" id="L191">            else                    return  0;</span>
+        }
+    }
+
+    // ascending order of max endpoint, breaking ties by min endpoint
+<span class="nc" id="L196">    private static class MaxEndpointComparator implements Comparator&lt;Interval1D&gt; {</span>
+        public int compare(Interval1D a, Interval1D b) {
+<span class="nc bnc" id="L198" title="All 2 branches missed.">            if      (a.max &lt; b.max) return -1;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            else if (a.max &gt; b.max) return +1;</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            else if (a.min &lt; b.min) return -1;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">            else if (a.min &gt; b.min) return +1;</span>
+<span class="nc" id="L202">            else                    return  0;</span>
+        }
+    }
+
+    // ascending order of length
+<span class="nc" id="L207">    private static class LengthComparator implements Comparator&lt;Interval1D&gt; {</span>
+        public int compare(Interval1D a, Interval1D b) {
+<span class="nc" id="L209">            double alen = a.length();</span>
+<span class="nc" id="L210">            double blen = b.length();</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            if      (alen &lt; blen) return -1;</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">            else if (alen &gt; blen) return +1;</span>
+<span class="nc" id="L213">            else                  return  0;</span>
+        }
+    }
+
+
+
+
+    /**
+     * Unit tests the {@code Interval1D} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L226">        Interval1D[] intervals = new Interval1D[4];</span>
+<span class="nc" id="L227">        intervals[0] = new Interval1D(15.0, 33.0);</span>
+<span class="nc" id="L228">        intervals[1] = new Interval1D(45.0, 60.0);</span>
+<span class="nc" id="L229">        intervals[2] = new Interval1D(20.0, 70.0);</span>
+<span class="nc" id="L230">        intervals[3] = new Interval1D(46.0, 55.0);</span>
+
+<span class="nc" id="L232">        StdOut.println(&quot;Unsorted&quot;);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        for (int i = 0; i &lt; intervals.length; i++)</span>
+<span class="nc" id="L234">            StdOut.println(intervals[i]);</span>
+<span class="nc" id="L235">        StdOut.println();</span>
+        
+<span class="nc" id="L237">        StdOut.println(&quot;Sort by min endpoint&quot;);</span>
+<span class="nc" id="L238">        Arrays.sort(intervals, Interval1D.MIN_ENDPOINT_ORDER);</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        for (int i = 0; i &lt; intervals.length; i++)</span>
+<span class="nc" id="L240">            StdOut.println(intervals[i]);</span>
+<span class="nc" id="L241">        StdOut.println();</span>
+
+<span class="nc" id="L243">        StdOut.println(&quot;Sort by max endpoint&quot;);</span>
+<span class="nc" id="L244">        Arrays.sort(intervals, Interval1D.MAX_ENDPOINT_ORDER);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        for (int i = 0; i &lt; intervals.length; i++)</span>
+<span class="nc" id="L246">            StdOut.println(intervals[i]);</span>
+<span class="nc" id="L247">        StdOut.println();</span>
+
+<span class="nc" id="L249">        StdOut.println(&quot;Sort by length&quot;);</span>
+<span class="nc" id="L250">        Arrays.sort(intervals, Interval1D.LENGTH_ORDER);</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        for (int i = 0; i &lt; intervals.length; i++)</span>
+<span class="nc" id="L252">            StdOut.println(intervals[i]);</span>
+<span class="nc" id="L253">        StdOut.println();</span>
+<span class="nc" id="L254">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

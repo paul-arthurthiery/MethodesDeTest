@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>EulerianPath.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">EulerianPath.java</span></div><h1>EulerianPath.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac EulerianPath.java
+ *  Execution:    java EulerianPath V E
+ *  Dependencies: Graph.java Stack.java StdOut.java
+ *
+ *  Find an Eulerian path in a graph, if one exists.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code EulerianPath} class represents a data type
+ *  for finding an Eulerian path in a graph.
+ *  An &lt;em&gt;Eulerian path&lt;/em&gt; is a path (not necessarily simple) that
+ *  uses every edge in the graph exactly once.
+ *  &lt;p&gt;
+ *  This implementation uses a nonrecursive depth-first search.
+ *  The constructor runs in O(&lt;em&gt;E&lt;/em&gt; + &lt;em&gt;V&lt;/em&gt;) time,
+ *  and uses O(&lt;em&gt;E&lt;/em&gt; + &lt;em&gt;V&lt;/em&gt;) extra space,
+ *  where &lt;em&gt;E&lt;/em&gt; is the number of edges and &lt;em&gt;V&lt;/em&gt; the number of vertices
+ *  All other methods take O(1) time.
+ *  &lt;p&gt;
+ *  To compute Eulerian cycles in graphs, see {@link EulerianCycle}.
+ *  To compute Eulerian cycles and paths in digraphs, see
+ *  {@link DirectedEulerianCycle} and {@link DirectedEulerianPath}.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/41graph&quot;&gt;Section 4.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ * 
+ * @author Robert Sedgewick
+ * @author Kevin Wayne
+ * @author Nate Liu
+ */
+<span class="nc bnc" id="L36" title="All 2 branches missed.">public class EulerianPath {</span>
+<span class="nc" id="L37">    private Stack&lt;Integer&gt; path = null;   // Eulerian path; null if no suh path</span>
+
+    // an undirected edge, with a field to indicate whether the edge has already been used
+    private static class Edge {
+        private final int v;
+        private final int w;
+        private boolean isUsed;
+
+<span class="nc" id="L45">        public Edge(int v, int w) {</span>
+<span class="nc" id="L46">            this.v = v;</span>
+<span class="nc" id="L47">            this.w = w;</span>
+<span class="nc" id="L48">            isUsed = false;</span>
+<span class="nc" id="L49">        }</span>
+
+        // returns the other vertex of the edge
+        public int other(int vertex) {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if      (vertex == v) return w;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            else if (vertex == w) return v;</span>
+<span class="nc" id="L55">            else throw new IllegalArgumentException(&quot;Illegal endpoint&quot;);</span>
+        }
+    }
+
+    /**
+     * Computes an Eulerian path in the specified graph, if one exists.
+     * 
+     * @param G the graph
+     */
+<span class="nc" id="L64">    public EulerianPath(Graph G) {</span>
+
+        // find vertex from which to start potential Eulerian path:
+        // a vertex v with odd degree(v) if it exits;
+        // otherwise a vertex with degree(v) &gt; 0
+<span class="nc" id="L69">        int oddDegreeVertices = 0;</span>
+<span class="nc" id="L70">        int s = nonIsolatedVertex(G);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if (G.degree(v) % 2 != 0) {</span>
+<span class="nc" id="L73">                oddDegreeVertices++;</span>
+<span class="nc" id="L74">                s = v;</span>
+            }
+        }
+
+        // graph can't have an Eulerian path
+        // (this condition is needed for correctness)
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (oddDegreeVertices &gt; 2) return;</span>
+
+        // special case for graph with zero edges (has a degenerate Eulerian path)
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (s == -1) s = 0;</span>
+
+        // create local view of adjacency lists, to iterate one vertex at a time
+        // the helper Edge data type is used to avoid exploring both copies of an edge v-w
+<span class="nc" id="L87">        Queue&lt;Edge&gt;[] adj = (Queue&lt;Edge&gt;[]) new Queue[G.V()];</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L89">            adj[v] = new Queue&lt;Edge&gt;();</span>
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L92">            int selfLoops = 0;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+                // careful with self loops
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                if (v == w) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                    if (selfLoops % 2 == 0) {</span>
+<span class="nc" id="L97">                        Edge e = new Edge(v, w);</span>
+<span class="nc" id="L98">                        adj[v].enqueue(e);</span>
+<span class="nc" id="L99">                        adj[w].enqueue(e);</span>
+                    }
+<span class="nc" id="L101">                    selfLoops++;</span>
+<span class="nc" id="L102">                }</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                else if (v &lt; w) {</span>
+<span class="nc" id="L104">                    Edge e = new Edge(v, w);</span>
+<span class="nc" id="L105">                    adj[v].enqueue(e);</span>
+<span class="nc" id="L106">                    adj[w].enqueue(e);</span>
+                }
+            }
+        }
+
+        // initialize stack with any non-isolated vertex
+<span class="nc" id="L112">        Stack&lt;Integer&gt; stack = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L113">        stack.push(s);</span>
+
+        // greedily search through edges in iterative DFS style
+<span class="nc" id="L116">        path = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        while (!stack.isEmpty()) {</span>
+<span class="nc" id="L118">            int v = stack.pop();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            while (!adj[v].isEmpty()) {</span>
+<span class="nc" id="L120">                Edge edge = adj[v].dequeue();</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                if (edge.isUsed) continue;</span>
+<span class="nc" id="L122">                edge.isUsed = true;</span>
+<span class="nc" id="L123">                stack.push(v);</span>
+<span class="nc" id="L124">                v = edge.other(v);</span>
+            }
+            // push vertex with no more leaving edges to path
+<span class="nc" id="L127">            path.push(v);</span>
+        }
+
+        // check if all edges are used
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (path.size() != G.E() + 1)</span>
+<span class="nc" id="L132">            path = null;</span>
+
+<span class="nc bnc" id="L134" title="All 4 branches missed.">        assert certifySolution(G);</span>
+<span class="nc" id="L135">    }</span>
+
+    /**
+     * Returns the sequence of vertices on an Eulerian path.
+     * 
+     * @return the sequence of vertices on an Eulerian path;
+     *         {@code null} if no such path
+     */
+    public Iterable&lt;Integer&gt; path() {
+<span class="nc" id="L144">        return path;</span>
+    }
+
+    /**
+     * Returns true if the graph has an Eulerian path.
+     * 
+     * @return {@code true} if the graph has an Eulerian path;
+     *         {@code false} otherwise
+     */
+    public boolean hasEulerianPath() {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        return path != null;</span>
+    }
+
+
+    // returns any non-isolated vertex; -1 if no such vertex
+    private static int nonIsolatedVertex(Graph G) {
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (G.degree(v) &gt; 0)</span>
+<span class="nc" id="L162">                return v;</span>
+<span class="nc" id="L163">        return -1;</span>
+    }
+
+
+    /**************************************************************************
+     *
+     *  The code below is solely for testing correctness of the data type.
+     *
+     **************************************************************************/
+
+    // Determines whether a graph has an Eulerian path using necessary
+    // and sufficient conditions (without computing the path itself):
+    //    - degree(v) is even for every vertex, except for possibly two
+    //    - the graph is connected (ignoring isolated vertices)
+    // This method is solely for unit testing.
+    private static boolean satisfiesNecessaryAndSufficientConditions(Graph G) {
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (G.E() == 0) return true;</span>
+
+        // Condition 1: degree(v) is even except for possibly two
+<span class="nc" id="L182">        int oddDegreeVertices = 0;</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            if (G.degree(v) % 2 != 0)</span>
+<span class="nc" id="L185">                oddDegreeVertices++;</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (oddDegreeVertices &gt; 2) return false;</span>
+
+        // Condition 2: graph is connected, ignoring isolated vertices
+<span class="nc" id="L189">        int s = nonIsolatedVertex(G);</span>
+<span class="nc" id="L190">        BreadthFirstPaths bfs = new BreadthFirstPaths(G, s);</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L192" title="All 4 branches missed.">            if (G.degree(v) &gt; 0 &amp;&amp; !bfs.hasPathTo(v))</span>
+<span class="nc" id="L193">                return false;</span>
+
+<span class="nc" id="L195">        return true;</span>
+    }
+
+    // check that solution is correct
+    private boolean certifySolution(Graph G) {
+
+        // internal consistency check
+<span class="nc bnc" id="L202" title="All 4 branches missed.">        if (hasEulerianPath() == (path() == null)) return false;</span>
+
+        // hashEulerianPath() returns correct value
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (hasEulerianPath() != satisfiesNecessaryAndSufficientConditions(G)) return false;</span>
+
+        // nothing else to check if no Eulerian path
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (path == null) return true;</span>
+
+        // check that path() uses correct number of edges
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (path.size() != G.E() + 1) return false;</span>
+
+        // check that path() is a path in G
+        // TODO
+
+<span class="nc" id="L216">        return true;</span>
+    }
+
+
+    private static void unitTest(Graph G, String description) {
+<span class="nc" id="L221">        StdOut.println(description);</span>
+<span class="nc" id="L222">        StdOut.println(&quot;-------------------------------------&quot;);</span>
+<span class="nc" id="L223">        StdOut.print(G);</span>
+
+<span class="nc" id="L225">        EulerianPath euler = new EulerianPath(G);</span>
+
+<span class="nc" id="L227">        StdOut.print(&quot;Eulerian path:  &quot;);</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">        if (euler.hasEulerianPath()) {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            for (int v : euler.path()) {</span>
+<span class="nc" id="L230">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L232">            StdOut.println();</span>
+<span class="nc" id="L233">        }</span>
+        else {
+<span class="nc" id="L235">            StdOut.println(&quot;none&quot;);</span>
+        }
+<span class="nc" id="L237">        StdOut.println();</span>
+<span class="nc" id="L238">    }</span>
+
+
+    /**
+     * Unit tests the {@code EulerianPath} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L247">        int V = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L248">        int E = Integer.parseInt(args[1]);</span>
+
+
+        // Eulerian cycle
+<span class="nc" id="L252">        Graph G1 = GraphGenerator.eulerianCycle(V, E);</span>
+<span class="nc" id="L253">        unitTest(G1, &quot;Eulerian cycle&quot;);</span>
+
+        // Eulerian path
+<span class="nc" id="L256">        Graph G2 = GraphGenerator.eulerianPath(V, E);</span>
+<span class="nc" id="L257">        unitTest(G2, &quot;Eulerian path&quot;);</span>
+
+        // add one random edge
+<span class="nc" id="L260">        Graph G3 = new Graph(G2);</span>
+<span class="nc" id="L261">        G3.addEdge(StdRandom.uniform(V), StdRandom.uniform(V));</span>
+<span class="nc" id="L262">        unitTest(G3, &quot;one random edge added to Eulerian path&quot;);</span>
+
+        // self loop
+<span class="nc" id="L265">        Graph G4 = new Graph(V);</span>
+<span class="nc" id="L266">        int v4 = StdRandom.uniform(V);</span>
+<span class="nc" id="L267">        G4.addEdge(v4, v4);</span>
+<span class="nc" id="L268">        unitTest(G4, &quot;single self loop&quot;);</span>
+
+        // single edge
+<span class="nc" id="L271">        Graph G5 = new Graph(V);</span>
+<span class="nc" id="L272">        G5.addEdge(StdRandom.uniform(V), StdRandom.uniform(V));</span>
+<span class="nc" id="L273">        unitTest(G5, &quot;single edge&quot;);</span>
+
+        // empty graph
+<span class="nc" id="L276">        Graph G6 = new Graph(V);</span>
+<span class="nc" id="L277">        unitTest(G6, &quot;empty graph&quot;);</span>
+
+        // random graph
+<span class="nc" id="L280">        Graph G7 = GraphGenerator.simple(V, E);</span>
+<span class="nc" id="L281">        unitTest(G7, &quot;simple graph&quot;);</span>
+<span class="nc" id="L282">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

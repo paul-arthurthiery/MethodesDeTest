@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Whitelist.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Whitelist.java</span></div><h1>Whitelist.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Whitelist.java
+ *  Execution:    java Whitelist whitelist.txt &lt; data.txt
+ *  Dependencies: StaticSetOfInts.java In.java StdOut.java
+ *
+ *  Data files:   https://algs4.cs.princeton.edu/11model/tinyW.txt
+ *                https://algs4.cs.princeton.edu/11model/tinyT.txt
+ *                https://algs4.cs.princeton.edu/11model/largeW.txt
+ *                https://algs4.cs.princeton.edu/11model/largeT.txt
+ *
+ *  Whitelist filter.
+ *
+ *
+ *  % java Whitelist tinyW.txt &lt; tinyT.txt
+ *  50
+ *  99
+ *  13
+ *
+ *  % java Whitelist largeW.txt &lt; largeT.txt | more
+ *  499569
+ *  984875
+ *  295754
+ *  207807
+ *  140925
+ *  161828
+ *  [367,966 total values]
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Whitelist} class provides a client for reading in
+ *  a set of integers from a file; reading in a sequence of integers
+ *  from standard input; and printing to standard output those 
+ *  integers not in the whitelist.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Whitelist {
+
+    // Do not instantiate.
+<span class="nc" id="L47">    private Whitelist() { }</span>
+
+    /**
+     * Reads in a sequence of integers from the whitelist file, specified as
+     * a command-line argument. Reads in integers from standard input and
+     * prints to standard output those integers that are not in the file.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L57">        In in = new In(args[0]);</span>
+<span class="nc" id="L58">        int[] white = in.readAllInts();</span>
+<span class="nc" id="L59">        StaticSETofInts set = new StaticSETofInts(white);</span>
+
+        // Read key, print if not in whitelist.
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L63">            int key = StdIn.readInt();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if (!set.contains(key))</span>
+<span class="nc" id="L65">                StdOut.println(key);</span>
+        }
+<span class="nc" id="L67">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>RectHV.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">RectHV.java</span></div><h1>RectHV.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac RectHV.java
+ *  Execution:    none
+ *  Dependencies: Point2D.java
+ *
+ *  Immutable data type for 2D axis-aligned rectangle.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code RectHV} class is an immutable data type to encapsulate a
+ *  two-dimensional axis-aligned rectagle with real-value coordinates.
+ *  The rectangle is &lt;em&gt;closed&lt;/em&gt;—it includes the points on the boundary.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+
+public final class RectHV {
+    private final double xmin, ymin;   // minimum x- and y-coordinates
+    private final double xmax, ymax;   // maximum x- and y-coordinates
+
+    /**
+     * Initializes a new rectangle [&lt;em&gt;xmin&lt;/em&gt;, &lt;em&gt;xmax&lt;/em&gt;]
+     * x [&lt;em&gt;ymin&lt;/em&gt;, &lt;em&gt;ymax&lt;/em&gt;].
+     *
+     * @param  xmin the &lt;em&gt;x&lt;/em&gt;-coordinate of the lower-left endpoint
+     * @param  xmax the &lt;em&gt;x&lt;/em&gt;-coordinate of the upper-right endpoint
+     * @param  ymin the &lt;em&gt;y&lt;/em&gt;-coordinate of the lower-left endpoint
+     * @param  ymax the &lt;em&gt;y&lt;/em&gt;-coordinate of the upper-right endpoint
+     * @throws IllegalArgumentException if any of {@code xmin},
+     *         {@code xmax}, {@code ymin}, or {@code ymax}
+     *         is {@code Double.NaN}.
+     * @throws IllegalArgumentException if {@code xmax &lt; xmin} or {@code ymax &lt; ymin}.
+     */
+<span class="nc" id="L42">    public RectHV(double xmin, double ymin, double xmax, double ymax) {</span>
+<span class="nc" id="L43">        this.xmin = xmin;</span>
+<span class="nc" id="L44">        this.ymin = ymin;</span>
+<span class="nc" id="L45">        this.xmax = xmax;</span>
+<span class="nc" id="L46">        this.ymax = ymax;</span>
+<span class="nc bnc" id="L47" title="All 4 branches missed.">        if (Double.isNaN(xmin) || Double.isNaN(xmax)) {</span>
+<span class="nc" id="L48">            throw new IllegalArgumentException(&quot;x-coordinate is NaN: &quot; + toString());</span>
+        }
+<span class="nc bnc" id="L50" title="All 4 branches missed.">        if (Double.isNaN(ymin) || Double.isNaN(ymax)) {</span>
+<span class="nc" id="L51">            throw new IllegalArgumentException(&quot;y-coordinate is NaN: &quot; + toString());</span>
+        }
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (xmax &lt; xmin) {</span>
+<span class="nc" id="L54">            throw new IllegalArgumentException(&quot;xmax &lt; xmin: &quot; + toString());</span>
+        }
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (ymax &lt; ymin) {</span>
+<span class="nc" id="L57">            throw new IllegalArgumentException(&quot;ymax &lt; ymin: &quot; + toString());</span>
+        }
+<span class="nc" id="L59">    }</span>
+
+    /**
+     * Returns the minimum &lt;em&gt;x&lt;/em&gt;-coordinate of any point in this rectangle.
+     *
+     * @return the minimum &lt;em&gt;x&lt;/em&gt;-coordinate of any point in this rectangle
+     */
+    public double xmin() {
+<span class="nc" id="L67">        return xmin;</span>
+    }
+
+    /**
+     * Returns the maximum &lt;em&gt;x&lt;/em&gt;-coordinate of any point in this rectangle.
+     *
+     * @return the maximum &lt;em&gt;x&lt;/em&gt;-coordinate of any point in this rectangle
+     */
+    public double xmax() {
+<span class="nc" id="L76">        return xmax;</span>
+    }
+
+    /**
+     * Returns the minimum &lt;em&gt;y&lt;/em&gt;-coordinate of any point in this rectangle.
+     *
+     * @return the minimum &lt;em&gt;y&lt;/em&gt;-coordinate of any point in this rectangle
+     */
+    public double ymin() {
+<span class="nc" id="L85">        return ymin;</span>
+    }
+
+    /**
+     * Returns the maximum &lt;em&gt;y&lt;/em&gt;-coordinate of any point in this rectangle.
+     *
+     * @return the maximum &lt;em&gt;y&lt;/em&gt;-coordinate of any point in this rectangle
+     */
+    public double ymax() {
+<span class="nc" id="L94">        return ymax;</span>
+    }
+
+    /**
+     * Returns the width of this rectangle.
+     *
+     * @return the width of this rectangle {@code xmax - xmin}
+     */
+    public double width() {
+<span class="nc" id="L103">        return xmax - xmin;</span>
+    }
+
+    /**
+     * Returns the height of this rectangle.
+     *
+     * @return the height of this rectangle {@code ymax - ymin}
+     */
+    public double height() {
+<span class="nc" id="L112">        return ymax - ymin;</span>
+    }
+
+    /**
+     * Returns true if the two rectangles intersect. This includes
+     * &lt;em&gt;improper intersections&lt;/em&gt; (at points on the boundary
+     * of each rectangle) and &lt;em&gt;nested intersctions&lt;/em&gt;
+     * (when one rectangle is contained inside the other)
+     *
+     * @param  that the other rectangle
+     * @return {@code true} if this rectangle intersect the argument
+               rectangle at one or more points
+     */
+    public boolean intersects(RectHV that) {
+<span class="nc bnc" id="L126" title="All 6 branches missed.">        return this.xmax &gt;= that.xmin &amp;&amp; this.ymax &gt;= that.ymin</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            &amp;&amp; that.xmax &gt;= this.xmin &amp;&amp; that.ymax &gt;= this.ymin;</span>
+    }
+
+    /**
+     * Returns true if this rectangle contain the point.
+     * @param  p the point
+     * @return {@code true} if this rectangle contain the point {@code p},
+               possibly at the boundary; {@code false} otherwise
+     */
+    public boolean contains(Point2D p) {
+<span class="nc bnc" id="L137" title="All 6 branches missed.">        return (p.x() &gt;= xmin) &amp;&amp; (p.x() &lt;= xmax)</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            &amp;&amp; (p.y() &gt;= ymin) &amp;&amp; (p.y() &lt;= ymax);</span>
+    }
+
+    /**
+     * Returns the Euclidean distance between this rectangle and the point {@code p}.
+     *
+     * @param  p the point
+     * @return the Euclidean distance between the point {@code p} and the closest point
+               on this rectangle; 0 if the point is contained in this rectangle
+     */
+    public double distanceTo(Point2D p) {
+<span class="nc" id="L149">        return Math.sqrt(this.distanceSquaredTo(p));</span>
+    }
+
+    /**
+     * Returns the square of the Euclidean distance between this rectangle and the point {@code p}.
+     *
+     * @param  p the point
+     * @return the square of the Euclidean distance between the point {@code p} and
+     *         the closest point on this rectangle; 0 if the point is contained
+     *         in this rectangle
+     */
+    public double distanceSquaredTo(Point2D p) {
+<span class="nc" id="L161">        double dx = 0.0, dy = 0.0;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if      (p.x() &lt; xmin) dx = p.x() - xmin;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        else if (p.x() &gt; xmax) dx = p.x() - xmax;</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if      (p.y() &lt; ymin) dy = p.y() - ymin;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        else if (p.y() &gt; ymax) dy = p.y() - ymax;</span>
+<span class="nc" id="L166">        return dx*dx + dy*dy;</span>
+    }
+
+    /**
+     * Compares this rectangle to the specified rectangle.
+     *
+     * @param  other the other rectangle
+     * @return {@code true} if this rectangle equals {@code other};
+     *         {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L181">        RectHV that = (RectHV) other;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (this.xmin != that.xmin) return false;</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (this.ymin != that.ymin) return false;</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (this.xmax != that.xmax) return false;</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (this.ymax != that.ymax) return false;</span>
+<span class="nc" id="L186">        return true;</span>
+    }
+
+    /**
+     * Returns an integer hash code for this rectangle.
+     * @return an integer hash code for this rectangle
+     */
+    @Override
+    public int hashCode() {
+<span class="nc" id="L195">        int hash1 = ((Double) xmin).hashCode();</span>
+<span class="nc" id="L196">        int hash2 = ((Double) ymin).hashCode();</span>
+<span class="nc" id="L197">        int hash3 = ((Double) xmax).hashCode();</span>
+<span class="nc" id="L198">        int hash4 = ((Double) ymax).hashCode();</span>
+<span class="nc" id="L199">        return 31*(31*(31*hash1 + hash2) + hash3) + hash4;</span>
+    }
+
+    /**
+     * Returns a string representation of this rectangle.
+     *
+     * @return a string representation of this rectangle, using the format
+     *         {@code [xmin, xmax] x [ymin, ymax]}
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L210">        return &quot;[&quot; + xmin + &quot;, &quot; + xmax + &quot;] x [&quot; + ymin + &quot;, &quot; + ymax + &quot;]&quot;;</span>
+    }
+
+    /**
+     * Draws this rectangle to standard draw.
+     */
+    public void draw() {
+<span class="nc" id="L217">        StdDraw.line(xmin, ymin, xmax, ymin);</span>
+<span class="nc" id="L218">        StdDraw.line(xmax, ymin, xmax, ymax);</span>
+<span class="nc" id="L219">        StdDraw.line(xmax, ymax, xmin, ymax);</span>
+<span class="nc" id="L220">        StdDraw.line(xmin, ymax, xmin, ymin);</span>
+<span class="nc" id="L221">    }</span>
+
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

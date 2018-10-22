@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DijkstraUndirectedSP.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DijkstraUndirectedSP.java</span></div><h1>DijkstraUndirectedSP.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DijkstraUndirectedSP.java
+ *  Execution:    java DijkstraUndirectedSP input.txt s
+ *  Dependencies: EdgeWeightedGraph.java IndexMinPQ.java Stack.java Edge.java
+ *  Data files:   https://algs4.cs.princeton.edu/43mst/tinyEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/mediumEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/largeEWG.txt
+ *
+ *  Dijkstra's algorithm. Computes the shortest path tree.
+ *  Assumes all weights are nonnegative.
+ *
+ *  % java DijkstraUndirectedSP tinyEWG.txt 6
+ *  6 to 0 (0.58)  6-0 0.58000
+ *  6 to 1 (0.76)  6-2 0.40000   1-2 0.36000
+ *  6 to 2 (0.40)  6-2 0.40000
+ *  6 to 3 (0.52)  3-6 0.52000
+ *  6 to 4 (0.93)  6-4 0.93000
+ *  6 to 5 (1.02)  6-2 0.40000   2-7 0.34000   5-7 0.28000
+ *  6 to 6 (0.00)
+ *  6 to 7 (0.74)  6-2 0.40000   2-7 0.34000
+ *
+ *  % java DijkstraUndirectedSP mediumEWG.txt 0
+ *  0 to 0 (0.00)
+ *  0 to 1 (0.71)  0-44 0.06471   44-93  0.06793  ...   1-107 0.07484
+ *  0 to 2 (0.65)  0-44 0.06471   44-231 0.10384  ...   2-42  0.11456
+ *  0 to 3 (0.46)  0-97 0.07705   97-248 0.08598  ...   3-45  0.11902
+ *  ...
+ *
+ *  % java DijkstraUndirectedSP largeEWG.txt 0
+ *  0 to 0 (0.00)  
+ *  0 to 1 (0.78)  0-460790 0.00190  460790-696678 0.00173   ...   1-826350 0.00191
+ *  0 to 2 (0.61)  0-15786  0.00130  15786-53370   0.00113   ...   2-793420 0.00040
+ *  0 to 3 (0.31)  0-460790 0.00190  460790-752483 0.00194   ...   3-698373 0.00172
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+/**
+ *  The {@code DijkstraUndirectedSP} class represents a data type for solving
+ *  the single-source shortest paths problem in edge-weighted graphs
+ *  where the edge weights are nonnegative.
+ *  &lt;p&gt;
+ *  This implementation uses Dijkstra's algorithm with a binary heap.
+ *  The constructor takes time proportional to &lt;em&gt;E&lt;/em&gt; log &lt;em&gt;V&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Each call to {@code distTo(int)} and {@code hasPathTo(int)} takes constant time;
+ *  each call to {@code pathTo(int)} takes time proportional to the number of
+ *  edges in the shortest path returned.
+ *  &lt;p&gt;
+ *  For additional documentation,    
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/44sp&quot;&gt;Section 4.4&lt;/a&gt; of    
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *  See {@link DijkstraSP} for a version on edge-weighted digraphs.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *  @author Nate Liu
+ */
+<span class="nc bnc" id="L61" title="All 2 branches missed.">public class DijkstraUndirectedSP {</span>
+    private double[] distTo;          // distTo[v] = distance  of shortest s-&gt;v path
+    private Edge[] edgeTo;            // edgeTo[v] = last edge on shortest s-&gt;v path
+    private IndexMinPQ&lt;Double&gt; pq;    // priority queue of vertices
+
+    /**
+     * Computes a shortest-paths tree from the source vertex {@code s} to every
+     * other vertex in the edge-weighted graph {@code G}.
+     *
+     * @param  G the edge-weighted digraph
+     * @param  s the source vertex
+     * @throws IllegalArgumentException if an edge weight is negative
+     * @throws IllegalArgumentException unless {@code 0 &lt;= s &lt; V}
+     */
+<span class="nc" id="L75">    public DijkstraUndirectedSP(EdgeWeightedGraph G, int s) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        for (Edge e : G.edges()) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            if (e.weight() &lt; 0)</span>
+<span class="nc" id="L78">                throw new IllegalArgumentException(&quot;edge &quot; + e + &quot; has negative weight&quot;);</span>
+        }
+
+<span class="nc" id="L81">        distTo = new double[G.V()];</span>
+<span class="nc" id="L82">        edgeTo = new Edge[G.V()];</span>
+
+<span class="nc" id="L84">        validateVertex(s);</span>
+
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L87">            distTo[v] = Double.POSITIVE_INFINITY;</span>
+<span class="nc" id="L88">        distTo[s] = 0.0;</span>
+
+        // relax vertices in order of distance from s
+<span class="nc" id="L91">        pq = new IndexMinPQ&lt;Double&gt;(G.V());</span>
+<span class="nc" id="L92">        pq.insert(s, distTo[s]);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        while (!pq.isEmpty()) {</span>
+<span class="nc" id="L94">            int v = pq.delMin();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            for (Edge e : G.adj(v))</span>
+<span class="nc" id="L96">                relax(e, v);</span>
+        }
+
+        // check optimality conditions
+<span class="nc bnc" id="L100" title="All 4 branches missed.">        assert check(G, s);</span>
+<span class="nc" id="L101">    }</span>
+
+    // relax edge e and update pq if changed
+    private void relax(Edge e, int v) {
+<span class="nc" id="L105">        int w = e.other(v);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (distTo[w] &gt; distTo[v] + e.weight()) {</span>
+<span class="nc" id="L107">            distTo[w] = distTo[v] + e.weight();</span>
+<span class="nc" id="L108">            edgeTo[w] = e;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            if (pq.contains(w)) pq.decreaseKey(w, distTo[w]);</span>
+<span class="nc" id="L110">            else                pq.insert(w, distTo[w]);</span>
+        }
+<span class="nc" id="L112">    }</span>
+
+    /**
+     * Returns the length of a shortest path between the source vertex {@code s} and
+     * vertex {@code v}.
+     *
+     * @param  v the destination vertex
+     * @return the length of a shortest path between the source vertex {@code s} and
+     *         the vertex {@code v}; {@code Double.POSITIVE_INFINITY} if no such path
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public double distTo(int v) {
+<span class="nc" id="L124">        validateVertex(v);</span>
+<span class="nc" id="L125">        return distTo[v];</span>
+    }
+
+    /**
+     * Returns true if there is a path between the source vertex {@code s} and
+     * vertex {@code v}.
+     *
+     * @param  v the destination vertex
+     * @return {@code true} if there is a path between the source vertex
+     *         {@code s} to vertex {@code v}; {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public boolean hasPathTo(int v) {
+<span class="nc" id="L138">        validateVertex(v);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        return distTo[v] &lt; Double.POSITIVE_INFINITY;</span>
+    }
+
+    /**
+     * Returns a shortest path between the source vertex {@code s} and vertex {@code v}.
+     *
+     * @param  v the destination vertex
+     * @return a shortest path between the source vertex {@code s} and vertex {@code v};
+     *         {@code null} if no such path
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public Iterable&lt;Edge&gt; pathTo(int v) {
+<span class="nc" id="L151">        validateVertex(v);</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (!hasPathTo(v)) return null;</span>
+<span class="nc" id="L153">        Stack&lt;Edge&gt; path = new Stack&lt;Edge&gt;();</span>
+<span class="nc" id="L154">        int x = v;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        for (Edge e = edgeTo[v]; e != null; e = edgeTo[x]) {</span>
+<span class="nc" id="L156">            path.push(e);</span>
+<span class="nc" id="L157">            x = e.other(x);</span>
+        }
+<span class="nc" id="L159">        return path;</span>
+    }
+
+
+    // check optimality conditions:
+    // (i) for all edges e = v-w:            distTo[w] &lt;= distTo[v] + e.weight()
+    // (ii) for all edge e = v-w on the SPT: distTo[w] == distTo[v] + e.weight()
+    private boolean check(EdgeWeightedGraph G, int s) {
+
+        // check that edge weights are nonnegative
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        for (Edge e : G.edges()) {</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            if (e.weight() &lt; 0) {</span>
+<span class="nc" id="L171">                System.err.println(&quot;negative edge weight detected&quot;);</span>
+<span class="nc" id="L172">                return false;</span>
+            }
+        }
+
+        // check that distTo[v] and edgeTo[v] are consistent
+<span class="nc bnc" id="L177" title="All 4 branches missed.">        if (distTo[s] != 0.0 || edgeTo[s] != null) {</span>
+<span class="nc" id="L178">            System.err.println(&quot;distTo[s] and edgeTo[s] inconsistent&quot;);</span>
+<span class="nc" id="L179">            return false;</span>
+        }
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">            if (v == s) continue;</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">            if (edgeTo[v] == null &amp;&amp; distTo[v] != Double.POSITIVE_INFINITY) {</span>
+<span class="nc" id="L184">                System.err.println(&quot;distTo[] and edgeTo[] inconsistent&quot;);</span>
+<span class="nc" id="L185">                return false;</span>
+            }
+        }
+
+        // check that all edges e = v-w satisfy distTo[w] &lt;= distTo[v] + e.weight()
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">            for (Edge e : G.adj(v)) {</span>
+<span class="nc" id="L192">                int w = e.other(v);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                if (distTo[v] + e.weight() &lt; distTo[w]) {</span>
+<span class="nc" id="L194">                    System.err.println(&quot;edge &quot; + e + &quot; not relaxed&quot;);</span>
+<span class="nc" id="L195">                    return false;</span>
+                }
+            }
+        }
+
+        // check that all edges e = v-w on SPT satisfy distTo[w] == distTo[v] + e.weight()
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        for (int w = 0; w &lt; G.V(); w++) {</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            if (edgeTo[w] == null) continue;</span>
+<span class="nc" id="L203">            Edge e = edgeTo[w];</span>
+<span class="nc bnc" id="L204" title="All 4 branches missed.">            if (w != e.either() &amp;&amp; w != e.other(e.either())) return false;</span>
+<span class="nc" id="L205">            int v = e.other(w);</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (distTo[v] + e.weight() != distTo[w]) {</span>
+<span class="nc" id="L207">                System.err.println(&quot;edge &quot; + e + &quot; on shortest path not tight&quot;);</span>
+<span class="nc" id="L208">                return false;</span>
+            }
+        }
+<span class="nc" id="L211">        return true;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L216">        int V = distTo.length;</span>
+<span class="nc bnc" id="L217" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L218">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L219">    }</span>
+
+    /**
+     * Unit tests the {@code DijkstraUndirectedSP} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L227">        In in = new In(args[0]);</span>
+<span class="nc" id="L228">        EdgeWeightedGraph G = new EdgeWeightedGraph(in);</span>
+<span class="nc" id="L229">        int s = Integer.parseInt(args[1]);</span>
+
+        // compute shortest paths
+<span class="nc" id="L232">        DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, s);</span>
+
+
+        // print shortest path
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        for (int t = 0; t &lt; G.V(); t++) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            if (sp.hasPathTo(t)) {</span>
+<span class="nc" id="L238">                StdOut.printf(&quot;%d to %d (%.2f)  &quot;, s, t, sp.distTo(t));</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">                for (Edge e : sp.pathTo(t)) {</span>
+<span class="nc" id="L240">                    StdOut.print(e + &quot;   &quot;);</span>
+                }
+<span class="nc" id="L242">                StdOut.println();</span>
+<span class="nc" id="L243">            }</span>
+            else {
+<span class="nc" id="L245">                StdOut.printf(&quot;%d to %d         no path\n&quot;, s, t);</span>
+            }
+        }
+<span class="nc" id="L248">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

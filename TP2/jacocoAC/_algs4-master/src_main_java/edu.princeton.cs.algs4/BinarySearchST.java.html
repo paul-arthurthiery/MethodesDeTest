@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>BinarySearchST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">BinarySearchST.java</span></div><h1>BinarySearchST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac BinarySearchST.java
+ *  Execution:    java BinarySearchST
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/31elementary/tinyST.txt  
+ *  
+ *  Symbol table implementation with binary search in an ordered array.
+ *
+ *  % more tinyST.txt
+ *  S E A R C H E X A M P L E
+ *  
+ *  % java BinarySearchST &lt; tinyST.txt
+ *  A 8
+ *  C 4
+ *  E 12
+ *  H 5
+ *  L 11
+ *  M 9
+ *  P 10
+ *  R 3
+ *  S 0
+ *  X 7
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code BST} class represents an ordered symbol table of generic
+ *  key-value pairs.
+ *  It supports the usual &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; methods.
+ *  It also provides ordered methods for finding the &lt;em&gt;minimum&lt;/em&gt;,
+ *  &lt;em&gt;maximum&lt;/em&gt;, &lt;em&gt;floor&lt;/em&gt;, &lt;em&gt;select&lt;/em&gt;, and &lt;em&gt;ceiling&lt;/em&gt;.
+ *  It also provides a &lt;em&gt;keys&lt;/em&gt; method for iterating over all of the keys.
+ *  A symbol table implements the &lt;em&gt;associative array&lt;/em&gt; abstraction:
+ *  when associating a value with a key that is already in the symbol table,
+ *  the convention is to replace the old value with the new value.
+ *  Unlike {@link java.util.Map}, this class uses the convention that
+ *  values cannot be {@code null}—setting the
+ *  value associated with a key to {@code null} is equivalent to deleting the key
+ *  from the symbol table.
+ *  &lt;p&gt;
+ *  This implementation uses a sorted array. It requires that
+ *  the key type implements the {@code Comparable} interface and calls the
+ *  {@code compareTo()} and method to compare two keys. It does not call either
+ *  {@code equals()} or {@code hashCode()}.
+ *  The &lt;em&gt;put&lt;/em&gt; and &lt;em&gt;remove&lt;/em&gt; operations each take linear time in
+ *  the worst case; the &lt;em&gt;contains&lt;/em&gt;, &lt;em&gt;ceiling&lt;/em&gt;, &lt;em&gt;floor&lt;/em&gt;,
+ *  and &lt;em&gt;rank&lt;/em&gt; operations take logarithmic time; the &lt;em&gt;size&lt;/em&gt;,
+ *  &lt;em&gt;is-empty&lt;/em&gt;, &lt;em&gt;minimum&lt;/em&gt;, &lt;em&gt;maximum&lt;/em&gt;, and &lt;em&gt;select&lt;/em&gt;
+ *  operations take constant time. Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/31elementary&quot;&gt;Section 3.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  For other implementations, see {@link ST}, {@link BST},
+ *  {@link SequentialSearchST}, {@link RedBlackBST},
+ *  {@link SeparateChainingHashST}, and {@link LinearProbingHashST},
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+<span class="nc bnc" id="L63" title="All 2 branches missed.">public class BinarySearchST&lt;Key extends Comparable&lt;Key&gt;, Value&gt; {</span>
+<span class="nc" id="L64">    private static final int INIT_CAPACITY = 2;</span>
+    private Key[] keys;
+    private Value[] vals;
+<span class="nc" id="L67">    private int n = 0;</span>
+
+    /**
+     * Initializes an empty symbol table.
+     */
+    public BinarySearchST() {
+<span class="nc" id="L73">        this(INIT_CAPACITY);</span>
+<span class="nc" id="L74">    }</span>
+
+    /**
+     * Initializes an empty symbol table with the specified initial capacity.
+     * @param capacity the maximum capacity
+     */
+<span class="nc" id="L80">    public BinarySearchST(int capacity) { </span>
+<span class="nc" id="L81">        keys = (Key[]) new Comparable[capacity]; </span>
+<span class="nc" id="L82">        vals = (Value[]) new Object[capacity]; </span>
+<span class="nc" id="L83">    }   </span>
+
+    // resize the underlying arrays
+    private void resize(int capacity) {
+<span class="nc bnc" id="L87" title="All 4 branches missed.">        assert capacity &gt;= n;</span>
+<span class="nc" id="L88">        Key[]   tempk = (Key[])   new Comparable[capacity];</span>
+<span class="nc" id="L89">        Value[] tempv = (Value[]) new Object[capacity];</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L91">            tempk[i] = keys[i];</span>
+<span class="nc" id="L92">            tempv[i] = vals[i];</span>
+        }
+<span class="nc" id="L94">        vals = tempv;</span>
+<span class="nc" id="L95">        keys = tempk;</span>
+<span class="nc" id="L96">    }</span>
+
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     *
+     * @return the number of key-value pairs in this symbol table
+     */
+    public int size() {
+<span class="nc" id="L104">        return n;</span>
+    }
+
+    /**
+     * Returns true if this symbol table is empty.
+     *
+     * @return {@code true} if this symbol table is empty;
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+
+    /**
+     * Does this symbol table contain the given key?
+     *
+     * @param  key the key
+     * @return {@code true} if this symbol table contains {@code key} and
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(Key key) {
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to contains() is null&quot;);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        return get(key) != null;</span>
+    }
+
+    /**
+     * Returns the value associated with the given key in this symbol table.
+     *
+     * @param  key the key
+     * @return the value associated with the given key if the key is in the symbol table
+     *         and {@code null} if the key is not in the symbol table
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Value get(Key key) {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to get() is null&quot;); </span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (isEmpty()) return null;</span>
+<span class="nc" id="L142">        int i = rank(key); </span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">        if (i &lt; n &amp;&amp; keys[i].compareTo(key) == 0) return vals[i];</span>
+<span class="nc" id="L144">        return null;</span>
+    } 
+
+    /**
+     * Returns the number of keys in this symbol table strictly less than {@code key}.
+     *
+     * @param  key the key
+     * @return the number of keys in the symbol table strictly less than {@code key}
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public int rank(Key key) {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to rank() is null&quot;); </span>
+
+<span class="nc" id="L157">        int lo = 0, hi = n-1; </span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        while (lo &lt;= hi) { </span>
+<span class="nc" id="L159">            int mid = lo + (hi - lo) / 2; </span>
+<span class="nc" id="L160">            int cmp = key.compareTo(keys[mid]);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if      (cmp &lt; 0) hi = mid - 1; </span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            else if (cmp &gt; 0) lo = mid + 1; </span>
+<span class="nc" id="L163">            else return mid; </span>
+        } 
+<span class="nc" id="L165">        return lo;</span>
+    } 
+
+
+
+    /**
+     * Inserts the specified key-value pair into the symbol table, overwriting the old 
+     * value with the new value if the symbol table already contains the specified key.
+     * Deletes the specified key (and its associated value) from this symbol table
+     * if the specified value is {@code null}.
+     *
+     * @param  key the key
+     * @param  val the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(Key key, Value val)  {
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;first argument to put() is null&quot;); </span>
+
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (val == null) {</span>
+<span class="nc" id="L184">            delete(key);</span>
+<span class="nc" id="L185">            return;</span>
+        }
+
+<span class="nc" id="L188">        int i = rank(key);</span>
+
+        // key is already in table
+<span class="nc bnc" id="L191" title="All 4 branches missed.">        if (i &lt; n &amp;&amp; keys[i].compareTo(key) == 0) {</span>
+<span class="nc" id="L192">            vals[i] = val;</span>
+<span class="nc" id="L193">            return;</span>
+        }
+
+        // insert new key-value pair
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (n == keys.length) resize(2*keys.length);</span>
+
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        for (int j = n; j &gt; i; j--)  {</span>
+<span class="nc" id="L200">            keys[j] = keys[j-1];</span>
+<span class="nc" id="L201">            vals[j] = vals[j-1];</span>
+        }
+<span class="nc" id="L203">        keys[i] = key;</span>
+<span class="nc" id="L204">        vals[i] = val;</span>
+<span class="nc" id="L205">        n++;</span>
+
+<span class="nc bnc" id="L207" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L208">    } </span>
+
+    /**
+     * Removes the specified key and associated value from this symbol table
+     * (if the key is in the symbol table).
+     *
+     * @param  key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(Key key) {
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to delete() is null&quot;); </span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (isEmpty()) return;</span>
+
+        // compute rank
+<span class="nc" id="L222">        int i = rank(key);</span>
+
+        // key not in table
+<span class="nc bnc" id="L225" title="All 4 branches missed.">        if (i == n || keys[i].compareTo(key) != 0) {</span>
+<span class="nc" id="L226">            return;</span>
+        }
+
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        for (int j = i; j &lt; n-1; j++)  {</span>
+<span class="nc" id="L230">            keys[j] = keys[j+1];</span>
+<span class="nc" id="L231">            vals[j] = vals[j+1];</span>
+        }
+
+<span class="nc" id="L234">        n--;</span>
+<span class="nc" id="L235">        keys[n] = null;  // to avoid loitering</span>
+<span class="nc" id="L236">        vals[n] = null;</span>
+
+        // resize if 1/4 full
+<span class="nc bnc" id="L239" title="All 4 branches missed.">        if (n &gt; 0 &amp;&amp; n == keys.length/4) resize(keys.length/2);</span>
+
+<span class="nc bnc" id="L241" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L242">    } </span>
+
+    /**
+     * Removes the smallest key and associated value from this symbol table.
+     *
+     * @throws NoSuchElementException if the symbol table is empty
+     */
+    public void deleteMin() {
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Symbol table underflow error&quot;);</span>
+<span class="nc" id="L251">        delete(min());</span>
+<span class="nc" id="L252">    }</span>
+
+    /**
+     * Removes the largest key and associated value from this symbol table.
+     *
+     * @throws NoSuchElementException if the symbol table is empty
+     */
+    public void deleteMax() {
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Symbol table underflow error&quot;);</span>
+<span class="nc" id="L261">        delete(max());</span>
+<span class="nc" id="L262">    }</span>
+
+
+   /***************************************************************************
+    *  Ordered symbol table methods.
+    ***************************************************************************/
+
+   /**
+     * Returns the smallest key in this symbol table.
+     *
+     * @return the smallest key in this symbol table
+     * @throws NoSuchElementException if this symbol table is empty
+     */
+    public Key min() {
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;called min() with empty symbol table&quot;);</span>
+<span class="nc" id="L277">        return keys[0]; </span>
+    }
+
+    /**
+     * Returns the largest key in this symbol table.
+     *
+     * @return the largest key in this symbol table
+     * @throws NoSuchElementException if this symbol table is empty
+     */
+    public Key max() {
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;called max() with empty symbol table&quot;);</span>
+<span class="nc" id="L288">        return keys[n-1];</span>
+    }
+
+    /**
+     * Return the kth smallest key in this symbol table.
+     *
+     * @param  k the order statistic
+     * @return the {@code k}th smallest key in this symbol table
+     * @throws IllegalArgumentException unless {@code k} is between 0 and
+     *        &lt;em&gt;n&lt;/em&gt;–1
+     */
+    public Key select(int k) {
+<span class="nc bnc" id="L300" title="All 4 branches missed.">        if (k &lt; 0 || k &gt;= size()) {</span>
+<span class="nc" id="L301">            throw new IllegalArgumentException(&quot;called select() with invalid argument: &quot; + k);</span>
+        }
+<span class="nc" id="L303">        return keys[k];</span>
+    }
+
+    /**
+     * Returns the largest key in this symbol table less than or equal to {@code key}.
+     *
+     * @param  key the key
+     * @return the largest key in this symbol table less than or equal to {@code key}
+     * @throws NoSuchElementException if there is no such key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Key floor(Key key) {
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to floor() is null&quot;); </span>
+<span class="nc" id="L316">        int i = rank(key);</span>
+<span class="nc bnc" id="L317" title="All 4 branches missed.">        if (i &lt; n &amp;&amp; key.compareTo(keys[i]) == 0) return keys[i];</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        if (i == 0) return null;</span>
+<span class="nc" id="L319">        else return keys[i-1];</span>
+    }
+
+    /**
+     * Returns the smallest key in this symbol table greater than or equal to {@code key}.
+     *
+     * @param  key the key
+     * @return the smallest key in this symbol table greater than or equal to {@code key}
+     * @throws NoSuchElementException if there is no such key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Key ceiling(Key key) {
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to ceiling() is null&quot;); </span>
+<span class="nc" id="L332">        int i = rank(key);</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if (i == n) return null; </span>
+<span class="nc" id="L334">        else return keys[i];</span>
+    }
+
+    /**
+     * Returns the number of keys in this symbol table in the specified range.
+     *
+     * @param lo minimum endpoint
+     * @param hi maximum endpoint
+     * @return the number of keys in this symbol table between {@code lo} 
+     *         (inclusive) and {@code hi} (inclusive)
+     * @throws IllegalArgumentException if either {@code lo} or {@code hi}
+     *         is {@code null}
+     */
+    public int size(Key lo, Key hi) {
+<span class="nc bnc" id="L348" title="All 2 branches missed.">        if (lo == null) throw new IllegalArgumentException(&quot;first argument to size() is null&quot;); </span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">        if (hi == null) throw new IllegalArgumentException(&quot;second argument to size() is null&quot;); </span>
+
+<span class="nc bnc" id="L351" title="All 2 branches missed.">        if (lo.compareTo(hi) &gt; 0) return 0;</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">        if (contains(hi)) return rank(hi) - rank(lo) + 1;</span>
+<span class="nc" id="L353">        else              return rank(hi) - rank(lo);</span>
+    }
+
+    /**
+     * Returns all keys in this symbol table as an {@code Iterable}.
+     * To iterate over all of the keys in the symbol table named {@code st},
+     * use the foreach notation: {@code for (Key key : st.keys())}.
+     *
+     * @return all keys in this symbol table
+     */
+    public Iterable&lt;Key&gt; keys() {
+<span class="nc" id="L364">        return keys(min(), max());</span>
+    }
+
+    /**
+     * Returns all keys in this symbol table in the given range,
+     * as an {@code Iterable}.
+     *
+     * @param lo minimum endpoint
+     * @param hi maximum endpoint
+     * @return all keys in this symbol table between {@code lo} 
+     *         (inclusive) and {@code hi} (inclusive)
+     * @throws IllegalArgumentException if either {@code lo} or {@code hi}
+     *         is {@code null}
+     */
+    public Iterable&lt;Key&gt; keys(Key lo, Key hi) {
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        if (lo == null) throw new IllegalArgumentException(&quot;first argument to keys() is null&quot;); </span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (hi == null) throw new IllegalArgumentException(&quot;second argument to keys() is null&quot;); </span>
+
+<span class="nc" id="L382">        Queue&lt;Key&gt; queue = new Queue&lt;Key&gt;(); </span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">        if (lo.compareTo(hi) &gt; 0) return queue;</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">        for (int i = rank(lo); i &lt; rank(hi); i++) </span>
+<span class="nc" id="L385">            queue.enqueue(keys[i]);</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (contains(hi)) queue.enqueue(keys[rank(hi)]);</span>
+<span class="nc" id="L387">        return queue; </span>
+    }
+
+
+   /***************************************************************************
+    *  Check internal invariants.
+    ***************************************************************************/
+
+    private boolean check() {
+<span class="nc bnc" id="L396" title="All 4 branches missed.">        return isSorted() &amp;&amp; rankCheck();</span>
+    }
+
+    // are the items in the array in ascending order?
+    private boolean isSorted() {
+<span class="nc bnc" id="L401" title="All 2 branches missed.">        for (int i = 1; i &lt; size(); i++)</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">            if (keys[i].compareTo(keys[i-1]) &lt; 0) return false;</span>
+<span class="nc" id="L403">        return true;</span>
+    }
+
+    // check that rank(select(i)) = i
+    private boolean rankCheck() {
+<span class="nc bnc" id="L408" title="All 2 branches missed.">        for (int i = 0; i &lt; size(); i++)</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">            if (i != rank(select(i))) return false;</span>
+<span class="nc bnc" id="L410" title="All 2 branches missed.">        for (int i = 0; i &lt; size(); i++)</span>
+<span class="nc bnc" id="L411" title="All 2 branches missed.">            if (keys[i].compareTo(select(rank(keys[i]))) != 0) return false;</span>
+<span class="nc" id="L412">        return true;</span>
+    }
+
+
+    /**
+     * Unit tests the {@code BinarySearchST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L422">        BinarySearchST&lt;String, Integer&gt; st = new BinarySearchST&lt;String, Integer&gt;();</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        for (int i = 0; !StdIn.isEmpty(); i++) {</span>
+<span class="nc" id="L424">            String key = StdIn.readString();</span>
+<span class="nc" id="L425">            st.put(key, i);</span>
+        }
+<span class="nc bnc" id="L427" title="All 2 branches missed.">        for (String s : st.keys())</span>
+<span class="nc" id="L428">            StdOut.println(s + &quot; &quot; + st.get(s));</span>
+<span class="nc" id="L429">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>CC.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">CC.java</span></div><h1>CC.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac CC.java
+ *  Execution:    java CC filename.txt
+ *  Dependencies: Graph.java StdOut.java Queue.java
+ *  Data files:   https://algs4.cs.princeton.edu/41graph/tinyG.txt
+ *                https://algs4.cs.princeton.edu/41graph/mediumG.txt
+ *                https://algs4.cs.princeton.edu/41graph/largeG.txt
+ *
+ *  Compute connected components using depth first search.
+ *  Runs in O(E + V) time.
+ *
+ *  % java CC tinyG.txt
+ *  3 components
+ *  0 1 2 3 4 5 6
+ *  7 8 
+ *  9 10 11 12
+ *
+ *  % java CC mediumG.txt 
+ *  1 components
+ *  0 1 2 3 4 5 6 7 8 9 10 ...
+ *
+ *  % java -Xss50m CC largeG.txt 
+ *  1 components
+ *  0 1 2 3 4 5 6 7 8 9 10 ...
+ *
+ *  Note: This implementation uses a recursive DFS. To avoid needing
+ *        a potentially very large stack size, replace with a non-recurisve
+ *        DFS ala NonrecursiveDFS.java.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code CC} class represents a data type for 
+ *  determining the connected components in an undirected graph.
+ *  The &lt;em&gt;id&lt;/em&gt; operation determines in which connected component
+ *  a given vertex lies; the &lt;em&gt;connected&lt;/em&gt; operation
+ *  determines whether two vertices are in the same connected component;
+ *  the &lt;em&gt;count&lt;/em&gt; operation determines the number of connected
+ *  components; and the &lt;em&gt;size&lt;/em&gt; operation determines the number
+ *  of vertices in the connect component containing a given vertex.
+
+ *  The &lt;em&gt;component identifier&lt;/em&gt; of a connected component is one of the
+ *  vertices in the connected component: two vertices have the same component
+ *  identifier if and only if they are in the same connected component.
+
+ *  &lt;p&gt;
+ *  This implementation uses depth-first search.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;id&lt;/em&gt;, &lt;em&gt;count&lt;/em&gt;, &lt;em&gt;connected&lt;/em&gt;,
+ *  and &lt;em&gt;size&lt;/em&gt; operations take constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/41graph&quot;&gt;Section 4.1&lt;/a&gt;   
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class CC {
+    private boolean[] marked;   // marked[v] = has vertex v been marked?
+    private int[] id;           // id[v] = id of connected component containing v
+    private int[] size;         // size[id] = number of vertices in given component
+    private int count;          // number of connected components
+
+    /**
+     * Computes the connected components of the undirected graph {@code G}.
+     *
+     * @param G the undirected graph
+     */
+<span class="nc" id="L73">    public CC(Graph G) {</span>
+<span class="nc" id="L74">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L75">        id = new int[G.V()];</span>
+<span class="nc" id="L76">        size = new int[G.V()];</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (!marked[v]) {</span>
+<span class="nc" id="L79">                dfs(G, v);</span>
+<span class="nc" id="L80">                count++;</span>
+            }
+        }
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Computes the connected components of the edge-weighted graph {@code G}.
+     *
+     * @param G the edge-weighted graph
+     */
+<span class="nc" id="L90">    public CC(EdgeWeightedGraph G) {</span>
+<span class="nc" id="L91">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L92">        id = new int[G.V()];</span>
+<span class="nc" id="L93">        size = new int[G.V()];</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            if (!marked[v]) {</span>
+<span class="nc" id="L96">                dfs(G, v);</span>
+<span class="nc" id="L97">                count++;</span>
+            }
+        }
+<span class="nc" id="L100">    }</span>
+
+    // depth-first search for a Graph
+    private void dfs(Graph G, int v) {
+<span class="nc" id="L104">        marked[v] = true;</span>
+<span class="nc" id="L105">        id[v] = count;</span>
+<span class="nc" id="L106">        size[count]++;</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            if (!marked[w]) {</span>
+<span class="nc" id="L109">                dfs(G, w);</span>
+            }
+        }
+<span class="nc" id="L112">    }</span>
+
+    // depth-first search for an EdgeWeightedGraph
+    private void dfs(EdgeWeightedGraph G, int v) {
+<span class="nc" id="L116">        marked[v] = true;</span>
+<span class="nc" id="L117">        id[v] = count;</span>
+<span class="nc" id="L118">        size[count]++;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        for (Edge e : G.adj(v)) {</span>
+<span class="nc" id="L120">            int w = e.other(v);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (!marked[w]) {</span>
+<span class="nc" id="L122">                dfs(G, w);</span>
+            }
+        }
+<span class="nc" id="L125">    }</span>
+
+
+    /**
+     * Returns the component id of the connected component containing vertex {@code v}.
+     *
+     * @param  v the vertex
+     * @return the component id of the connected component containing vertex {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int id(int v) {
+<span class="nc" id="L136">        validateVertex(v);</span>
+<span class="nc" id="L137">        return id[v];</span>
+    }
+
+    /**
+     * Returns the number of vertices in the connected component containing vertex {@code v}.
+     *
+     * @param  v the vertex
+     * @return the number of vertices in the connected component containing vertex {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int size(int v) {
+<span class="nc" id="L148">        validateVertex(v);</span>
+<span class="nc" id="L149">        return size[id[v]];</span>
+    }
+
+    /**
+     * Returns the number of connected components in the graph {@code G}.
+     *
+     * @return the number of connected components in the graph {@code G}
+     */
+    public int count() {
+<span class="nc" id="L158">        return count;</span>
+    }
+
+    /**
+     * Returns true if vertices {@code v} and {@code w} are in the same
+     * connected component.
+     *
+     * @param  v one vertex
+     * @param  w the other vertex
+     * @return {@code true} if vertices {@code v} and {@code w} are in the same
+     *         connected component; {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= w &lt; V}
+     */
+    public boolean connected(int v, int w) {
+<span class="nc" id="L173">        validateVertex(v);</span>
+<span class="nc" id="L174">        validateVertex(w);</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">        return id(v) == id(w);</span>
+    }
+
+    /**
+     * Returns true if vertices {@code v} and {@code w} are in the same
+     * connected component.
+     *
+     * @param  v one vertex
+     * @param  w the other vertex
+     * @return {@code true} if vertices {@code v} and {@code w} are in the same
+     *         connected component; {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= w &lt; V}
+     * @deprecated Replaced by {@link #connected(int, int)}.
+     */
+    @Deprecated
+    public boolean areConnected(int v, int w) {
+<span class="nc" id="L192">        validateVertex(v);</span>
+<span class="nc" id="L193">        validateVertex(w);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        return id(v) == id(w);</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L199">        int V = marked.length;</span>
+<span class="nc bnc" id="L200" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L201">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L202">    }</span>
+
+    /**
+     * Unit tests the {@code CC} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L210">        In in = new In(args[0]);</span>
+<span class="nc" id="L211">        Graph G = new Graph(in);</span>
+<span class="nc" id="L212">        CC cc = new CC(G);</span>
+
+        // number of connected components
+<span class="nc" id="L215">        int m = cc.count();</span>
+<span class="nc" id="L216">        StdOut.println(m + &quot; components&quot;);</span>
+
+        // compute list of vertices in each connected component
+<span class="nc" id="L219">        Queue&lt;Integer&gt;[] components = (Queue&lt;Integer&gt;[]) new Queue[m];</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L221">            components[i] = new Queue&lt;Integer&gt;();</span>
+        }
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L224">            components[cc.id(v)].enqueue(v);</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L228" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            for (int v : components[i]) {</span>
+<span class="nc" id="L230">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L232">            StdOut.println();</span>
+        }
+<span class="nc" id="L234">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

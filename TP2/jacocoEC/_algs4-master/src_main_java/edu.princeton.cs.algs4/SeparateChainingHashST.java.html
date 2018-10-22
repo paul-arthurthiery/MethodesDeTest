@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>SeparateChainingHashST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">SeparateChainingHashST.java</span></div><h1>SeparateChainingHashST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac SeparateChainingHashST.java
+ *  Execution:    java SeparateChainingHashST &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/34hash/tinyST.txt
+ *
+ *  A symbol table implemented with a separate-chaining hash table.
+ * 
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code SeparateChainingHashST} class represents a symbol table of generic
+ *  key-value pairs.
+ *  It supports the usual &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; methods.
+ *  It also provides a &lt;em&gt;keys&lt;/em&gt; method for iterating over all of the keys.
+ *  A symbol table implements the &lt;em&gt;associative array&lt;/em&gt; abstraction:
+ *  when associating a value with a key that is already in the symbol table,
+ *  the convention is to replace the old value with the new value.
+ *  Unlike {@link java.util.Map}, this class uses the convention that
+ *  values cannot be {@code null}—setting the
+ *  value associated with a key to {@code null} is equivalent to deleting the key
+ *  from the symbol table.
+ *  &lt;p&gt;
+ *  This implementation uses a separate chaining hash table. It requires that
+ *  the key type overrides the {@code equals()} and {@code hashCode()} methods.
+ *  The expected time per &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, or &lt;em&gt;remove&lt;/em&gt;
+ *  operation is constant, subject to the uniform hashing assumption.
+ *  The &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; operations take constant time.
+ *  Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/34hash&quot;&gt;Section 3.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  For other implementations, see {@link ST}, {@link BinarySearchST},
+ *  {@link SequentialSearchST}, {@link BST}, {@link RedBlackBST}, and
+ *  {@link LinearProbingHashST},
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class SeparateChainingHashST&lt;Key, Value&gt; {
+    private static final int INIT_CAPACITY = 4;
+
+    private int n;                                // number of key-value pairs
+    private int m;                                // hash table size
+    private SequentialSearchST&lt;Key, Value&gt;[] st;  // array of linked-list symbol tables
+
+
+    /**
+     * Initializes an empty symbol table.
+     */
+    public SeparateChainingHashST() {
+<span class="nc" id="L55">        this(INIT_CAPACITY);</span>
+<span class="nc" id="L56">    } </span>
+
+    /**
+     * Initializes an empty symbol table with {@code m} chains.
+     * @param m the initial number of chains
+     */
+<span class="nc" id="L62">    public SeparateChainingHashST(int m) {</span>
+<span class="nc" id="L63">        this.m = m;</span>
+<span class="nc" id="L64">        st = (SequentialSearchST&lt;Key, Value&gt;[]) new SequentialSearchST[m];</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc" id="L66">            st[i] = new SequentialSearchST&lt;Key, Value&gt;();</span>
+<span class="nc" id="L67">    } </span>
+
+    // resize the hash table to have the given number of chains,
+    // rehashing all of the keys
+    private void resize(int chains) {
+<span class="nc" id="L72">        SeparateChainingHashST&lt;Key, Value&gt; temp = new SeparateChainingHashST&lt;Key, Value&gt;(chains);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            for (Key key : st[i].keys()) {</span>
+<span class="nc" id="L75">                temp.put(key, st[i].get(key));</span>
+            }
+        }
+<span class="nc" id="L78">        this.m  = temp.m;</span>
+<span class="nc" id="L79">        this.n  = temp.n;</span>
+<span class="nc" id="L80">        this.st = temp.st;</span>
+<span class="nc" id="L81">    }</span>
+
+    // hash value between 0 and m-1
+    private int hash(Key key) {
+<span class="nc" id="L85">        return (key.hashCode() &amp; 0x7fffffff) % m;</span>
+    } 
+
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     *
+     * @return the number of key-value pairs in this symbol table
+     */
+    public int size() {
+<span class="nc" id="L94">        return n;</span>
+    } 
+
+    /**
+     * Returns true if this symbol table is empty.
+     *
+     * @return {@code true} if this symbol table is empty;
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns true if this symbol table contains the specified key.
+     *
+     * @param  key the key
+     * @return {@code true} if this symbol table contains {@code key};
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(Key key) {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to contains() is null&quot;);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        return get(key) != null;</span>
+    } 
+
+    /**
+     * Returns the value associated with the specified key in this symbol table.
+     *
+     * @param  key the key
+     * @return the value associated with {@code key} in the symbol table;
+     *         {@code null} if no such value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Value get(Key key) {
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to get() is null&quot;);</span>
+<span class="nc" id="L130">        int i = hash(key);</span>
+<span class="nc" id="L131">        return st[i].get(key);</span>
+    } 
+
+    /**
+     * Inserts the specified key-value pair into the symbol table, overwriting the old 
+     * value with the new value if the symbol table already contains the specified key.
+     * Deletes the specified key (and its associated value) from this symbol table
+     * if the specified value is {@code null}.
+     *
+     * @param  key the key
+     * @param  val the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(Key key, Value val) {
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;first argument to put() is null&quot;);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (val == null) {</span>
+<span class="nc" id="L147">            delete(key);</span>
+<span class="nc" id="L148">            return;</span>
+        }
+
+        // double table size if average length of list &gt;= 10
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (n &gt;= 10*m) resize(2*m);</span>
+
+<span class="nc" id="L154">        int i = hash(key);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (!st[i].contains(key)) n++;</span>
+<span class="nc" id="L156">        st[i].put(key, val);</span>
+<span class="nc" id="L157">    } </span>
+
+    /**
+     * Removes the specified key and its associated value from this symbol table     
+     * (if the key is in this symbol table).    
+     *
+     * @param  key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(Key key) {
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to delete() is null&quot;);</span>
+
+<span class="nc" id="L169">        int i = hash(key);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (st[i].contains(key)) n--;</span>
+<span class="nc" id="L171">        st[i].delete(key);</span>
+
+        // halve table size if average length of list &lt;= 2
+<span class="nc bnc" id="L174" title="All 4 branches missed.">        if (m &gt; INIT_CAPACITY &amp;&amp; n &lt;= 2*m) resize(m/2);</span>
+<span class="nc" id="L175">    } </span>
+
+    // return keys in symbol table as an Iterable
+    public Iterable&lt;Key&gt; keys() {
+<span class="nc" id="L179">        Queue&lt;Key&gt; queue = new Queue&lt;Key&gt;();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            for (Key key : st[i].keys())</span>
+<span class="nc" id="L182">                queue.enqueue(key);</span>
+        }
+<span class="nc" id="L184">        return queue;</span>
+    } 
+
+
+    /**
+     * Unit tests the {@code SeparateChainingHashST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L194">        SeparateChainingHashST&lt;String, Integer&gt; st = new SeparateChainingHashST&lt;String, Integer&gt;();</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        for (int i = 0; !StdIn.isEmpty(); i++) {</span>
+<span class="nc" id="L196">            String key = StdIn.readString();</span>
+<span class="nc" id="L197">            st.put(key, i);</span>
+        }
+
+        // print keys
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        for (String s : st.keys()) </span>
+<span class="nc" id="L202">            StdOut.println(s + &quot; &quot; + st.get(s)); </span>
+
+<span class="nc" id="L204">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>IndexFibonacciMinPQ.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">IndexFibonacciMinPQ.java</span></div><h1>IndexFibonacciMinPQ.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation: javac IndexFibonacciMinPQ.java
+ *  Execution:
+ *  
+ *  An index Fibonacci heap.
+ *  
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+
+/*
+ *  The IndexFibonacciMinPQ class represents an indexed priority queue of generic keys.
+ *  It supports the usual insert and delete-the-minimum operations,
+ *  along with delete and change-the-key methods. 
+ *  In order to let the client refer to keys on the priority queue,
+ *  an integer between 0 and N-1 is associated with each key ; the client
+ *  uses this integer to specify which key to delete or change.
+ *  It also supports methods for peeking at the minimum key,
+ *  testing if the priority queue is empty, and iterating through
+ *  the keys.
+ *  
+ *  This implementation uses a Fibonacci heap along with an array to associate
+ *  keys with integers in the given range.
+ *  The insert, size, is-empty, contains, minimum-index, minimum-key
+ *  and key-of take constant time.
+ *  The decrease-key operation takes amortized constant time.
+ *  The delete, increase-key, delete-the-minimum, change-key take amortized logarithmic time.
+ *  Construction takes time proportional to the specified capacity
+ *
+ *  @author Tristan Claverie
+ */
+public class IndexFibonacciMinPQ&lt;Key&gt; implements Iterable&lt;Integer&gt; {
+	private Node&lt;Key&gt;[] nodes;			//Array of Nodes in the heap
+	private Node&lt;Key&gt; head;				//Head of the circular root list
+	private Node&lt;Key&gt; min;				//Minimum Node in the heap
+	private int size;					//Number of keys in the heap
+	private int n;						//Maximum number of elements in the heap
+	private final Comparator&lt;Key&gt; comp; //Comparator over the keys
+<span class="nc" id="L44">	private HashMap&lt;Integer, Node&lt;Key&gt;&gt; table = new HashMap&lt;Integer, Node&lt;Key&gt;&gt;(); //Used for the consolidate operation</span>
+	
+	//Represents a Node of a tree
+<span class="nc" id="L47">	private class Node&lt;Key&gt; {</span>
+		Key key;						//Key of the Node
+		int order;						//The order of the tree rooted by this Node
+		int index;						//Index associated with the key
+		Node&lt;Key&gt; prev, next;			//siblings of the Node
+		Node&lt;Key&gt; parent, child;		//parent and child of this Node
+		boolean mark;					//Indicates if this Node already lost a child
+	}
+	
+    /**
+     * Initializes an empty indexed priority queue with indices between {@code 0} and {@code N-1}
+     * Worst case is O(n)
+     * @param N number of keys in the priority queue, index from {@code 0} to {@code N-1}
+     * @throws java.lang.IllegalArgumentException if {@code N &lt; 0}
+     */
+<span class="nc" id="L62">	public IndexFibonacciMinPQ(int N) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">		if (N &lt; 0) throw new IllegalArgumentException(&quot;Cannot create a priority queue of negative size&quot;);</span>
+<span class="nc" id="L64">		n = N;</span>
+<span class="nc" id="L65">		nodes = (Node&lt;Key&gt;[]) new Node[n];</span>
+<span class="nc" id="L66">		comp = new MyComparator();</span>
+<span class="nc" id="L67">	}</span>
+	
+    /**
+     * Initializes an empty indexed priority queue with indices between {@code 0} and {@code N-1}
+     * Worst case is O(n)
+     * @param N number of keys in the priority queue, index from {@code 0} to {@code N-1}
+     * @param C a Comparator over the keys
+     * @throws java.lang.IllegalArgumentException if {@code N &lt; 0}
+     */
+<span class="nc" id="L76">	public IndexFibonacciMinPQ(Comparator&lt;Key&gt; C, int N) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">		if (N &lt; 0) throw new IllegalArgumentException(&quot;Cannot create a priority queue of negative size&quot;);</span>
+<span class="nc" id="L78">		n = N;</span>
+<span class="nc" id="L79">		nodes = (Node&lt;Key&gt;[]) new Node[n];</span>
+<span class="nc" id="L80">		comp = C;</span>
+<span class="nc" id="L81">	}</span>
+
+	/**
+	 * Whether the priority queue is empty
+	 * Worst case is O(1)
+	 * @return true if the priority queue is empty, false if not
+	 */
+	
+	public boolean isEmpty() {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">		return size == 0;</span>
+	}
+
+	/**
+	 * Does the priority queue contains the index i ?
+	 * Worst case is O(1)
+	 * @param i an index
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @return true if i is on the priority queue, false if not
+	 */
+	
+	public boolean contains(int i) {
+<span class="nc bnc" id="L102" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">		else 				 return nodes[i] != null;</span>
+	}
+
+	/**
+	 * Number of elements currently on the priority queue
+	 * Worst case is O(1)
+	 * @return the number of elements on the priority queue
+	 */
+	
+	public int size() {
+<span class="nc" id="L113">		return size;</span>
+	}
+
+	/**
+	 * Associates a key with an index
+	 * Worst case is O(1)
+	 * @param i an index
+	 * @param key a Key associated with i
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @throws java.lang.IllegalArgumentException if the index is already in the queue
+	 */
+	
+	public void insert(int i, Key key) {
+<span class="nc bnc" id="L126" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		if (contains(i)) throw new IllegalArgumentException(&quot;Specified index is already in the queue&quot;);</span>
+<span class="nc" id="L128">		Node&lt;Key&gt; x = new Node&lt;Key&gt;();</span>
+<span class="nc" id="L129">		x.key = key;</span>
+<span class="nc" id="L130">		x.index = i;</span>
+<span class="nc" id="L131">		nodes[i] = x;</span>
+<span class="nc" id="L132">		size++;</span>
+<span class="nc" id="L133">		head = insert(x, head);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">		if (min == null) min = head;</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">		else 			 min = (greater(min.key, key)) ? head : min;</span>
+<span class="nc" id="L136">	}</span>
+
+	/**
+	 * Get the index associated with the minimum key
+	 * Worst case is O(1)
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the index associated with the minimum key
+	 */
+	
+	public int minIndex() {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L147">		return min.index;</span>
+	}
+
+	/**
+	 * Get the minimum key currently in the queue
+	 * Worst case is O(1)
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the minimum key currently in the priority queue
+	 */
+	
+	public Key minKey() {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L159">		return min.key;</span>
+	}
+
+	/**
+	 * Delete the minimum key
+	 * Worst case is O(log(n)) (amortized)
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the index associated with the minimum key
+	 */
+	
+	public int delMin() {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L171">		head = cut(min, head);</span>
+<span class="nc" id="L172">		Node&lt;Key&gt; x = min.child;</span>
+<span class="nc" id="L173">		int index = min.index;</span>
+<span class="nc" id="L174">		min.key = null;					//For garbage collection</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">		if (x != null) {</span>
+			do {
+<span class="nc" id="L177">				x.parent = null;</span>
+<span class="nc" id="L178">				x = x.next;</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">			} while (x != min.child);</span>
+<span class="nc" id="L180">			head = meld(head, x);</span>
+<span class="nc" id="L181">			min.child = null;			//For garbage collection</span>
+		}
+<span class="nc" id="L183">		size--;</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">		if (!isEmpty()) consolidate();</span>
+<span class="nc" id="L185">		else 			min = null;</span>
+<span class="nc" id="L186">		nodes[index] = null;</span>
+<span class="nc" id="L187">		return index;</span>
+	}
+
+	/**
+	 * Get the key associated with index i
+	 * Worst case is O(1)
+	 * @param i an index
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @throws java.util.NoSuchElementException if the index is not in the queue
+	 * @return the key associated with index i
+	 */
+	
+	public Key keyOf(int i) {
+<span class="nc bnc" id="L200" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">		if (!contains(i)) throw new NoSuchElementException(&quot;Specified index is not in the queue&quot;);</span>
+<span class="nc" id="L202">		return nodes[i].key;</span>
+	}
+
+	/**
+	 * Changes the key associated with index i to the given key
+	 * If the given key is greater, Worst case is O(log(n))
+	 * If the given key is lower, Worst case is O(1) (amortized)
+	 * @param i an index
+	 * @param key the key to associate with i
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @throws java.util.NoSuchElementException if the index has no key associated with
+	 */
+	
+	public void changeKey(int i, Key key) {
+<span class="nc bnc" id="L216" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) 		throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">		if (!contains(i))			throw new NoSuchElementException(&quot;Specified index is not in the queue&quot;);</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">		if (greater(key, nodes[i].key))  increaseKey(i, key);</span>
+<span class="nc" id="L219">		else 							 decreaseKey(i, key);</span>
+<span class="nc" id="L220">	}</span>
+
+	/**
+	 * Decreases the key associated with index i to the given key
+	 * Worst case is O(1) (amortized).
+	 * @param i an index
+	 * @param key the key to associate with i
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @throws java.util.NoSuchElementException if the index has no key associated with
+	 * @throws java.lang.IllegalArgumentException if the given key is greater than the current key
+	 */
+	
+	public void decreaseKey(int i, Key key) {
+<span class="nc bnc" id="L233" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) 		throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">		if (!contains(i))			throw new NoSuchElementException(&quot;Specified index is not in the queue&quot;);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">		if (greater(key, nodes[i].key))  throw new IllegalArgumentException(&quot;Calling with this argument would not decrease the key&quot;);</span>
+<span class="nc" id="L236">		Node&lt;Key&gt; x = nodes[i];</span>
+<span class="nc" id="L237">		x.key = key;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">		if (greater(min.key, key)) min = x;</span>
+<span class="nc bnc" id="L239" title="All 4 branches missed.">		if (x.parent != null &amp;&amp; greater(x.parent.key, key)) {</span>
+<span class="nc" id="L240">			cut(i);</span>
+		}
+<span class="nc" id="L242">	}</span>
+
+	/**
+	 * Increases the key associated with index i to the given key
+	 * Worst case is O(log(n))
+	 * @param i an index
+	 * @param key the key to associate with i
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @throws java.util.NoSuchElementException if the index has no key associated with
+	 * @throws java.lang.IllegalArgumentException if the given key is lower than the current key
+	 */
+	
+	public void increaseKey(int i, Key key) {
+<span class="nc bnc" id="L255" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) 		throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">		if (!contains(i))			throw new NoSuchElementException(&quot;Specified index is not in the queue&quot;);</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">		if (greater(nodes[i].key, key))  throw new IllegalArgumentException(&quot;Calling with this argument would not increase the key&quot;);</span>
+<span class="nc" id="L258">		delete(i);</span>
+<span class="nc" id="L259">		insert(i, key);</span>
+<span class="nc" id="L260">	}</span>
+
+	/**
+	 * Deletes the key associated the given index
+	 * Worst case is O(log(n)) (amortized)
+	 * @param i an index
+	 * @throws java.lang.IllegalArgumentException if the specified index is invalid
+	 * @throws java.util.NoSuchElementException if the given index has no key associated with
+	 */
+	
+	public void delete(int i) {
+<span class="nc bnc" id="L271" title="All 4 branches missed.">		if (i &lt; 0 || i &gt;= n) 		throw new IllegalArgumentException();</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">		if (!contains(i))			throw new NoSuchElementException(&quot;Specified index is not in the queue&quot;);</span>
+<span class="nc" id="L273">		Node&lt;Key&gt; x = nodes[i];</span>
+<span class="nc" id="L274">		x.key = null;				//For garbage collection</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">		if (x.parent != null) {</span>
+<span class="nc" id="L276">			cut(i);</span>
+		}
+<span class="nc" id="L278">		head = cut(x, head);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">		if (x.child != null) {</span>
+<span class="nc" id="L280">			Node&lt;Key&gt; child = x.child;</span>
+<span class="nc" id="L281">			x.child = null;			//For garbage collection</span>
+<span class="nc" id="L282">			x = child;</span>
+			do {
+<span class="nc" id="L284">				child.parent = null;</span>
+<span class="nc" id="L285">				child = child.next;</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">			} while (child != x);</span>
+<span class="nc" id="L287">			head = meld(head, child);</span>
+		}
+<span class="nc bnc" id="L289" title="All 2 branches missed.">		if (!isEmpty()) consolidate();</span>
+<span class="nc" id="L290">		else 			min = null;</span>
+<span class="nc" id="L291">		nodes[i] = null;</span>
+<span class="nc" id="L292">		size--;</span>
+<span class="nc" id="L293">	}</span>
+	
+	/*************************************
+	 * General helper functions
+	 ************************************/
+	
+	//Compares two keys
+	private boolean greater(Key n, Key m) {
+<span class="nc bnc" id="L301" title="All 2 branches missed.">		if (n == null) return false;</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">		if (m == null) return true;</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">		return comp.compare(n,  m) &gt; 0;</span>
+	}
+	
+	//Assuming root1 holds a greater key than root2, root2 becomes the new root
+	private void link(Node&lt;Key&gt; root1, Node&lt;Key&gt; root2) {
+<span class="nc" id="L308">		root1.parent = root2;</span>
+<span class="nc" id="L309">		root2.child = insert(root1, root2.child);</span>
+<span class="nc" id="L310">		root2.order++;</span>
+<span class="nc" id="L311">	}</span>
+	
+	/*************************************
+	 * Function for decreasing a key
+	 ************************************/
+	
+	//Removes a Node from its parent's child list and insert it in the root list
+	//If the parent Node already lost a child, reshapes the heap accordingly
+	private void cut(int i) {
+<span class="nc" id="L320">		Node&lt;Key&gt; x = nodes[i];</span>
+<span class="nc" id="L321">		Node&lt;Key&gt; parent = x.parent;</span>
+<span class="nc" id="L322">		parent.child = cut(x, parent.child);</span>
+<span class="nc" id="L323">		x.parent = null;</span>
+<span class="nc" id="L324">		parent.order--;</span>
+<span class="nc" id="L325">		head = insert(x, head);</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">		parent.mark = !parent.mark;</span>
+<span class="nc bnc" id="L327" title="All 4 branches missed.">		if (!parent.mark &amp;&amp; parent.parent != null) {</span>
+<span class="nc" id="L328">			cut(parent.index);}</span>
+<span class="nc" id="L329">	}</span>
+	
+	/*************************************
+	 * Function for consolidating all trees in the root list
+	 ************************************/
+	
+	//Coalesces the roots, thus reshapes the heap
+	//Caching a HashMap improves greatly performances
+	private void consolidate() {
+<span class="nc" id="L338">		table.clear();</span>
+<span class="nc" id="L339">		Node&lt;Key&gt; x = head;</span>
+<span class="nc" id="L340">		int maxOrder = 0;</span>
+<span class="nc" id="L341">		min = head;</span>
+<span class="nc" id="L342">		Node&lt;Key&gt; y = null, z = null;</span>
+		do {
+<span class="nc" id="L344">			y = x;</span>
+<span class="nc" id="L345">			x = x.next;</span>
+<span class="nc" id="L346">			z = table.get(y.order);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">			while (z != null) {</span>
+<span class="nc" id="L348">				table.remove(y.order);</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">				if (greater(y.key, z.key)) {</span>
+<span class="nc" id="L350">					link(y, z);</span>
+<span class="nc" id="L351">					y = z;</span>
+<span class="nc" id="L352">				} else {</span>
+<span class="nc" id="L353">					link(z, y);</span>
+				}
+<span class="nc" id="L355">				z = table.get(y.order);</span>
+			}
+<span class="nc" id="L357">			table.put(y.order, y);</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">			if (y.order &gt; maxOrder) maxOrder = y.order;</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">		} while (x != head);</span>
+<span class="nc" id="L360">		head = null;</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">		for (Node&lt;Key&gt; n : table.values()) {</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">			min = greater(min.key, n.key) ? n : min;</span>
+<span class="nc" id="L363">			head = insert(n, head);</span>
+		}
+<span class="nc" id="L365">	}</span>
+	
+	/*************************************
+	 * General helper functions for manipulating circular lists
+	 ************************************/
+	
+	//Inserts a Node in a circular list containing head, returns a new head
+	private Node&lt;Key&gt; insert(Node&lt;Key&gt; x, Node&lt;Key&gt; head) {
+<span class="nc bnc" id="L373" title="All 2 branches missed.">		if (head == null) {</span>
+<span class="nc" id="L374">			x.prev = x;</span>
+<span class="nc" id="L375">			x.next = x;</span>
+<span class="nc" id="L376">		} else {</span>
+<span class="nc" id="L377">			head.prev.next = x;</span>
+<span class="nc" id="L378">			x.next = head;</span>
+<span class="nc" id="L379">			x.prev = head.prev;</span>
+<span class="nc" id="L380">			head.prev = x;</span>
+		}
+<span class="nc" id="L382">		return x;</span>
+	}
+	
+	//Removes a tree from the list defined by the head pointer
+	private Node&lt;Key&gt; cut(Node&lt;Key&gt; x, Node&lt;Key&gt; head) {
+<span class="nc bnc" id="L387" title="All 2 branches missed.">		if (x.next == x) {</span>
+<span class="nc" id="L388">			x.next = null;</span>
+<span class="nc" id="L389">			x.prev = null;</span>
+<span class="nc" id="L390">			return null;</span>
+		} else {
+<span class="nc" id="L392">			x.next.prev = x.prev;</span>
+<span class="nc" id="L393">			x.prev.next = x.next;</span>
+<span class="nc" id="L394">			Node&lt;Key&gt; res = x.next;</span>
+<span class="nc" id="L395">			x.next = null;</span>
+<span class="nc" id="L396">			x.prev = null;</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">			if (head == x)  return res;</span>
+<span class="nc" id="L398">			else 			return head;</span>
+		}
+	}
+	
+	//Merges two lists together.
+	private Node&lt;Key&gt; meld(Node&lt;Key&gt; x, Node&lt;Key&gt; y) {
+<span class="nc bnc" id="L404" title="All 2 branches missed.">		if (x == null) return y;</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">		if (y == null) return x;</span>
+<span class="nc" id="L406">		x.prev.next = y.next;</span>
+<span class="nc" id="L407">		y.next.prev = x.prev;</span>
+<span class="nc" id="L408">		x.prev = y;</span>
+<span class="nc" id="L409">		y.next = x;</span>
+<span class="nc" id="L410">		return x;</span>
+	}
+	
+	/*************************************
+	 * Iterator
+	 ************************************/
+	
+	/**
+	 * Get an Iterator over the indexes in the priority queue in ascending order
+	 * The Iterator does not implement the remove() method
+	 * iterator() : Worst case is O(n)
+	 * next() : 	Worst case is O(log(n)) (amortized)
+	 * hasNext() : 	Worst case is O(1)
+	 * @return an Iterator over the indexes in the priority queue in ascending order
+	 */
+	
+	public Iterator&lt;Integer&gt; iterator() {
+<span class="nc" id="L427">		return new MyIterator();</span>
+	}
+	
+	private class MyIterator implements Iterator&lt;Integer&gt; {
+		private IndexFibonacciMinPQ&lt;Key&gt; copy;
+		
+		
+		//Constructor takes linear time
+<span class="nc" id="L435">		public MyIterator() {</span>
+<span class="nc" id="L436">			copy = new IndexFibonacciMinPQ&lt;Key&gt;(comp, n);</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">			for (Node&lt;Key&gt; x : nodes) {</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">				if (x != null) copy.insert(x.index, x.key);</span>
+			}
+<span class="nc" id="L440">		}</span>
+		
+		public void remove() {
+<span class="nc" id="L443">			throw new UnsupportedOperationException();</span>
+		}
+		
+		public boolean hasNext() {
+<span class="nc bnc" id="L447" title="All 2 branches missed.">			return !copy.isEmpty();</span>
+		}
+		
+		//Takes amortized logarithmic time
+		public Integer next() {
+<span class="nc bnc" id="L452" title="All 2 branches missed.">			if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L453">			return copy.delMin();</span>
+		}
+	}
+	
+	/***************************
+	 * Comparator
+	 **************************/
+	
+	//default Comparator
+<span class="nc" id="L462">	private class MyComparator implements Comparator&lt;Key&gt; {</span>
+		@Override
+		public int compare(Key key1, Key key2) {
+<span class="nc" id="L465">			return ((Comparable&lt;Key&gt;) key1).compareTo(key2);</span>
+		}
+	}
+	
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

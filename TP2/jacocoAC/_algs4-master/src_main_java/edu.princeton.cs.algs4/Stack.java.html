@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Stack.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Stack.java</span></div><h1>Stack.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Stack.java
+ *  Execution:    java Stack &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/13stacks/tobe.txt
+ *
+ *  A generic stack, implemented using a singly linked list.
+ *  Each stack element is of type Item.
+ *
+ *  This version uses a static nested class Node (to save 8 bytes per
+ *  Node), whereas the version in the textbook uses a non-static nested
+ *  class (for simplicity).
+ *  
+ *  % more tobe.txt 
+ *  to be or not to - be - - that - - - is
+ *
+ *  % java Stack &lt; tobe.txt
+ *  to be not that or be (2 left on stack)
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+
+/**
+ *  The {@code Stack} class represents a last-in-first-out (LIFO) stack of generic items.
+ *  It supports the usual &lt;em&gt;push&lt;/em&gt; and &lt;em&gt;pop&lt;/em&gt; operations, along with methods
+ *  for peeking at the top item, testing if the stack is empty, and iterating through
+ *  the items in LIFO order.
+ *  &lt;p&gt;
+ *  This implementation uses a singly linked list with a static nested class for
+ *  linked-list nodes. See {@link LinkedStack} for the version from the
+ *  textbook that uses a non-static nested class.
+ *  See {@link ResizingArrayStack} for a version that uses a resizing array.
+ *  The &lt;em&gt;push&lt;/em&gt;, &lt;em&gt;pop&lt;/em&gt;, &lt;em&gt;peek&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt;
+ *  operations all take constant time in the worst case.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/13stacks&quot;&gt;Section 1.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *
+ *  @param &lt;Item&gt; the generic type of an item in this stack
+ */
+public class Stack&lt;Item&gt; implements Iterable&lt;Item&gt; {
+    private Node&lt;Item&gt; first;     // top of stack
+    private int n;                // size of the stack
+
+    // helper linked list class
+<span class="nc" id="L55">    private static class Node&lt;Item&gt; {</span>
+        private Item item;
+        private Node&lt;Item&gt; next;
+    }
+
+    /**
+     * Initializes an empty stack.
+     */
+<span class="nc" id="L63">    public Stack() {</span>
+<span class="nc" id="L64">        first = null;</span>
+<span class="nc" id="L65">        n = 0;</span>
+<span class="nc" id="L66">    }</span>
+
+    /**
+     * Returns true if this stack is empty.
+     *
+     * @return true if this stack is empty; false otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        return first == null;</span>
+    }
+
+    /**
+     * Returns the number of items in this stack.
+     *
+     * @return the number of items in this stack
+     */
+    public int size() {
+<span class="nc" id="L83">        return n;</span>
+    }
+
+    /**
+     * Adds the item to this stack.
+     *
+     * @param  item the item to add
+     */
+    public void push(Item item) {
+<span class="nc" id="L92">        Node&lt;Item&gt; oldfirst = first;</span>
+<span class="nc" id="L93">        first = new Node&lt;Item&gt;();</span>
+<span class="nc" id="L94">        first.item = item;</span>
+<span class="nc" id="L95">        first.next = oldfirst;</span>
+<span class="nc" id="L96">        n++;</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Removes and returns the item most recently added to this stack.
+     *
+     * @return the item most recently added
+     * @throws NoSuchElementException if this stack is empty
+     */
+    public Item pop() {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Stack underflow&quot;);</span>
+<span class="nc" id="L107">        Item item = first.item;        // save item to return</span>
+<span class="nc" id="L108">        first = first.next;            // delete first node</span>
+<span class="nc" id="L109">        n--;</span>
+<span class="nc" id="L110">        return item;                   // return the saved item</span>
+    }
+
+
+    /**
+     * Returns (but does not remove) the item most recently added to this stack.
+     *
+     * @return the item most recently added to this stack
+     * @throws NoSuchElementException if this stack is empty
+     */
+    public Item peek() {
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Stack underflow&quot;);</span>
+<span class="nc" id="L122">        return first.item;</span>
+    }
+
+    /**
+     * Returns a string representation of this stack.
+     *
+     * @return the sequence of items in this stack in LIFO order, separated by spaces
+     */
+    public String toString() {
+<span class="nc" id="L131">        StringBuilder s = new StringBuilder();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        for (Item item : this) {</span>
+<span class="nc" id="L133">            s.append(item);</span>
+<span class="nc" id="L134">            s.append(' ');</span>
+        }
+<span class="nc" id="L136">        return s.toString();</span>
+    }
+       
+
+    /**
+     * Returns an iterator to this stack that iterates through the items in LIFO order.
+     *
+     * @return an iterator to this stack that iterates through the items in LIFO order
+     */
+    public Iterator&lt;Item&gt; iterator() {
+<span class="nc" id="L146">        return new ListIterator&lt;Item&gt;(first);</span>
+    }
+
+    // an iterator, doesn't implement remove() since it's optional
+    private class ListIterator&lt;Item&gt; implements Iterator&lt;Item&gt; {
+        private Node&lt;Item&gt; current;
+
+<span class="nc" id="L153">        public ListIterator(Node&lt;Item&gt; first) {</span>
+<span class="nc" id="L154">            current = first;</span>
+<span class="nc" id="L155">        }</span>
+
+        public boolean hasNext() {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            return current != null;</span>
+        }
+
+        public void remove() {
+<span class="nc" id="L162">            throw new UnsupportedOperationException();</span>
+        }
+
+        public Item next() {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L167">            Item item = current.item;</span>
+<span class="nc" id="L168">            current = current.next; </span>
+<span class="nc" id="L169">            return item;</span>
+        }
+    }
+
+
+    /**
+     * Unit tests the {@code Stack} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L180">        Stack&lt;String&gt; stack = new Stack&lt;String&gt;();</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L182">            String item = StdIn.readString();</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">            if (!item.equals(&quot;-&quot;))</span>
+<span class="nc" id="L184">                stack.push(item);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">            else if (!stack.isEmpty())</span>
+<span class="nc" id="L186">                StdOut.print(stack.pop() + &quot; &quot;);</span>
+        }
+<span class="nc" id="L188">        StdOut.println(&quot;(&quot; + stack.size() + &quot; left on stack)&quot;);</span>
+<span class="nc" id="L189">    }</span>
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

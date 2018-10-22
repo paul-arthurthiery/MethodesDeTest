@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>KosarajuSharirSCC.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">KosarajuSharirSCC.java</span></div><h1>KosarajuSharirSCC.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac KosarajuSharirSCC.java
+ *  Execution:    java KosarajuSharirSCC filename.txt
+ *  Dependencies: Digraph.java TransitiveClosure.java StdOut.java In.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt
+ *
+ *  Compute the strongly-connected components of a digraph using the
+ *  Kosaraju-Sharir algorithm.
+ *
+ *  Runs in O(E + V) time.
+ *
+ *  % java KosarajuSharirSCC tinyDG.txt
+ *  5 strong components
+ *  1 
+ *  0 2 3 4 5 
+ *  9 10 11 12 
+ *  6 8 
+ *  7
+ *
+ *  % java KosarajuSharirSCC mediumDG.txt 
+ *  10 strong components
+ *  21 
+ *  2 5 6 8 9 11 12 13 15 16 18 19 22 23 25 26 28 29 30 31 32 33 34 35 37 38 39 40 42 43 44 46 47 48 49 
+ *  14 
+ *  3 4 17 20 24 27 36 
+ *  41 
+ *  7 
+ *  45 
+ *  1 
+ *  0 
+ *  10 
+ *
+ *  % java -Xss50m KosarajuSharirSCC mediumDG.txt 
+ *  25 strong components
+ *  7 11 32 36 61 84 95 116 121 128 230   ...
+ *  28 73 80 104 115 143 149 164 184 185  ...
+ *  38 40 200 201 207 218 286 387 418 422 ...
+ *  12 14 56 78 87 103 216 269 271 272    ...
+ *  42 48 112 135 160 217 243 246 273 346 ...
+ *  46 76 96 97 224 237 297 303 308 309   ...
+ *  9 15 21 22 27 90 167 214 220 225 227  ...
+ *  74 99 133 146 161 166 202 205 245 262 ...
+ *  43 83 94 120 125 183 195 206 244 254  ...
+ *  1 13 54 91 92 93 106 140 156 194 208  ...
+ *  10 39 67 69 131 144 145 154 168 258   ...
+ *  6 52 66 113 118 122 139 147 212 213   ...
+ *  8 127 150 182 203 204 249 367 400 432 ...
+ *  63 65 101 107 108 136 169 170 171 173 ...
+ *  55 71 102 155 159 198 228 252 325 419 ...
+ *  4 25 34 58 70 152 172 196 199 210 226 ...
+ *  2 44 50 88 109 138 141 178 197 211    ...
+ *  57 89 129 162 174 179 188 209 238 276 ...
+ *  33 41 49 119 126 132 148 181 215 221  ...
+ *  3 18 23 26 35 64 105 124 157 186 251  ...
+ *  5 16 17 20 31 47 81 98 158 180 187    ...
+ *  24 29 51 59 75 82 100 114 117 134 151 ...
+ *  30 45 53 60 72 85 111 130 137 142 163 ...
+ *  19 37 62 77 79 110 153 352 353 361    ...
+ *  0 68 86 123 165 176 193 239 289 336   ...
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code KosarajuSharirSCC} class represents a data type for 
+ *  determining the strong components in a digraph.
+ *  The &lt;em&gt;id&lt;/em&gt; operation determines in which strong component
+ *  a given vertex lies; the &lt;em&gt;areStronglyConnected&lt;/em&gt; operation
+ *  determines whether two vertices are in the same strong component;
+ *  and the &lt;em&gt;count&lt;/em&gt; operation determines the number of strong
+ *  components.
+
+ *  The &lt;em&gt;component identifier&lt;/em&gt; of a component is one of the
+ *  vertices in the strong component: two vertices have the same component
+ *  identifier if and only if they are in the same strong component.
+
+ *  &lt;p&gt;
+ *  This implementation uses the Kosaraju-Sharir algorithm.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;id&lt;/em&gt;, &lt;em&gt;count&lt;/em&gt;, and &lt;em&gt;areStronglyConnected&lt;/em&gt;
+ *  operations take constant time.
+ *  For alternate implementations of the same API, see
+ *  {@link TarjanSCC} and {@link GabowSCC}.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L97" title="All 2 branches missed.">public class KosarajuSharirSCC {</span>
+    private boolean[] marked;     // marked[v] = has vertex v been visited?
+    private int[] id;             // id[v] = id of strong component containing v
+    private int count;            // number of strongly-connected components
+
+    /**
+     * Computes the strong components of the digraph {@code G}.
+     * @param G the digraph
+     */
+<span class="nc" id="L106">    public KosarajuSharirSCC(Digraph G) {</span>
+
+        // compute reverse postorder of reverse graph
+<span class="nc" id="L109">        DepthFirstOrder dfs = new DepthFirstOrder(G.reverse());</span>
+
+        // run DFS on G, using reverse postorder to guide calculation
+<span class="nc" id="L112">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L113">        id = new int[G.V()];</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (int v : dfs.reversePost()) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (!marked[v]) {</span>
+<span class="nc" id="L116">                dfs(G, v);</span>
+<span class="nc" id="L117">                count++;</span>
+            }
+        }
+
+        // check that id[] gives strong components
+<span class="nc bnc" id="L122" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L123">    }</span>
+
+    // DFS on graph G
+    private void dfs(Digraph G, int v) { 
+<span class="nc" id="L127">        marked[v] = true;</span>
+<span class="nc" id="L128">        id[v] = count;</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (!marked[w]) dfs(G, w);</span>
+        }
+<span class="nc" id="L132">    }</span>
+
+    /**
+     * Returns the number of strong components.
+     * @return the number of strong components
+     */
+    public int count() {
+<span class="nc" id="L139">        return count;</span>
+    }
+
+    /**
+     * Are vertices {@code v} and {@code w} in the same strong component?
+     * @param  v one vertex
+     * @param  w the other vertex
+     * @return {@code true} if vertices {@code v} and {@code w} are in the same
+     *         strong component, and {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= w &lt; V}
+     */
+    public boolean stronglyConnected(int v, int w) {
+<span class="nc" id="L152">        validateVertex(v);</span>
+<span class="nc" id="L153">        validateVertex(w);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        return id[v] == id[w];</span>
+    }
+
+    /**
+     * Returns the component id of the strong component containing vertex {@code v}.
+     * @param  v the vertex
+     * @return the component id of the strong component containing vertex {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= s &lt; V}
+     */
+    public int id(int v) {
+<span class="nc" id="L164">        validateVertex(v);</span>
+<span class="nc" id="L165">        return id[v];</span>
+    }
+
+    // does the id[] array contain the strongly connected components?
+    private boolean check(Digraph G) {
+<span class="nc" id="L170">        TransitiveClosure tc = new TransitiveClosure(G);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            for (int w = 0; w &lt; G.V(); w++) {</span>
+<span class="nc bnc" id="L173" title="All 6 branches missed.">                if (stronglyConnected(v, w) != (tc.reachable(v, w) &amp;&amp; tc.reachable(w, v)))</span>
+<span class="nc" id="L174">                    return false;</span>
+            }
+        }
+<span class="nc" id="L177">        return true;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L182">        int V = marked.length;</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L184">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L185">    }</span>
+
+    /**
+     * Unit tests the {@code KosarajuSharirSCC} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L193">        In in = new In(args[0]);</span>
+<span class="nc" id="L194">        Digraph G = new Digraph(in);</span>
+<span class="nc" id="L195">        KosarajuSharirSCC scc = new KosarajuSharirSCC(G);</span>
+
+        // number of connected components
+<span class="nc" id="L198">        int m = scc.count();</span>
+<span class="nc" id="L199">        StdOut.println(m + &quot; strong components&quot;);</span>
+
+        // compute list of vertices in each strong component
+<span class="nc" id="L202">        Queue&lt;Integer&gt;[] components = (Queue&lt;Integer&gt;[]) new Queue[m];</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L204">            components[i] = new Queue&lt;Integer&gt;();</span>
+        }
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L207">            components[scc.id(v)].enqueue(v);</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">            for (int v : components[i]) {</span>
+<span class="nc" id="L213">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L215">            StdOut.println();</span>
+        }
+
+<span class="nc" id="L218">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

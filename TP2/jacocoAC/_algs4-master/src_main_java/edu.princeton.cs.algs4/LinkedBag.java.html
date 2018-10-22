@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LinkedBag.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LinkedBag.java</span></div><h1>LinkedBag.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LinkedBag.java
+ *  Execution:    java LinkedBag &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *
+ *  A generic bag or multiset, implemented using a singly linked list.
+ *
+ *  % more tobe.txt 
+ *  to be or not to - be - - that - - - is
+ *
+ *  % java LinkedBag &lt; tobe.txt
+ *  size of bag = 14
+ *  is
+ *  -
+ *  -
+ *  -
+ *  that
+ *  -
+ *  -
+ *  be
+ *  -
+ *  to
+ *  not
+ *  or
+ *  be
+ *  to
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code LinkedBag} class represents a bag (or multiset) of 
+ *  generic items. It supports insertion and iterating over the 
+ *  items in arbitrary order.
+ *  &lt;p&gt;
+ *  This implementation uses a singly linked list with a non-static nested class Node.
+ *  See {@link Bag} for a version that uses a static nested class.
+ *  The &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;isEmpty&lt;/em&gt;, and &lt;em&gt;size&lt;/em&gt; operations
+ *  take constant time. Iteration takes time proportional to the number of items.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/13stacks&quot;&gt;Section 1.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class LinkedBag&lt;Item&gt; implements Iterable&lt;Item&gt; {
+    private Node first;    // beginning of bag
+    private int n;         // number of elements in bag
+
+    // helper linked list class
+<span class="nc" id="L56">    private class Node {</span>
+        private Item item;
+        private Node next;
+    }
+
+    /**
+     * Initializes an empty bag.
+     */
+<span class="nc" id="L64">    public LinkedBag() {</span>
+<span class="nc" id="L65">        first = null;</span>
+<span class="nc" id="L66">        n = 0;</span>
+<span class="nc" id="L67">    }</span>
+
+    /**
+     * Is this bag empty?
+     * @return true if this bag is empty; false otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        return first == null;</span>
+    }
+
+    /**
+     * Returns the number of items in this bag.
+     * @return the number of items in this bag
+     */
+    public int size() {
+<span class="nc" id="L82">        return n;</span>
+    }
+
+    /**
+     * Adds the item to this bag.
+     * @param item the item to add to this bag
+     */
+    public void add(Item item) {
+<span class="nc" id="L90">        Node oldfirst = first;</span>
+<span class="nc" id="L91">        first = new Node();</span>
+<span class="nc" id="L92">        first.item = item;</span>
+<span class="nc" id="L93">        first.next = oldfirst;</span>
+<span class="nc" id="L94">        n++;</span>
+<span class="nc" id="L95">    }</span>
+
+
+    /**
+     * Returns an iterator that iterates over the items in the bag.
+     */
+    public Iterator&lt;Item&gt; iterator()  {
+<span class="nc" id="L102">        return new ListIterator();  </span>
+    }
+
+    // an iterator over a linked list
+    private class ListIterator implements Iterator&lt;Item&gt; {
+        private Node current;
+
+        // creates a new iterator
+<span class="nc" id="L110">        public ListIterator() {</span>
+<span class="nc" id="L111">            current = first;</span>
+<span class="nc" id="L112">        }</span>
+
+        // is there a next item in the iterator?
+        public boolean hasNext() {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            return current != null;</span>
+        }
+
+        // this method is optional in Iterator interface
+        public void remove() {
+<span class="nc" id="L121">            throw new UnsupportedOperationException();</span>
+        }
+
+        // returns the next item in the iterator (and advances the iterator)
+        public Item next() {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L127">            Item item = current.item;</span>
+<span class="nc" id="L128">            current = current.next; </span>
+<span class="nc" id="L129">            return item;</span>
+        }
+    }
+
+    /**
+     * Unit tests the {@code LinkedBag} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L139">        LinkedBag&lt;String&gt; bag = new LinkedBag&lt;String&gt;();</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L141">            String item = StdIn.readString();</span>
+<span class="nc" id="L142">            bag.add(item);</span>
+        }
+
+<span class="nc" id="L145">        StdOut.println(&quot;size of bag = &quot; + bag.size());</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (String s : bag) {</span>
+<span class="nc" id="L147">            StdOut.println(s);</span>
+        }
+<span class="nc" id="L149">    }</span>
+
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

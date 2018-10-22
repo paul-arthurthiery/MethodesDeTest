@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Cycle.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Cycle.java</span></div><h1>Cycle.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Cycle.java
+ *  Execution:    java  Cycle filename.txt
+ *  Dependencies: Graph.java Stack.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/41graph/tinyG.txt
+ *                https://algs4.cs.princeton.edu/41graph/mediumG.txt
+ *                https://algs4.cs.princeton.edu/41graph/largeG.txt  
+ *
+ *  Identifies a cycle.
+ *  Runs in O(E + V) time.
+ *
+ *  % java Cycle tinyG.txt
+ *  3 4 5 3 
+ * 
+ *  % java Cycle mediumG.txt 
+ *  15 0 225 15 
+ * 
+ *  % java Cycle largeG.txt 
+ *  996673 762 840164 4619 785187 194717 996673 
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Cycle} class represents a data type for 
+ *  determining whether an undirected graph has a simple cycle.
+ *  The &lt;em&gt;hasCycle&lt;/em&gt; operation determines whether the graph has
+ *  a cycle and, if so, the &lt;em&gt;cycle&lt;/em&gt; operation returns one.
+ *  &lt;p&gt;
+ *  This implementation uses depth-first search.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;hasCycle&lt;/em&gt; operation takes constant time;
+ *  the &lt;em&gt;cycle&lt;/em&gt; operation takes time proportional
+ *  to the length of the cycle.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/41graph&quot;&gt;Section 4.1&lt;/a&gt;   
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Cycle {
+    private boolean[] marked;
+    private int[] edgeTo;
+    private Stack&lt;Integer&gt; cycle;
+
+    /**
+     * Determines whether the undirected graph {@code G} has a cycle and,
+     * if so, finds such a cycle.
+     *
+     * @param G the undirected graph
+     */
+<span class="nc" id="L56">    public Cycle(Graph G) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (hasSelfLoop(G)) return;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (hasParallelEdges(G)) return;</span>
+<span class="nc" id="L59">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L60">        edgeTo = new int[G.V()];</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (!marked[v])</span>
+<span class="nc" id="L63">                dfs(G, -1, v);</span>
+<span class="nc" id="L64">    }</span>
+
+
+    // does this graph have a self loop?
+    // side effect: initialize cycle to be self loop
+    private boolean hasSelfLoop(Graph G) {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                if (v == w) {</span>
+<span class="nc" id="L73">                    cycle = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L74">                    cycle.push(v);</span>
+<span class="nc" id="L75">                    cycle.push(v);</span>
+<span class="nc" id="L76">                    return true;</span>
+                }
+            }
+        }
+<span class="nc" id="L80">        return false;</span>
+    }
+
+    // does this graph have two parallel edges?
+    // side effect: initialize cycle to be two parallel edges
+    private boolean hasParallelEdges(Graph G) {
+<span class="nc" id="L86">        marked = new boolean[G.V()];</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+
+            // check for parallel edges incident to v
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                if (marked[w]) {</span>
+<span class="nc" id="L93">                    cycle = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L94">                    cycle.push(v);</span>
+<span class="nc" id="L95">                    cycle.push(w);</span>
+<span class="nc" id="L96">                    cycle.push(v);</span>
+<span class="nc" id="L97">                    return true;</span>
+                }
+<span class="nc" id="L99">                marked[w] = true;</span>
+            }
+
+            // reset so marked[v] = false for all v
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc" id="L104">                marked[w] = false;</span>
+            }
+        }
+<span class="nc" id="L107">        return false;</span>
+    }
+
+    /**
+     * Returns true if the graph {@code G} has a cycle.
+     *
+     * @return {@code true} if the graph has a cycle; {@code false} otherwise
+     */
+    public boolean hasCycle() {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        return cycle != null;</span>
+    }
+
+     /**
+     * Returns a cycle in the graph {@code G}.
+     * @return a cycle if the graph {@code G} has a cycle,
+     *         and {@code null} otherwise
+     */
+    public Iterable&lt;Integer&gt; cycle() {
+<span class="nc" id="L125">        return cycle;</span>
+    }
+
+    private void dfs(Graph G, int u, int v) {
+<span class="nc" id="L129">        marked[v] = true;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+
+            // short circuit if cycle already found
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            if (cycle != null) return;</span>
+
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            if (!marked[w]) {</span>
+<span class="nc" id="L136">                edgeTo[w] = v;</span>
+<span class="nc" id="L137">                dfs(G, v, w);</span>
+<span class="nc" id="L138">            }</span>
+
+            // check for cycle (but disregard reverse of edge leading to v)
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            else if (w != u) {</span>
+<span class="nc" id="L142">                cycle = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                for (int x = v; x != w; x = edgeTo[x]) {</span>
+<span class="nc" id="L144">                    cycle.push(x);</span>
+                }
+<span class="nc" id="L146">                cycle.push(w);</span>
+<span class="nc" id="L147">                cycle.push(v);</span>
+            }
+        }
+<span class="nc" id="L150">    }</span>
+
+    /**
+     * Unit tests the {@code Cycle} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L158">        In in = new In(args[0]);</span>
+<span class="nc" id="L159">        Graph G = new Graph(in);</span>
+<span class="nc" id="L160">        Cycle finder = new Cycle(G);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (finder.hasCycle()) {</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            for (int v : finder.cycle()) {</span>
+<span class="nc" id="L163">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L165">            StdOut.println();</span>
+<span class="nc" id="L166">        }</span>
+        else {
+<span class="nc" id="L168">            StdOut.println(&quot;Graph is acyclic&quot;);</span>
+        }
+<span class="nc" id="L170">    }</span>
+
+
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

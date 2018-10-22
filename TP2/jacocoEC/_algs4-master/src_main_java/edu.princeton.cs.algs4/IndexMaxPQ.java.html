@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>IndexMaxPQ.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">IndexMaxPQ.java</span></div><h1>IndexMaxPQ.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac IndexMaxPQ.java
+ *  Execution:    java IndexMaxPQ
+ *  Dependencies: StdOut.java
+ *
+ *  Maximum-oriented indexed PQ implementation using a binary heap.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code IndexMaxPQ} class represents an indexed priority queue of generic keys.
+ *  It supports the usual &lt;em&gt;insert&lt;/em&gt; and &lt;em&gt;delete-the-maximum&lt;/em&gt;
+ *  operations, along with &lt;em&gt;delete&lt;/em&gt; and &lt;em&gt;change-the-key&lt;/em&gt; 
+ *  methods. In order to let the client refer to items on the priority queue,
+ *  an integer between {@code 0} and {@code maxN - 1}
+ *  is associated with each key—the client
+ *  uses this integer to specify which key to delete or change.
+ *  It also supports methods for peeking at a maximum key,
+ *  testing if the priority queue is empty, and iterating through
+ *  the keys.
+ *  &lt;p&gt;
+ *  This implementation uses a binary heap along with an array to associate
+ *  keys with integers in the given range.
+ *  The &lt;em&gt;insert&lt;/em&gt;, &lt;em&gt;delete-the-maximum&lt;/em&gt;, &lt;em&gt;delete&lt;/em&gt;,
+ *  &lt;em&gt;change-key&lt;/em&gt;, &lt;em&gt;decrease-key&lt;/em&gt;, and &lt;em&gt;increase-key&lt;/em&gt;
+ *  operations take logarithmic time.
+ *  The &lt;em&gt;is-empty&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, &lt;em&gt;max-index&lt;/em&gt;, &lt;em&gt;max-key&lt;/em&gt;,
+ *  and &lt;em&gt;key-of&lt;/em&gt; operations take constant time.
+ *  Construction takes time proportional to the specified capacity.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/24pq&quot;&gt;Section 2.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *
+ *  @param &lt;Key&gt; the generic type of key on this priority queue
+ */
+<span class="nc bnc" id="L44" title="All 2 branches missed.">public class IndexMaxPQ&lt;Key extends Comparable&lt;Key&gt;&gt; implements Iterable&lt;Integer&gt; {</span>
+    private int n;           // number of elements on PQ
+    private int[] pq;        // binary heap using 1-based indexing
+    private int[] qp;        // inverse of pq - qp[pq[i]] = pq[qp[i]] = i
+    private Key[] keys;      // keys[i] = priority of i
+
+    /**
+     * Initializes an empty indexed priority queue with indices between {@code 0}
+     * and {@code maxN - 1}.
+     *
+     * @param  maxN the keys on this priority queue are index from {@code 0} to {@code maxN - 1}
+     * @throws IllegalArgumentException if {@code maxN &lt; 0}
+     */
+<span class="nc" id="L57">    public IndexMaxPQ(int maxN) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (maxN &lt; 0) throw new IllegalArgumentException();</span>
+<span class="nc" id="L59">        n = 0;</span>
+<span class="nc" id="L60">        keys = (Key[]) new Comparable[maxN + 1];    // make this of length maxN??</span>
+<span class="nc" id="L61">        pq   = new int[maxN + 1];</span>
+<span class="nc" id="L62">        qp   = new int[maxN + 1];                   // make this of length maxN??</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        for (int i = 0; i &lt;= maxN; i++)</span>
+<span class="nc" id="L64">            qp[i] = -1;</span>
+<span class="nc" id="L65">    }</span>
+
+    /**
+     * Returns true if this priority queue is empty.
+     *
+     * @return {@code true} if this priority queue is empty;
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        return n == 0;</span>
+    }
+
+    /**
+     * Is {@code i} an index on this priority queue?
+     *
+     * @param  i an index
+     * @return {@code true} if {@code i} is an index on this priority queue;
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     */
+    public boolean contains(int i) {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        return qp[i] != -1;</span>
+    }
+
+    /**
+     * Returns the number of keys on this priority queue.
+     *
+     * @return the number of keys on this priority queue 
+     */
+    public int size() {
+<span class="nc" id="L95">        return n;</span>
+    }
+
+   /**
+     * Associate key with index i.
+     *
+     * @param  i an index
+     * @param  key the key to associate with index {@code i}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     * @throws IllegalArgumentException if there already is an item
+     *         associated with index {@code i}
+     */
+    public void insert(int i, Key key) {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (contains(i)) throw new IllegalArgumentException(&quot;index is already in the priority queue&quot;);</span>
+<span class="nc" id="L109">        n++;</span>
+<span class="nc" id="L110">        qp[i] = n;</span>
+<span class="nc" id="L111">        pq[n] = i;</span>
+<span class="nc" id="L112">        keys[i] = key;</span>
+<span class="nc" id="L113">        swim(n);</span>
+<span class="nc" id="L114">    }</span>
+
+    /**
+     * Returns an index associated with a maximum key.
+     *
+     * @return an index associated with a maximum key
+     * @throws NoSuchElementException if this priority queue is empty
+     */
+    public int maxIndex() {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (n == 0) throw new NoSuchElementException(&quot;Priority queue underflow&quot;);</span>
+<span class="nc" id="L124">        return pq[1];</span>
+    }
+
+    /**
+     * Returns a maximum key.
+     *
+     * @return a maximum key
+     * @throws NoSuchElementException if this priority queue is empty
+     */
+    public Key maxKey() {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (n == 0) throw new NoSuchElementException(&quot;Priority queue underflow&quot;);</span>
+<span class="nc" id="L135">        return keys[pq[1]];</span>
+    }
+
+    /**
+     * Removes a maximum key and returns its associated index.
+     *
+     * @return an index associated with a maximum key
+     * @throws NoSuchElementException if this priority queue is empty
+     */
+    public int delMax() {
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (n == 0) throw new NoSuchElementException(&quot;Priority queue underflow&quot;);</span>
+<span class="nc" id="L146">        int min = pq[1];</span>
+<span class="nc" id="L147">        exch(1, n--);</span>
+<span class="nc" id="L148">        sink(1);</span>
+
+<span class="nc bnc" id="L150" title="All 4 branches missed.">        assert pq[n+1] == min;</span>
+<span class="nc" id="L151">        qp[min] = -1;        // delete</span>
+<span class="nc" id="L152">        keys[min] = null;    // to help with garbage collection</span>
+<span class="nc" id="L153">        pq[n+1] = -1;        // not needed</span>
+<span class="nc" id="L154">        return min;</span>
+    }
+
+    /**
+     * Returns the key associated with index {@code i}.
+     *
+     * @param  i the index of the key to return
+     * @return the key associated with index {@code i}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     * @throws NoSuchElementException no key is associated with index {@code i}
+     */
+    public Key keyOf(int i) {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (!contains(i)) throw new NoSuchElementException(&quot;index is not in the priority queue&quot;);</span>
+<span class="nc" id="L167">        else return keys[i];</span>
+    }
+
+    /**
+     * Change the key associated with index {@code i} to the specified value.
+     *
+     * @param  i the index of the key to change
+     * @param  key change the key associated with index {@code i} to this key
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     */
+    public void changeKey(int i, Key key) {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (!contains(i)) throw new NoSuchElementException(&quot;index is not in the priority queue&quot;);</span>
+<span class="nc" id="L179">        keys[i] = key;</span>
+<span class="nc" id="L180">        swim(qp[i]);</span>
+<span class="nc" id="L181">        sink(qp[i]);</span>
+<span class="nc" id="L182">    }</span>
+
+   /**
+     * Change the key associated with index {@code i} to the specified value.
+     *
+     * @param  i the index of the key to change
+     * @param  key change the key associated with index {@code i} to this key
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     * @deprecated Replaced by {@code changeKey(int, Key)}.
+     */
+    @Deprecated
+    public void change(int i, Key key) {
+<span class="nc" id="L194">        changeKey(i, key);</span>
+<span class="nc" id="L195">    }</span>
+
+    /**
+     * Increase the key associated with index {@code i} to the specified value.
+     *
+     * @param  i the index of the key to increase
+     * @param  key increase the key associated with index {@code i} to this key
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     * @throws IllegalArgumentException if {@code key &lt;= keyOf(i)}
+     * @throws NoSuchElementException no key is associated with index {@code i}
+     */
+    public void increaseKey(int i, Key key) {
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (!contains(i)) throw new NoSuchElementException(&quot;index is not in the priority queue&quot;);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (keys[i].compareTo(key) &gt;= 0)</span>
+<span class="nc" id="L209">            throw new IllegalArgumentException(&quot;Calling increaseKey() with given argument would not strictly increase the key&quot;);</span>
+
+<span class="nc" id="L211">        keys[i] = key;</span>
+<span class="nc" id="L212">        swim(qp[i]);</span>
+<span class="nc" id="L213">    }</span>
+
+    /**
+     * Decrease the key associated with index {@code i} to the specified value.
+     *
+     * @param  i the index of the key to decrease
+     * @param  key decrease the key associated with index {@code i} to this key
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     * @throws IllegalArgumentException if {@code key &gt;= keyOf(i)}
+     * @throws NoSuchElementException no key is associated with index {@code i}
+     */
+    public void decreaseKey(int i, Key key) {
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (!contains(i)) throw new NoSuchElementException(&quot;index is not in the priority queue&quot;);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (keys[i].compareTo(key) &lt;= 0)</span>
+<span class="nc" id="L227">            throw new IllegalArgumentException(&quot;Calling decreaseKey() with given argument would not strictly decrease the key&quot;);</span>
+
+<span class="nc" id="L229">        keys[i] = key;</span>
+<span class="nc" id="L230">        sink(qp[i]);</span>
+<span class="nc" id="L231">    }</span>
+
+    /**
+     * Remove the key on the priority queue associated with index {@code i}.
+     *
+     * @param  i the index of the key to remove
+     * @throws IllegalArgumentException unless {@code 0 &lt;= i &lt; maxN}
+     * @throws NoSuchElementException no key is associated with index {@code i}
+     */
+    public void delete(int i) {
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (!contains(i)) throw new NoSuchElementException(&quot;index is not in the priority queue&quot;);</span>
+<span class="nc" id="L242">        int index = qp[i];</span>
+<span class="nc" id="L243">        exch(index, n--);</span>
+<span class="nc" id="L244">        swim(index);</span>
+<span class="nc" id="L245">        sink(index);</span>
+<span class="nc" id="L246">        keys[i] = null;</span>
+<span class="nc" id="L247">        qp[i] = -1;</span>
+<span class="nc" id="L248">    }</span>
+
+
+   /***************************************************************************
+    * General helper functions.
+    ***************************************************************************/
+    private boolean less(int i, int j) {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        return keys[pq[i]].compareTo(keys[pq[j]]) &lt; 0;</span>
+    }
+
+    private void exch(int i, int j) {
+<span class="nc" id="L259">        int swap = pq[i];</span>
+<span class="nc" id="L260">        pq[i] = pq[j];</span>
+<span class="nc" id="L261">        pq[j] = swap;</span>
+<span class="nc" id="L262">        qp[pq[i]] = i;</span>
+<span class="nc" id="L263">        qp[pq[j]] = j;</span>
+<span class="nc" id="L264">    }</span>
+
+
+   /***************************************************************************
+    * Heap helper functions.
+    ***************************************************************************/
+    private void swim(int k) {
+<span class="nc bnc" id="L271" title="All 4 branches missed.">        while (k &gt; 1 &amp;&amp; less(k/2, k)) {</span>
+<span class="nc" id="L272">            exch(k, k/2);</span>
+<span class="nc" id="L273">            k = k/2;</span>
+        }
+<span class="nc" id="L275">    }</span>
+
+    private void sink(int k) {
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        while (2*k &lt;= n) {</span>
+<span class="nc" id="L279">            int j = 2*k;</span>
+<span class="nc bnc" id="L280" title="All 4 branches missed.">            if (j &lt; n &amp;&amp; less(j, j+1)) j++;</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">            if (!less(k, j)) break;</span>
+<span class="nc" id="L282">            exch(k, j);</span>
+<span class="nc" id="L283">            k = j;</span>
+        }
+<span class="nc" id="L285">    }</span>
+
+
+    /**
+     * Returns an iterator that iterates over the keys on the
+     * priority queue in descending order.
+     * The iterator doesn't implement {@code remove()} since it's optional.
+     *
+     * @return an iterator that iterates over the keys in descending order
+     */
+    public Iterator&lt;Integer&gt; iterator() {
+<span class="nc" id="L296">        return new HeapIterator();</span>
+    }
+
+    private class HeapIterator implements Iterator&lt;Integer&gt; {
+        // create a new pq
+        private IndexMaxPQ&lt;Key&gt; copy;
+
+        // add all elements to copy of heap
+        // takes linear time since already in heap order so no keys move
+<span class="nc" id="L305">        public HeapIterator() {</span>
+<span class="nc" id="L306">            copy = new IndexMaxPQ&lt;Key&gt;(pq.length - 1);</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">            for (int i = 1; i &lt;= n; i++)</span>
+<span class="nc" id="L308">                copy.insert(pq[i], keys[pq[i]]);</span>
+<span class="nc" id="L309">        }</span>
+
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        public boolean hasNext()  { return !copy.isEmpty();                     }</span>
+<span class="nc" id="L312">        public void remove()      { throw new UnsupportedOperationException();  }</span>
+
+        public Integer next() {
+<span class="nc bnc" id="L315" title="All 2 branches missed.">            if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L316">            return copy.delMax();</span>
+        }
+    }
+
+    /**
+     * Unit tests the {@code IndexMaxPQ} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+        // insert a bunch of strings
+<span class="nc" id="L327">        String[] strings = { &quot;it&quot;, &quot;was&quot;, &quot;the&quot;, &quot;best&quot;, &quot;of&quot;, &quot;times&quot;, &quot;it&quot;, &quot;was&quot;, &quot;the&quot;, &quot;worst&quot; };</span>
+
+<span class="nc" id="L329">        IndexMaxPQ&lt;String&gt; pq = new IndexMaxPQ&lt;String&gt;(strings.length);</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        for (int i = 0; i &lt; strings.length; i++) {</span>
+<span class="nc" id="L331">            pq.insert(i, strings[i]);</span>
+        }
+
+        // print each key using the iterator
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        for (int i : pq) {</span>
+<span class="nc" id="L336">            StdOut.println(i + &quot; &quot; + strings[i]);</span>
+        }
+
+<span class="nc" id="L339">        StdOut.println();</span>
+
+        // increase or decrease the key
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        for (int i = 0; i &lt; strings.length; i++) {</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">            if (StdRandom.uniform() &lt; 0.5)</span>
+<span class="nc" id="L344">                pq.increaseKey(i, strings[i] + strings[i]);</span>
+            else
+<span class="nc" id="L346">                pq.decreaseKey(i, strings[i].substring(0, 1));</span>
+        }
+
+        // delete and print each key
+<span class="nc bnc" id="L350" title="All 2 branches missed.">        while (!pq.isEmpty()) {</span>
+<span class="nc" id="L351">            String key = pq.maxKey();</span>
+<span class="nc" id="L352">            int i = pq.delMax();</span>
+<span class="nc" id="L353">            StdOut.println(i + &quot; &quot; + key);</span>
+        }
+<span class="nc" id="L355">        StdOut.println();</span>
+
+        // reinsert the same strings
+<span class="nc bnc" id="L358" title="All 2 branches missed.">        for (int i = 0; i &lt; strings.length; i++) {</span>
+<span class="nc" id="L359">            pq.insert(i, strings[i]);</span>
+        }
+
+        // delete them in random order
+<span class="nc" id="L363">        int[] perm = new int[strings.length];</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        for (int i = 0; i &lt; strings.length; i++)</span>
+<span class="nc" id="L365">            perm[i] = i;</span>
+<span class="nc" id="L366">        StdRandom.shuffle(perm);</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">        for (int i = 0; i &lt; perm.length; i++) {</span>
+<span class="nc" id="L368">            String key = pq.keyOf(perm[i]);</span>
+<span class="nc" id="L369">            pq.delete(perm[i]);</span>
+<span class="nc" id="L370">            StdOut.println(perm[i] + &quot; &quot; + key);</span>
+        }
+
+<span class="nc" id="L373">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

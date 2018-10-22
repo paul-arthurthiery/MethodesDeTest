@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>TrieSET.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">TrieSET.java</span></div><h1>TrieSET.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac TrieSET.java
+ *  Execution:    java TrieSET &lt; words.txt
+ *  Dependencies: StdIn.java
+ *  Data files:   https://algs4.cs.princeton.edu/52trie/shellsST.txt
+ *
+ *  An set for extended ASCII strings, implemented  using a 256-way trie.
+ *
+ *  Sample client reads in a list of words from standard input and
+ *  prints out each word, removing any duplicates.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+
+/**
+ *  The {@code TrieSET} class represents an ordered set of strings over
+ *  the extended ASCII alphabet.
+ *  It supports the usual &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, and &lt;em&gt;delete&lt;/em&gt;
+ *  methods. It also provides character-based methods for finding the string
+ *  in the set that is the &lt;em&gt;longest prefix&lt;/em&gt; of a given prefix,
+ *  finding all strings in the set that &lt;em&gt;start with&lt;/em&gt; a given prefix,
+ *  and finding all strings in the set that &lt;em&gt;match&lt;/em&gt; a given pattern.
+ *  &lt;p&gt;
+ *  This implementation uses a 256-way trie.
+ *  The &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, &lt;em&gt;delete&lt;/em&gt;, and
+ *  &lt;em&gt;longest prefix&lt;/em&gt; methods take time proportional to the length
+ *  of the key (in the worst case). Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://algs4.cs.princeton.edu/52trie&quot;&gt;Section 5.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms in Java, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class TrieSET implements Iterable&lt;String&gt; {
+    private static final int R = 256;        // extended ASCII
+
+    private Node root;      // root of trie
+    private int n;          // number of keys in trie
+
+    // R-way trie node
+<span class="nc" id="L46">    private static class Node {</span>
+<span class="nc" id="L47">        private Node[] next = new Node[R];</span>
+        private boolean isString;
+    }
+
+    /**
+     * Initializes an empty set of strings.
+     */
+<span class="nc" id="L54">    public TrieSET() {</span>
+<span class="nc" id="L55">    }</span>
+
+    /**
+     * Does the set contain the given key?
+     * @param key the key
+     * @return {@code true} if the set contains {@code key} and
+     *     {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(String key) {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to contains() is null&quot;);</span>
+<span class="nc" id="L66">        Node x = get(root, key, 0);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (x == null) return false;</span>
+<span class="nc" id="L68">        return x.isString;</span>
+    }
+
+    private Node get(Node x, String key, int d) {
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (x == null) return null;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (d == key.length()) return x;</span>
+<span class="nc" id="L74">        char c = key.charAt(d);</span>
+<span class="nc" id="L75">        return get(x.next[c], key, d+1);</span>
+    }
+
+    /**
+     * Adds the key to the set if it is not already present.
+     * @param key the key to add
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void add(String key) {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to add() is null&quot;);</span>
+<span class="nc" id="L85">        root = add(root, key, 0);</span>
+<span class="nc" id="L86">    }</span>
+
+    private Node add(Node x, String key, int d) {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (x == null) x = new Node();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (d == key.length()) {</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (!x.isString) n++;</span>
+<span class="nc" id="L92">            x.isString = true;</span>
+<span class="nc" id="L93">        }</span>
+        else {
+<span class="nc" id="L95">            char c = key.charAt(d);</span>
+<span class="nc" id="L96">            x.next[c] = add(x.next[c], key, d+1);</span>
+        }
+<span class="nc" id="L98">        return x;</span>
+    }
+
+    /**
+     * Returns the number of strings in the set.
+     * @return the number of strings in the set
+     */
+    public int size() {
+<span class="nc" id="L106">        return n;</span>
+    }
+
+    /**
+     * Is the set empty?
+     * @return {@code true} if the set is empty, and {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns all of the keys in the set, as an iterator.
+     * To iterate over all of the keys in a set named {@code set}, use the
+     * foreach notation: {@code for (Key key : set)}.
+     * @return an iterator to all of the keys in the set
+     */
+    public Iterator&lt;String&gt; iterator() {
+<span class="nc" id="L124">        return keysWithPrefix(&quot;&quot;).iterator();</span>
+    }
+
+    /**
+     * Returns all of the keys in the set that start with {@code prefix}.
+     * @param prefix the prefix
+     * @return all of the keys in the set that start with {@code prefix},
+     *     as an iterable
+     */
+    public Iterable&lt;String&gt; keysWithPrefix(String prefix) {
+<span class="nc" id="L134">        Queue&lt;String&gt; results = new Queue&lt;String&gt;();</span>
+<span class="nc" id="L135">        Node x = get(root, prefix, 0);</span>
+<span class="nc" id="L136">        collect(x, new StringBuilder(prefix), results);</span>
+<span class="nc" id="L137">        return results;</span>
+    }
+
+    private void collect(Node x, StringBuilder prefix, Queue&lt;String&gt; results) {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (x == null) return;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (x.isString) results.enqueue(prefix.toString());</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (char c = 0; c &lt; R; c++) {</span>
+<span class="nc" id="L144">            prefix.append(c);</span>
+<span class="nc" id="L145">            collect(x.next[c], prefix, results);</span>
+<span class="nc" id="L146">            prefix.deleteCharAt(prefix.length() - 1);</span>
+        }
+<span class="nc" id="L148">    }</span>
+
+    /**
+     * Returns all of the keys in the set that match {@code pattern},
+     * where . symbol is treated as a wildcard character.
+     * @param pattern the pattern
+     * @return all of the keys in the set that match {@code pattern},
+     *     as an iterable, where . is treated as a wildcard character.
+     */  
+    public Iterable&lt;String&gt; keysThatMatch(String pattern) {
+<span class="nc" id="L158">        Queue&lt;String&gt; results = new Queue&lt;String&gt;();</span>
+<span class="nc" id="L159">        StringBuilder prefix = new StringBuilder();</span>
+<span class="nc" id="L160">        collect(root, prefix, pattern, results);</span>
+<span class="nc" id="L161">        return results;</span>
+    }
+        
+    private void collect(Node x, StringBuilder prefix, String pattern, Queue&lt;String&gt; results) {
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (x == null) return;</span>
+<span class="nc" id="L166">        int d = prefix.length();</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">        if (d == pattern.length() &amp;&amp; x.isString)</span>
+<span class="nc" id="L168">            results.enqueue(prefix.toString());</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (d == pattern.length())</span>
+<span class="nc" id="L170">            return;</span>
+<span class="nc" id="L171">        char c = pattern.charAt(d);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (c == '.') {</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">            for (char ch = 0; ch &lt; R; ch++) {</span>
+<span class="nc" id="L174">                prefix.append(ch);</span>
+<span class="nc" id="L175">                collect(x.next[ch], prefix, pattern, results);</span>
+<span class="nc" id="L176">                prefix.deleteCharAt(prefix.length() - 1);</span>
+            }
+<span class="nc" id="L178">        }</span>
+        else {
+<span class="nc" id="L180">            prefix.append(c);</span>
+<span class="nc" id="L181">            collect(x.next[c], prefix, pattern, results);</span>
+<span class="nc" id="L182">            prefix.deleteCharAt(prefix.length() - 1);</span>
+        }
+<span class="nc" id="L184">    }</span>
+
+    /**
+     * Returns the string in the set that is the longest prefix of {@code query},
+     * or {@code null}, if no such string.
+     * @param query the query string
+     * @return the string in the set that is the longest prefix of {@code query},
+     *     or {@code null} if no such string
+     * @throws IllegalArgumentException if {@code query} is {@code null}
+     */
+    public String longestPrefixOf(String query) {
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (query == null) throw new IllegalArgumentException(&quot;argument to longestPrefixOf() is null&quot;);</span>
+<span class="nc" id="L196">        int length = longestPrefixOf(root, query, 0, -1);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (length == -1) return null;</span>
+<span class="nc" id="L198">        return query.substring(0, length);</span>
+    }
+
+    // returns the length of the longest string key in the subtrie
+    // rooted at x that is a prefix of the query string,
+    // assuming the first d character match and we have already
+    // found a prefix match of length length
+    private int longestPrefixOf(Node x, String query, int d, int length) {
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        if (x == null) return length;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (x.isString) length = d;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (d == query.length()) return length;</span>
+<span class="nc" id="L209">        char c = query.charAt(d);</span>
+<span class="nc" id="L210">        return longestPrefixOf(x.next[c], query, d+1, length);</span>
+    }
+
+    /**
+     * Removes the key from the set if the key is present.
+     * @param key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(String key) {
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to delete() is null&quot;);</span>
+<span class="nc" id="L220">        root = delete(root, key, 0);</span>
+<span class="nc" id="L221">    }</span>
+
+    private Node delete(Node x, String key, int d) {
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (x == null) return null;</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (d == key.length()) {</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">            if (x.isString) n--;</span>
+<span class="nc" id="L227">            x.isString = false;</span>
+<span class="nc" id="L228">        }</span>
+        else {
+<span class="nc" id="L230">            char c = key.charAt(d);</span>
+<span class="nc" id="L231">            x.next[c] = delete(x.next[c], key, d+1);</span>
+        }
+
+        // remove subtrie rooted at x if it is completely empty
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (x.isString) return x;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        for (int c = 0; c &lt; R; c++)</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            if (x.next[c] != null)</span>
+<span class="nc" id="L238">                return x;</span>
+<span class="nc" id="L239">        return null;</span>
+    }
+
+
+    /**
+     * Unit tests the {@code TrieSET} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L249">        TrieSET set = new TrieSET();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L251">            String key = StdIn.readString();</span>
+<span class="nc" id="L252">            set.add(key);</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L256" title="All 2 branches missed.">        if (set.size() &lt; 100) {</span>
+<span class="nc" id="L257">            StdOut.println(&quot;keys(\&quot;\&quot;):&quot;);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">            for (String key : set) {</span>
+<span class="nc" id="L259">                StdOut.println(key);</span>
+            }
+<span class="nc" id="L261">            StdOut.println();</span>
+        }
+
+<span class="nc" id="L264">        StdOut.println(&quot;longestPrefixOf(\&quot;shellsort\&quot;):&quot;);</span>
+<span class="nc" id="L265">        StdOut.println(set.longestPrefixOf(&quot;shellsort&quot;));</span>
+<span class="nc" id="L266">        StdOut.println();</span>
+
+<span class="nc" id="L268">        StdOut.println(&quot;longestPrefixOf(\&quot;xshellsort\&quot;):&quot;);</span>
+<span class="nc" id="L269">        StdOut.println(set.longestPrefixOf(&quot;xshellsort&quot;));</span>
+<span class="nc" id="L270">        StdOut.println();</span>
+
+<span class="nc" id="L272">        StdOut.println(&quot;keysWithPrefix(\&quot;shor\&quot;):&quot;);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (String s : set.keysWithPrefix(&quot;shor&quot;))</span>
+<span class="nc" id="L274">            StdOut.println(s);</span>
+<span class="nc" id="L275">        StdOut.println();</span>
+
+<span class="nc" id="L277">        StdOut.println(&quot;keysWithPrefix(\&quot;shortening\&quot;):&quot;);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (String s : set.keysWithPrefix(&quot;shortening&quot;))</span>
+<span class="nc" id="L279">            StdOut.println(s);</span>
+<span class="nc" id="L280">        StdOut.println();</span>
+
+<span class="nc" id="L282">        StdOut.println(&quot;keysThatMatch(\&quot;.he.l.\&quot;):&quot;);</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        for (String s : set.keysThatMatch(&quot;.he.l.&quot;))</span>
+<span class="nc" id="L284">            StdOut.println(s);</span>
+<span class="nc" id="L285">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

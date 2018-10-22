@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>BoruvkaMST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">BoruvkaMST.java</span></div><h1>BoruvkaMST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac BoruvkaMST.java
+ *  Execution:    java BoruvkaMST filename.txt
+ *  Dependencies: EdgeWeightedGraph.java Edge.java Bag.java
+ *                UF.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/43mst/tinyEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/mediumEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/largeEWG.txt
+ *
+ *  Compute a minimum spanning forest using Boruvka's algorithm.
+ *
+ *  % java BoruvkaMST tinyEWG.txt 
+ *  0-2 0.26000
+ *  6-2 0.40000
+ *  5-7 0.28000
+ *  4-5 0.35000
+ *  2-3 0.17000
+ *  1-7 0.19000
+ *  0-7 0.16000
+ *  1.81000
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code BoruvkaMST} class represents a data type for computing a
+ *  &lt;em&gt;minimum spanning tree&lt;/em&gt; in an edge-weighted graph.
+ *  The edge weights can be positive, zero, or negative and need not
+ *  be distinct. If the graph is not connected, it computes a &lt;em&gt;minimum
+ *  spanning forest&lt;/em&gt;, which is the union of minimum spanning trees
+ *  in each connected component. The {@code weight()} method returns the 
+ *  weight of a minimum spanning tree and the {@code edges()} method
+ *  returns its edges.
+ *  &lt;p&gt;
+ *  This implementation uses &lt;em&gt;Boruvka's algorithm&lt;/em&gt; and the union-find
+ *  data type.
+ *  The constructor takes time proportional to &lt;em&gt;E&lt;/em&gt; log &lt;em&gt;V&lt;/em&gt;
+ *  and extra space (not including the graph) proportional to &lt;em&gt;V&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the {@code weight()} method takes constant time
+ *  and the {@code edges()} method takes time proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/43mst&quot;&gt;Section 4.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  For alternate implementations, see {@link LazyPrimMST}, {@link PrimMST},
+ *  and {@link KruskalMST}.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L53" title="All 2 branches missed.">public class BoruvkaMST {</span>
+<span class="nc" id="L54">    private static final double FLOATING_POINT_EPSILON = 1E-12;</span>
+
+<span class="nc" id="L56">    private Bag&lt;Edge&gt; mst = new Bag&lt;Edge&gt;();    // edges in MST</span>
+    private double weight;                      // weight of MST
+
+    /**
+     * Compute a minimum spanning tree (or forest) of an edge-weighted graph.
+     * @param G the edge-weighted graph
+     */
+<span class="nc" id="L63">    public BoruvkaMST(EdgeWeightedGraph G) {</span>
+<span class="nc" id="L64">        UF uf = new UF(G.V());</span>
+
+        // repeat at most log V times or until we have V-1 edges
+<span class="nc bnc" id="L67" title="All 4 branches missed.">        for (int t = 1; t &lt; G.V() &amp;&amp; mst.size() &lt; G.V() - 1; t = t + t) {</span>
+
+            // foreach tree in forest, find closest edge
+            // if edge weights are equal, ties are broken in favor of first edge in G.edges()
+<span class="nc" id="L71">            Edge[] closest = new Edge[G.V()];</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            for (Edge e : G.edges()) {</span>
+<span class="nc" id="L73">                int v = e.either(), w = e.other(v);</span>
+<span class="nc" id="L74">                int i = uf.find(v), j = uf.find(w);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">                if (i == j) continue;   // same tree</span>
+<span class="nc bnc" id="L76" title="All 4 branches missed.">                if (closest[i] == null || less(e, closest[i])) closest[i] = e;</span>
+<span class="nc bnc" id="L77" title="All 4 branches missed.">                if (closest[j] == null || less(e, closest[j])) closest[j] = e;</span>
+            }
+
+            // add newly discovered edges to MST
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            for (int i = 0; i &lt; G.V(); i++) {</span>
+<span class="nc" id="L82">                Edge e = closest[i];</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                if (e != null) {</span>
+<span class="nc" id="L84">                    int v = e.either(), w = e.other(v);</span>
+                    // don't add the same edge twice
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                    if (!uf.connected(v, w)) {</span>
+<span class="nc" id="L87">                        mst.add(e);</span>
+<span class="nc" id="L88">                        weight += e.weight();</span>
+<span class="nc" id="L89">                        uf.union(v, w);</span>
+                    }
+                }
+            }
+        }
+
+        // check optimality conditions
+<span class="nc bnc" id="L96" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Returns the edges in a minimum spanning tree (or forest).
+     * @return the edges in a minimum spanning tree (or forest) as
+     *    an iterable of edges
+     */
+    public Iterable&lt;Edge&gt; edges() {
+<span class="nc" id="L105">        return mst;</span>
+    }
+
+
+    /**
+     * Returns the sum of the edge weights in a minimum spanning tree (or forest).
+     * @return the sum of the edge weights in a minimum spanning tree (or forest)
+     */
+    public double weight() {
+<span class="nc" id="L114">        return weight;</span>
+    }
+
+    // is the weight of edge e strictly less than that of edge f?
+    private static boolean less(Edge e, Edge f) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        return e.weight() &lt; f.weight();</span>
+    }
+
+    // check optimality conditions (takes time proportional to E V lg* V)
+    private boolean check(EdgeWeightedGraph G) {
+
+        // check weight
+<span class="nc" id="L126">        double totalWeight = 0.0;</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        for (Edge e : edges()) {</span>
+<span class="nc" id="L128">            totalWeight += e.weight();</span>
+        }
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (Math.abs(totalWeight - weight()) &gt; FLOATING_POINT_EPSILON) {</span>
+<span class="nc" id="L131">            System.err.printf(&quot;Weight of edges does not equal weight(): %f vs. %f\n&quot;, totalWeight, weight());</span>
+<span class="nc" id="L132">            return false;</span>
+        }
+
+        // check that it is acyclic
+<span class="nc" id="L136">        UF uf = new UF(G.V());</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        for (Edge e : edges()) {</span>
+<span class="nc" id="L138">            int v = e.either(), w = e.other(v);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (uf.connected(v, w)) {</span>
+<span class="nc" id="L140">                System.err.println(&quot;Not a forest&quot;);</span>
+<span class="nc" id="L141">                return false;</span>
+            }
+<span class="nc" id="L143">            uf.union(v, w);</span>
+        }
+
+        // check that it is a spanning forest
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        for (Edge e : G.edges()) {</span>
+<span class="nc" id="L148">            int v = e.either(), w = e.other(v);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            if (!uf.connected(v, w)) {</span>
+<span class="nc" id="L150">                System.err.println(&quot;Not a spanning forest&quot;);</span>
+<span class="nc" id="L151">                return false;</span>
+            }
+        }
+
+        // check that it is a minimal spanning forest (cut optimality conditions)
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        for (Edge e : edges()) {</span>
+
+            // all edges in MST except e
+<span class="nc" id="L159">            uf = new UF(G.V());</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            for (Edge f : mst) {</span>
+<span class="nc" id="L161">                int x = f.either(), y = f.other(x);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">                if (f != e) uf.union(x, y);</span>
+            }
+
+            // check that e is min weight edge in crossing cut
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            for (Edge f : G.edges()) {</span>
+<span class="nc" id="L167">                int x = f.either(), y = f.other(x);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                if (!uf.connected(x, y)) {</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                    if (f.weight() &lt; e.weight()) {</span>
+<span class="nc" id="L170">                        System.err.println(&quot;Edge &quot; + f + &quot; violates cut optimality conditions&quot;);</span>
+<span class="nc" id="L171">                        return false;</span>
+                    }
+                }
+            }
+
+        }
+
+<span class="nc" id="L178">        return true;</span>
+    }
+
+    /**
+     * Unit tests the {@code BoruvkaMST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L187">        In in = new In(args[0]);</span>
+<span class="nc" id="L188">        EdgeWeightedGraph G = new EdgeWeightedGraph(in);</span>
+<span class="nc" id="L189">        BoruvkaMST mst = new BoruvkaMST(G);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        for (Edge e : mst.edges()) {</span>
+<span class="nc" id="L191">            StdOut.println(e);</span>
+        }
+<span class="nc" id="L193">        StdOut.printf(&quot;%.5f\n&quot;, mst.weight());</span>
+<span class="nc" id="L194">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

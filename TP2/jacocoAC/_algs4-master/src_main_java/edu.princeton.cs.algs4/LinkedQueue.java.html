@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LinkedQueue.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LinkedQueue.java</span></div><h1>LinkedQueue.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LinkedQueue.java
+ *  Execution:    java LinkedQueue &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/13stacks/tobe.txt  
+ *
+ *  A generic queue, implemented using a singly linked list.
+ *
+ *  % java Queue &lt; tobe.txt 
+ *  to be or not to be (2 left on queue)
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code LinkedQueue} class represents a first-in-first-out (FIFO)
+ *  queue of generic items.
+ *  It supports the usual &lt;em&gt;enqueue&lt;/em&gt; and &lt;em&gt;dequeue&lt;/em&gt;
+ *  operations, along with methods for peeking at the first item,
+ *  testing if the queue is empty, and iterating through
+ *  the items in FIFO order.
+ *  &lt;p&gt;
+ *  This implementation uses a singly linked list with a non-static nested class 
+ *  for linked-list nodes.  See {@link Queue} for a version that uses a static nested class.
+ *  The &lt;em&gt;enqueue&lt;/em&gt;, &lt;em&gt;dequeue&lt;/em&gt;, &lt;em&gt;peek&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt;
+ *  operations all take constant time in the worst case.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/13stacks&quot;&gt;Section 1.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L38" title="All 2 branches missed.">public class LinkedQueue&lt;Item&gt; implements Iterable&lt;Item&gt; {</span>
+    private int n;         // number of elements on queue
+    private Node first;    // beginning of queue
+    private Node last;     // end of queue
+
+    // helper linked list class
+<span class="nc" id="L44">    private class Node {</span>
+        private Item item;
+        private Node next;
+    }
+
+    /**
+     * Initializes an empty queue.
+     */
+<span class="nc" id="L52">    public LinkedQueue() {</span>
+<span class="nc" id="L53">        first = null;</span>
+<span class="nc" id="L54">        last  = null;</span>
+<span class="nc" id="L55">        n = 0;</span>
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L57">    }</span>
+
+    /**
+     * Is this queue empty?
+     * @return true if this queue is empty; false otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return first == null;</span>
+    }
+
+    /**
+     * Returns the number of items in this queue.
+     * @return the number of items in this queue
+     */
+    public int size() {
+<span class="nc" id="L72">        return n;     </span>
+    }
+
+    /**
+     * Returns the item least recently added to this queue.
+     * @return the item least recently added to this queue
+     * @throws java.util.NoSuchElementException if this queue is empty
+     */
+    public Item peek() {
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Queue underflow&quot;);</span>
+<span class="nc" id="L82">        return first.item;</span>
+    }
+
+    /**
+     * Adds the item to this queue.
+     * @param item the item to add
+     */
+    public void enqueue(Item item) {
+<span class="nc" id="L90">        Node oldlast = last;</span>
+<span class="nc" id="L91">        last = new Node();</span>
+<span class="nc" id="L92">        last.item = item;</span>
+<span class="nc" id="L93">        last.next = null;</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (isEmpty()) first = last;</span>
+<span class="nc" id="L95">        else           oldlast.next = last;</span>
+<span class="nc" id="L96">        n++;</span>
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L98">    }</span>
+
+    /**
+     * Removes and returns the item on this queue that was least recently added.
+     * @return the item on this queue that was least recently added
+     * @throws java.util.NoSuchElementException if this queue is empty
+     */
+    public Item dequeue() {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (isEmpty()) throw new NoSuchElementException(&quot;Queue underflow&quot;);</span>
+<span class="nc" id="L107">        Item item = first.item;</span>
+<span class="nc" id="L108">        first = first.next;</span>
+<span class="nc" id="L109">        n--;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (isEmpty()) last = null;   // to avoid loitering</span>
+<span class="nc bnc" id="L111" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L112">        return item;</span>
+    }
+
+    /**
+     * Returns a string representation of this queue.
+     * @return the sequence of items in FIFO order, separated by spaces
+     */
+    public String toString() {
+<span class="nc" id="L120">        StringBuilder s = new StringBuilder();</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        for (Item item : this)</span>
+<span class="nc" id="L122">            s.append(item + &quot; &quot;);</span>
+<span class="nc" id="L123">        return s.toString();</span>
+    } 
+
+    // check internal invariants
+    private boolean check() {
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (n &lt; 0) {</span>
+<span class="nc" id="L129">            return false;</span>
+        }
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        else if (n == 0) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            if (first != null) return false;</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            if (last  != null) return false;</span>
+        }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        else if (n == 1) {</span>
+<span class="nc bnc" id="L136" title="All 4 branches missed.">            if (first == null || last == null) return false;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            if (first != last)                 return false;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            if (first.next != null)            return false;</span>
+        }
+        else {
+<span class="nc bnc" id="L141" title="All 4 branches missed.">            if (first == null || last == null) return false;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            if (first == last)      return false;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            if (first.next == null) return false;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (last.next  != null) return false;</span>
+
+            // check internal consistency of instance variable n
+<span class="nc" id="L147">            int numberOfNodes = 0;</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">            for (Node x = first; x != null &amp;&amp; numberOfNodes &lt;= n; x = x.next) {</span>
+<span class="nc" id="L149">                numberOfNodes++;</span>
+            }
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (numberOfNodes != n) return false;</span>
+
+            // check internal consistency of instance variable last
+<span class="nc" id="L154">            Node lastNode = first;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            while (lastNode.next != null) {</span>
+<span class="nc" id="L156">                lastNode = lastNode.next;</span>
+            }
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (last != lastNode) return false;</span>
+        }
+
+<span class="nc" id="L161">        return true;</span>
+    } 
+ 
+
+    /**
+     * Returns an iterator that iterates over the items in this queue in FIFO order.
+     * @return an iterator that iterates over the items in this queue in FIFO order
+     */
+    public Iterator&lt;Item&gt; iterator()  {
+<span class="nc" id="L170">        return new ListIterator();  </span>
+    }
+
+    // an iterator, doesn't implement remove() since it's optional
+<span class="nc" id="L174">    private class ListIterator implements Iterator&lt;Item&gt; {</span>
+<span class="nc" id="L175">        private Node current = first;</span>
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        public boolean hasNext()  { return current != null;                     }</span>
+<span class="nc" id="L178">        public void remove()      { throw new UnsupportedOperationException();  }</span>
+
+        public Item next() {
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L182">            Item item = current.item;</span>
+<span class="nc" id="L183">            current = current.next; </span>
+<span class="nc" id="L184">            return item;</span>
+        }
+    }
+
+
+    /**
+     * Unit tests the {@code LinkedQueue} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L195">        LinkedQueue&lt;String&gt; queue = new LinkedQueue&lt;String&gt;();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L197">            String item = StdIn.readString();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">            if (!item.equals(&quot;-&quot;))</span>
+<span class="nc" id="L199">                queue.enqueue(item);</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            else if (!queue.isEmpty())</span>
+<span class="nc" id="L201">                StdOut.print(queue.dequeue() + &quot; &quot;);</span>
+        }
+<span class="nc" id="L203">        StdOut.println(&quot;(&quot; + queue.size() + &quot; left on queue)&quot;);</span>
+<span class="nc" id="L204">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

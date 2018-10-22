@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Shell.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Shell.java</span></div><h1>Shell.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Shell.java
+ *  Execution:    java Shell &lt; input.txt
+ *  Dependencies: StdOut.java StdIn.java
+ *  Data files:   https://algs4.cs.princeton.edu/21elementary/tiny.txt
+ *                https://algs4.cs.princeton.edu/21elementary/words3.txt
+ *   
+ *  Sorts a sequence of strings from standard input using shellsort.
+ *
+ *  Uses increment sequence proposed by Sedgewick and Incerpi.
+ *  The nth element of the sequence is the smallest integer &gt;= 2.5^n
+ *  that is relatively prime to all previous terms in the sequence.
+ *  For example, incs[4] is 41 because 2.5^4 = 39.0625 and 41 is
+ *  the next integer that is relatively prime to 3, 7, and 16.
+ *   
+ *  % more tiny.txt
+ *  S O R T E X A M P L E
+ *
+ *  % java Shell &lt; tiny.txt
+ *  A E E L M O P R S T X                 [ one string per line ]
+ *    
+ *  % more words3.txt
+ *  bed bug dad yes zoo ... all bad yet
+ *  
+ *  % java Shell &lt; words3.txt
+ *  all bad bed bug dad ... yes yet zoo    [ one string per line ]
+ *
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Shell} class provides static methods for sorting an
+ *  array using Shellsort with Knuth's increment sequence (1, 4, 13, 40, ...).
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/21elementary&quot;&gt;Section 2.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L43" title="All 2 branches missed.">public class Shell {</span>
+
+    // This class should not be instantiated.
+<span class="nc" id="L46">    private Shell() { }</span>
+
+    /**
+     * Rearranges the array in ascending order, using the natural order.
+     * @param a the array to be sorted
+     */
+    public static void sort(Comparable[] a) {
+<span class="nc" id="L53">        int n = a.length;</span>
+
+        // 3x+1 increment sequence:  1, 4, 13, 40, 121, 364, 1093, ... 
+<span class="nc" id="L56">        int h = 1;</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        while (h &lt; n/3) h = 3*h + 1; </span>
+
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        while (h &gt;= 1) {</span>
+            // h-sort the array
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            for (int i = h; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">                for (int j = i; j &gt;= h &amp;&amp; less(a[j], a[j-h]); j -= h) {</span>
+<span class="nc" id="L63">                    exch(a, j, j-h);</span>
+                }
+            }
+<span class="nc bnc" id="L66" title="All 4 branches missed.">            assert isHsorted(a, h); </span>
+<span class="nc" id="L67">            h /= 3;</span>
+        }
+<span class="nc bnc" id="L69" title="All 4 branches missed.">        assert isSorted(a);</span>
+<span class="nc" id="L70">    }</span>
+
+
+
+   /***************************************************************************
+    *  Helper sorting functions.
+    ***************************************************************************/
+    
+    // is v &lt; w ?
+    private static boolean less(Comparable v, Comparable w) {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        return v.compareTo(w) &lt; 0;</span>
+    }
+        
+    // exchange a[i] and a[j]
+    private static void exch(Object[] a, int i, int j) {
+<span class="nc" id="L85">        Object swap = a[i];</span>
+<span class="nc" id="L86">        a[i] = a[j];</span>
+<span class="nc" id="L87">        a[j] = swap;</span>
+<span class="nc" id="L88">    }</span>
+
+
+   /***************************************************************************
+    *  Check if array is sorted - useful for debugging.
+    ***************************************************************************/
+    private static boolean isSorted(Comparable[] a) {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (int i = 1; i &lt; a.length; i++)</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            if (less(a[i], a[i-1])) return false;</span>
+<span class="nc" id="L97">        return true;</span>
+    }
+
+    // is the array h-sorted?
+    private static boolean isHsorted(Comparable[] a, int h) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        for (int i = h; i &lt; a.length; i++)</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            if (less(a[i], a[i-h])) return false;</span>
+<span class="nc" id="L104">        return true;</span>
+    }
+
+    // print array to standard output
+    private static void show(Comparable[] a) {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++) {</span>
+<span class="nc" id="L110">            StdOut.println(a[i]);</span>
+        }
+<span class="nc" id="L112">    }</span>
+
+    /**
+     * Reads in a sequence of strings from standard input; Shellsorts them; 
+     * and prints them to standard output in ascending order. 
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L121">        String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L122">        Shell.sort(a);</span>
+<span class="nc" id="L123">        show(a);</span>
+<span class="nc" id="L124">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

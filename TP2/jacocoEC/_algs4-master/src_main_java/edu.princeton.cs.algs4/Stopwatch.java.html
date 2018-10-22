@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Stopwatch.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Stopwatch.java</span></div><h1>Stopwatch.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Stopwatch.java
+ *  Execution:    java Stopwatch n
+ *  Dependencies: none
+ *
+ *  A utility class to measure the running time (wall clock) of a program.
+ *
+ *  % java8 Stopwatch 100000000
+ *  6.666667e+11  0.5820 seconds
+ *  6.666667e+11  8.4530 seconds
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Stopwatch} data type is for measuring
+ *  the time that elapses between the start and end of a
+ *  programming task (wall-clock time).
+ *
+ *  See {@link StopwatchCPU} for a version that measures CPU time.
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/14analysis&quot;&gt;Section 1.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+
+
+public class Stopwatch { 
+
+    private final long start;
+
+    /**
+     * Initializes a new stopwatch.
+     */
+<span class="nc" id="L38">    public Stopwatch() {</span>
+<span class="nc" id="L39">        start = System.currentTimeMillis();</span>
+<span class="nc" id="L40">    } </span>
+
+
+    /**
+     * Returns the elapsed CPU time (in seconds) since the stopwatch was created.
+     *
+     * @return elapsed CPU time (in seconds) since the stopwatch was created
+     */
+    public double elapsedTime() {
+<span class="nc" id="L49">        long now = System.currentTimeMillis();</span>
+<span class="nc" id="L50">        return (now - start) / 1000.0;</span>
+    }
+
+    
+    /**
+     * Unit tests the {@code Stopwatch} data type.
+     * Takes a command-line argument {@code n} and computes the 
+     * sum of the square roots of the first {@code n} positive integers,
+     * first using {@code Math.sqrt()}, then using {@code Math.pow()}.
+     * It prints to standard output the sum and the amount of time to
+     * compute the sum. Note that the discrete sum can be approximated by
+     * an integral - the sum should be approximately 2/3 * (n^(3/2) - 1).
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L66">        int n = Integer.parseInt(args[0]);</span>
+
+        // sum of square roots of integers from 1 to n using Math.sqrt(x).
+<span class="nc" id="L69">        Stopwatch timer1 = new Stopwatch();</span>
+<span class="nc" id="L70">        double sum1 = 0.0;</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        for (int i = 1; i &lt;= n; i++) {</span>
+<span class="nc" id="L72">            sum1 += Math.sqrt(i);</span>
+        }
+<span class="nc" id="L74">        double time1 = timer1.elapsedTime();</span>
+<span class="nc" id="L75">        StdOut.printf(&quot;%e (%.2f seconds)\n&quot;, sum1, time1);</span>
+
+        // sum of square roots of integers from 1 to n using Math.pow(x, 0.5).
+<span class="nc" id="L78">        Stopwatch timer2 = new Stopwatch();</span>
+<span class="nc" id="L79">        double sum2 = 0.0;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        for (int i = 1; i &lt;= n; i++) {</span>
+<span class="nc" id="L81">            sum2 += Math.pow(i, 0.5);</span>
+        }
+<span class="nc" id="L83">        double time2 = timer2.elapsedTime();</span>
+<span class="nc" id="L84">        StdOut.printf(&quot;%e (%.2f seconds)\n&quot;, sum2, time2);</span>
+<span class="nc" id="L85">    }</span>
+} 
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Digraph.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Digraph.java</span></div><h1>Digraph.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Digraph.java
+ *  Execution:    java Digraph filename.txt
+ *  Dependencies: Bag.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt  
+ *
+ *  A graph, implemented using an array of lists.
+ *  Parallel edges and self-loops are permitted.
+ *
+ *  % java Digraph tinyDG.txt
+ *  13 vertices, 22 edges
+ *  0: 5 1 
+ *  1: 
+ *  2: 0 3 
+ *  3: 5 2 
+ *  4: 3 2 
+ *  5: 4 
+ *  6: 9 4 8 0 
+ *  7: 6 9
+ *  8: 6 
+ *  9: 11 10 
+ *  10: 12 
+ *  11: 4 12 
+ *  12: 9 
+ *  
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code Digraph} class represents a directed graph of vertices
+ *  named 0 through &lt;em&gt;V&lt;/em&gt; - 1.
+ *  It supports the following two primary operations: add an edge to the digraph,
+ *  iterate over all of the vertices adjacent from a given vertex.
+ *  Parallel edges and self-loops are permitted.
+ *  &lt;p&gt;
+ *  This implementation uses an adjacency-lists representation, which 
+ *  is a vertex-indexed array of {@link Bag} objects.
+ *  All operations take constant time (in the worst case) except
+ *  iterating over the vertices adjacent from a given vertex, which takes
+ *  time proportional to the number of such vertices.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+
+public class Digraph {
+<span class="nc" id="L56">    private static final String NEWLINE = System.getProperty(&quot;line.separator&quot;);</span>
+
+    private final int V;           // number of vertices in this digraph
+    private int E;                 // number of edges in this digraph
+    private Bag&lt;Integer&gt;[] adj;    // adj[v] = adjacency list for vertex v
+    private int[] indegree;        // indegree[v] = indegree of vertex v
+    
+    /**
+     * Initializes an empty digraph with &lt;em&gt;V&lt;/em&gt; vertices.
+     *
+     * @param  V the number of vertices
+     * @throws IllegalArgumentException if {@code V &lt; 0}
+     */
+<span class="nc" id="L69">    public Digraph(int V) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (V &lt; 0) throw new IllegalArgumentException(&quot;Number of vertices in a Digraph must be nonnegative&quot;);</span>
+<span class="nc" id="L71">        this.V = V;</span>
+<span class="nc" id="L72">        this.E = 0;</span>
+<span class="nc" id="L73">        indegree = new int[V];</span>
+<span class="nc" id="L74">        adj = (Bag&lt;Integer&gt;[]) new Bag[V];</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L76">            adj[v] = new Bag&lt;Integer&gt;();</span>
+        }
+<span class="nc" id="L78">    }</span>
+
+    /**  
+     * Initializes a digraph from the specified input stream.
+     * The format is the number of vertices &lt;em&gt;V&lt;/em&gt;,
+     * followed by the number of edges &lt;em&gt;E&lt;/em&gt;,
+     * followed by &lt;em&gt;E&lt;/em&gt; pairs of vertices, with each entry separated by whitespace.
+     *
+     * @param  in the input stream
+     * @throws IllegalArgumentException if the endpoints of any edge are not in prescribed range
+     * @throws IllegalArgumentException if the number of vertices or edges is negative
+     * @throws IllegalArgumentException if the input stream is in the wrong format
+     */
+<span class="nc" id="L91">    public Digraph(In in) {</span>
+        try {
+<span class="nc" id="L93">            this.V = in.readInt();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (V &lt; 0) throw new IllegalArgumentException(&quot;number of vertices in a Digraph must be nonnegative&quot;);</span>
+<span class="nc" id="L95">            indegree = new int[V];</span>
+<span class="nc" id="L96">            adj = (Bag&lt;Integer&gt;[]) new Bag[V];</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L98">                adj[v] = new Bag&lt;Integer&gt;();</span>
+            }
+<span class="nc" id="L100">            int E = in.readInt();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if (E &lt; 0) throw new IllegalArgumentException(&quot;number of edges in a Digraph must be nonnegative&quot;);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            for (int i = 0; i &lt; E; i++) {</span>
+<span class="nc" id="L103">                int v = in.readInt();</span>
+<span class="nc" id="L104">                int w = in.readInt();</span>
+<span class="nc" id="L105">                addEdge(v, w); </span>
+            }
+<span class="nc" id="L107">        }</span>
+<span class="nc" id="L108">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L109">            throw new IllegalArgumentException(&quot;invalid input format in Digraph constructor&quot;, e);</span>
+        }
+<span class="nc" id="L111">    }</span>
+
+    /**
+     * Initializes a new digraph that is a deep copy of the specified digraph.
+     *
+     * @param  G the digraph to copy
+     */
+    public Digraph(Digraph G) {
+<span class="nc" id="L119">        this(G.V());</span>
+<span class="nc" id="L120">        this.E = G.E();</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc" id="L122">            this.indegree[v] = G.indegree(v);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+            // reverse so that adjacency list is in same order as original
+<span class="nc" id="L125">            Stack&lt;Integer&gt; reverse = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            for (int w : G.adj[v]) {</span>
+<span class="nc" id="L127">                reverse.push(w);</span>
+            }
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            for (int w : reverse) {</span>
+<span class="nc" id="L130">                adj[v].add(w);</span>
+            }
+        }
+<span class="nc" id="L133">    }</span>
+        
+    /**
+     * Returns the number of vertices in this digraph.
+     *
+     * @return the number of vertices in this digraph
+     */
+    public int V() {
+<span class="nc" id="L141">        return V;</span>
+    }
+
+    /**
+     * Returns the number of edges in this digraph.
+     *
+     * @return the number of edges in this digraph
+     */
+    public int E() {
+<span class="nc" id="L150">        return E;</span>
+    }
+
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc bnc" id="L156" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L157">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L158">    }</span>
+
+    /**
+     * Adds the directed edge v→w to this digraph.
+     *
+     * @param  v the tail vertex
+     * @param  w the head vertex
+     * @throws IllegalArgumentException unless both {@code 0 &lt;= v &lt; V} and {@code 0 &lt;= w &lt; V}
+     */
+    public void addEdge(int v, int w) {
+<span class="nc" id="L168">        validateVertex(v);</span>
+<span class="nc" id="L169">        validateVertex(w);</span>
+<span class="nc" id="L170">        adj[v].add(w);</span>
+<span class="nc" id="L171">        indegree[w]++;</span>
+<span class="nc" id="L172">        E++;</span>
+<span class="nc" id="L173">    }</span>
+
+    /**
+     * Returns the vertices adjacent from vertex {@code v} in this digraph.
+     *
+     * @param  v the vertex
+     * @return the vertices adjacent from vertex {@code v} in this digraph, as an iterable
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public Iterable&lt;Integer&gt; adj(int v) {
+<span class="nc" id="L183">        validateVertex(v);</span>
+<span class="nc" id="L184">        return adj[v];</span>
+    }
+
+    /**
+     * Returns the number of directed edges incident from vertex {@code v}.
+     * This is known as the &lt;em&gt;outdegree&lt;/em&gt; of vertex {@code v}.
+     *
+     * @param  v the vertex
+     * @return the outdegree of vertex {@code v}               
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int outdegree(int v) {
+<span class="nc" id="L196">        validateVertex(v);</span>
+<span class="nc" id="L197">        return adj[v].size();</span>
+    }
+
+    /**
+     * Returns the number of directed edges incident to vertex {@code v}.
+     * This is known as the &lt;em&gt;indegree&lt;/em&gt; of vertex {@code v}.
+     *
+     * @param  v the vertex
+     * @return the indegree of vertex {@code v}               
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int indegree(int v) {
+<span class="nc" id="L209">        validateVertex(v);</span>
+<span class="nc" id="L210">        return indegree[v];</span>
+    }
+
+    /**
+     * Returns the reverse of the digraph.
+     *
+     * @return the reverse of the digraph
+     */
+    public Digraph reverse() {
+<span class="nc" id="L219">        Digraph reverse = new Digraph(V);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            for (int w : adj(v)) {</span>
+<span class="nc" id="L222">                reverse.addEdge(w, v);</span>
+            }
+        }
+<span class="nc" id="L225">        return reverse;</span>
+    }
+
+    /**
+     * Returns a string representation of the graph.
+     *
+     * @return the number of vertices &lt;em&gt;V&lt;/em&gt;, followed by the number of edges &lt;em&gt;E&lt;/em&gt;,  
+     *         followed by the &lt;em&gt;V&lt;/em&gt; adjacency lists
+     */
+    public String toString() {
+<span class="nc" id="L235">        StringBuilder s = new StringBuilder();</span>
+<span class="nc" id="L236">        s.append(V + &quot; vertices, &quot; + E + &quot; edges &quot; + NEWLINE);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L238">            s.append(String.format(&quot;%d: &quot;, v));</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">            for (int w : adj[v]) {</span>
+<span class="nc" id="L240">                s.append(String.format(&quot;%d &quot;, w));</span>
+            }
+<span class="nc" id="L242">            s.append(NEWLINE);</span>
+        }
+<span class="nc" id="L244">        return s.toString();</span>
+    }
+
+    /**
+     * Unit tests the {@code Digraph} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L253">        In in = new In(args[0]);</span>
+<span class="nc" id="L254">        Digraph G = new Digraph(in);</span>
+<span class="nc" id="L255">        StdOut.println(G);</span>
+<span class="nc" id="L256">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

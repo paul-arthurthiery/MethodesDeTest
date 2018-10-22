@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Particle.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Particle.java</span></div><h1>Particle.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Particle.java
+ *  Execution:    none
+ *  Dependencies: StdDraw.java
+ *      
+ *  A particle moving in the unit box with a given position, velocity,
+ *  radius, and mass.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.awt.Color;
+
+/**
+ *  The {@code Particle} class represents a particle moving in the unit box,
+ *  with a given position, velocity, radius, and mass. Methods are provided
+ *  for moving the particle and for predicting and resolvling elastic
+ *  collisions with vertical walls, horizontal walls, and other particles.
+ *  This data type is mutable because the position and velocity change.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/61event&quot;&gt;Section 6.1&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Particle {
+    private static final double INFINITY = Double.POSITIVE_INFINITY;
+
+    private double rx, ry;        // position
+    private double vx, vy;        // velocity
+    private int count;            // number of collisions so far
+    private final double radius;  // radius
+    private final double mass;    // mass
+    private final Color color;    // color
+
+
+    /**
+     * Initializes a particle with the specified position, velocity, radius, mass, and color.
+     *
+     * @param  rx &lt;em&gt;x&lt;/em&gt;-coordinate of position
+     * @param  ry &lt;em&gt;y&lt;/em&gt;-coordinate of position
+     * @param  vx &lt;em&gt;x&lt;/em&gt;-coordinate of velocity
+     * @param  vy &lt;em&gt;y&lt;/em&gt;-coordinate of velocity
+     * @param  radius the radius
+     * @param  mass the mass
+     * @param  color the color
+     */
+<span class="nc" id="L51">    public Particle(double rx, double ry, double vx, double vy, double radius, double mass, Color color) {</span>
+<span class="nc" id="L52">        this.vx = vx;</span>
+<span class="nc" id="L53">        this.vy = vy;</span>
+<span class="nc" id="L54">        this.rx = rx;</span>
+<span class="nc" id="L55">        this.ry = ry;</span>
+<span class="nc" id="L56">        this.radius = radius;</span>
+<span class="nc" id="L57">        this.mass   = mass;</span>
+<span class="nc" id="L58">        this.color  = color;</span>
+<span class="nc" id="L59">    }</span>
+         
+    /**
+     * Initializes a particle with a random position and velocity.
+     * The position is uniform in the unit box; the velocity in
+     * either direciton is chosen uniformly at random.
+     */
+<span class="nc" id="L66">    public Particle() {</span>
+<span class="nc" id="L67">        rx     = StdRandom.uniform(0.0, 1.0);</span>
+<span class="nc" id="L68">        ry     = StdRandom.uniform(0.0, 1.0);</span>
+<span class="nc" id="L69">        vx     = StdRandom.uniform(-0.005, 0.005);</span>
+<span class="nc" id="L70">        vy     = StdRandom.uniform(-0.005, 0.005);</span>
+<span class="nc" id="L71">        radius = 0.01;</span>
+<span class="nc" id="L72">        mass   = 0.5;</span>
+<span class="nc" id="L73">        color  = Color.BLACK;</span>
+<span class="nc" id="L74">    }</span>
+
+    /**
+     * Moves this particle in a straight line (based on its velocity)
+     * for the specified amount of time.
+     *
+     * @param  dt the amount of time
+     */
+    public void move(double dt) {
+<span class="nc" id="L83">        rx += vx * dt;</span>
+<span class="nc" id="L84">        ry += vy * dt;</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Draws this particle to standard draw.
+     */
+    public void draw() {
+<span class="nc" id="L91">        StdDraw.setPenColor(color);</span>
+<span class="nc" id="L92">        StdDraw.filledCircle(rx, ry, radius);</span>
+<span class="nc" id="L93">    }</span>
+
+    /**
+     * Returns the number of collisions involving this particle with
+     * vertical walls, horizontal walls, or other particles.
+     * This is equal to the number of calls to {@link #bounceOff},
+     * {@link #bounceOffVerticalWall}, and
+     * {@link #bounceOffHorizontalWall}.
+     *
+     * @return the number of collisions involving this particle with
+     *         vertical walls, horizontal walls, or other particles
+     */
+    public int count() {
+<span class="nc" id="L106">        return count;</span>
+    }
+
+    /**
+     * Returns the amount of time for this particle to collide with the specified
+     * particle, assuming no interening collisions.
+     *
+     * @param  that the other particle
+     * @return the amount of time for this particle to collide with the specified
+     *         particle, assuming no interening collisions; 
+     *         {@code Double.POSITIVE_INFINITY} if the particles will not collide
+     */
+    public double timeToHit(Particle that) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (this == that) return INFINITY;</span>
+<span class="nc" id="L120">        double dx  = that.rx - this.rx;</span>
+<span class="nc" id="L121">        double dy  = that.ry - this.ry;</span>
+<span class="nc" id="L122">        double dvx = that.vx - this.vx;</span>
+<span class="nc" id="L123">        double dvy = that.vy - this.vy;</span>
+<span class="nc" id="L124">        double dvdr = dx*dvx + dy*dvy;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (dvdr &gt; 0) return INFINITY;</span>
+<span class="nc" id="L126">        double dvdv = dvx*dvx + dvy*dvy;</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (dvdv == 0) return INFINITY;</span>
+<span class="nc" id="L128">        double drdr = dx*dx + dy*dy;</span>
+<span class="nc" id="L129">        double sigma = this.radius + that.radius;</span>
+<span class="nc" id="L130">        double d = (dvdr*dvdr) - dvdv * (drdr - sigma*sigma);</span>
+        // if (drdr &lt; sigma*sigma) StdOut.println(&quot;overlapping particles&quot;);
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (d &lt; 0) return INFINITY;</span>
+<span class="nc" id="L133">        return -(dvdr + Math.sqrt(d)) / dvdv;</span>
+    }
+
+    /**
+     * Returns the amount of time for this particle to collide with a vertical
+     * wall, assuming no interening collisions.
+     *
+     * @return the amount of time for this particle to collide with a vertical wall,
+     *         assuming no interening collisions; 
+     *         {@code Double.POSITIVE_INFINITY} if the particle will not collide
+     *         with a vertical wall
+     */
+    public double timeToHitVerticalWall() {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if      (vx &gt; 0) return (1.0 - rx - radius) / vx;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        else if (vx &lt; 0) return (radius - rx) / vx;  </span>
+<span class="nc" id="L148">        else             return INFINITY;</span>
+    }
+
+    /**
+     * Returns the amount of time for this particle to collide with a horizontal
+     * wall, assuming no interening collisions.
+     *
+     * @return the amount of time for this particle to collide with a horizontal wall,
+     *         assuming no interening collisions; 
+     *         {@code Double.POSITIVE_INFINITY} if the particle will not collide
+     *         with a horizontal wall
+     */
+    public double timeToHitHorizontalWall() {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if      (vy &gt; 0) return (1.0 - ry - radius) / vy;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        else if (vy &lt; 0) return (radius - ry) / vy;</span>
+<span class="nc" id="L163">        else             return INFINITY;</span>
+    }
+
+    /**
+     * Updates the velocities of this particle and the specified particle according
+     * to the laws of elastic collision. Assumes that the particles are colliding
+     * at this instant.
+     *
+     * @param  that the other particle
+     */
+    public void bounceOff(Particle that) {
+<span class="nc" id="L174">        double dx  = that.rx - this.rx;</span>
+<span class="nc" id="L175">        double dy  = that.ry - this.ry;</span>
+<span class="nc" id="L176">        double dvx = that.vx - this.vx;</span>
+<span class="nc" id="L177">        double dvy = that.vy - this.vy;</span>
+<span class="nc" id="L178">        double dvdr = dx*dvx + dy*dvy;             // dv dot dr</span>
+<span class="nc" id="L179">        double dist = this.radius + that.radius;   // distance between particle centers at collison</span>
+
+        // magnitude of normal force
+<span class="nc" id="L182">        double magnitude = 2 * this.mass * that.mass * dvdr / ((this.mass + that.mass) * dist);</span>
+
+        // normal force, and in x and y directions
+<span class="nc" id="L185">        double fx = magnitude * dx / dist;</span>
+<span class="nc" id="L186">        double fy = magnitude * dy / dist;</span>
+
+        // update velocities according to normal force
+<span class="nc" id="L189">        this.vx += fx / this.mass;</span>
+<span class="nc" id="L190">        this.vy += fy / this.mass;</span>
+<span class="nc" id="L191">        that.vx -= fx / that.mass;</span>
+<span class="nc" id="L192">        that.vy -= fy / that.mass;</span>
+
+        // update collision counts
+<span class="nc" id="L195">        this.count++;</span>
+<span class="nc" id="L196">        that.count++;</span>
+<span class="nc" id="L197">    }</span>
+
+    /**
+     * Updates the velocity of this particle upon collision with a vertical
+     * wall (by reflecting the velocity in the &lt;em&gt;x&lt;/em&gt;-direction).
+     * Assumes that the particle is colliding with a vertical wall at this instant.
+     */
+    public void bounceOffVerticalWall() {
+<span class="nc" id="L205">        vx = -vx;</span>
+<span class="nc" id="L206">        count++;</span>
+<span class="nc" id="L207">    }</span>
+
+    /**
+     * Updates the velocity of this particle upon collision with a horizontal
+     * wall (by reflecting the velocity in the &lt;em&gt;y&lt;/em&gt;-direction).
+     * Assumes that the particle is colliding with a horizontal wall at this instant.
+     */
+    public void bounceOffHorizontalWall() {
+<span class="nc" id="L215">        vy = -vy;</span>
+<span class="nc" id="L216">        count++;</span>
+<span class="nc" id="L217">    }</span>
+
+    /**
+     * Returns the kinetic energy of this particle.
+     * The kinetic energy is given by the formula 1/2 &lt;em&gt;m&lt;/em&gt; &lt;em&gt;v&lt;/em&gt;&lt;sup&gt;2&lt;/sup&gt;,
+     * where &lt;em&gt;m&lt;/em&gt; is the mass of this particle and &lt;em&gt;v&lt;/em&gt; is its velocity.
+     *
+     * @return the kinetic energy of this particle
+     */
+    public double kineticEnergy() {
+<span class="nc" id="L227">        return 0.5 * mass * (vx*vx + vy*vy);</span>
+    }
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

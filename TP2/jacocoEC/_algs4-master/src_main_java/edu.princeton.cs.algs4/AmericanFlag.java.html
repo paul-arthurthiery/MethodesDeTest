@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>AmericanFlag.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">AmericanFlag.java</span></div><h1>AmericanFlag.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac AmericanFlag.java
+ *  Execution:    java AmericanFlag &lt; input.txt
+ *                java AmericanFlag int &lt; input-non-negative-ints.txt  
+ *  Dependencies: StdIn.java StdOut.java Stack.java
+ *  Data files:   https://algs4.cs.princeton.edu/51radix/words3.txt
+ *                https://algs4.cs.princeton.edu/51radix/shells.txt
+ *
+ *  Sort an array of strings or integers in-place using American flag sort.
+ *
+ *  % java AmericanFlag &lt; shells.txt 
+ *  are
+ *  by
+ *  sea
+ *  seashells
+ *  seashells
+ *  sells
+ *  sells
+ *  she
+ *  she
+ *  shells
+ *  shore
+ *  surely
+ *  the
+ *  the
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code AmericanFlag} class provides static methods for sorting an
+ *  array of extended ASCII strings or integers in-place using 
+ *  American flag sort. This is a non-recursive implementation.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/51radix&quot;&gt;Section 5.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne
+ *  and &lt;a href = &quot;http://static.usenix.org/publications/compsystems/1993/win_mcilroy.pdf&quot;&gt;
+ *  Engineering Radix Sort&lt;/a&gt; by McIlroy and Bostic.
+ *  For a version that uses only one auxilary array, see {@link AmericanFlagX}.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *  @author Ivan Pesin
+ */
+
+<span class="nc bnc" id="L48" title="All 2 branches missed.">public class AmericanFlag {</span>
+    private static final int BITS_PER_BYTE =   8;
+    private static final int BITS_PER_INT  =  32;   // each Java int is 32 bits 
+    private static final int R             = 256;   // extend ASCII alphabet size
+<span class="nc" id="L52">    private static final int CUTOFF        =  15;   // cutoff to insertion sort</span>
+
+    // do not instantiate
+<span class="nc" id="L55">    private AmericanFlag() { } </span>
+
+    // return dth character of s, -1 if d = length of string
+    private static int charAt(String s, int d) {
+<span class="nc bnc" id="L59" title="All 6 branches missed.">        assert d &gt;= 0 &amp;&amp; d &lt;= s.length();</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (d == s.length()) return -1;</span>
+<span class="nc" id="L61">        return s.charAt(d);</span>
+    }
+
+    /**
+     * Rearranges the array of extended ASCII strings in ascending order.
+     * This is an unstable sorting algorithm.
+     *
+     * @param a the array to be sorted
+     */
+    public static void sort(String[] a) {
+<span class="nc" id="L71">        sort(a, 0, a.length - 1);</span>
+<span class="nc" id="L72">    }</span>
+
+    // sort from a[lo] to a[hi], starting at the dth character
+    public static void sort(String[] a, int lo, int hi) {
+        // one-time allocation of data structures
+<span class="nc" id="L77">        Stack&lt;Integer&gt; st = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L78">        int[] first = new int[R+2];</span>
+<span class="nc" id="L79">        int[] next  = new int[R+2];</span>
+<span class="nc" id="L80">        int d = 0; // character index to sort by</span>
+
+<span class="nc" id="L82">        st.push(lo);</span>
+<span class="nc" id="L83">        st.push(hi);</span>
+<span class="nc" id="L84">        st.push(d);</span>
+        
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        while (!st.isEmpty()) {</span>
+<span class="nc" id="L87">            d = st.pop();</span>
+<span class="nc" id="L88">            hi = st.pop();</span>
+<span class="nc" id="L89">            lo = st.pop();</span>
+        
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (hi &lt;= lo + CUTOFF) {</span>
+<span class="nc" id="L92">                insertion(a, lo, hi, d);</span>
+<span class="nc" id="L93">                continue;</span>
+            }
+
+            // compute frequency counts
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            for (int i = lo; i &lt;= hi; i++) {</span>
+<span class="nc" id="L98">                int c = charAt(a[i], d) + 1; // account for -1 representing end-of-string</span>
+<span class="nc" id="L99">                first[c+1]++;</span>
+            }
+
+            // first[c] = location of first string whose dth character = c
+<span class="nc" id="L103">            first[0] = lo;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            for (int c = 0; c &lt;= R; c++) {</span>
+<span class="nc" id="L105">                first[c+1] += first[c];</span>
+            
+<span class="nc bnc" id="L107" title="All 4 branches missed.">                if (c &gt; 0 &amp;&amp; first[c+1]-1 &gt; first[c]) { </span>
+                    // add subproblem for character c (excludes sentinel c == 0)
+<span class="nc" id="L109">                    st.push(first[c]);</span>
+<span class="nc" id="L110">                    st.push(first[c+1] - 1);</span>
+<span class="nc" id="L111">                    st.push(d+1); </span>
+                }
+            }
+
+            // next[c] = location to place next string whose dth character = c
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            for (int c = 0; c &lt; R+2; c++)</span>
+<span class="nc" id="L117">                next[c] = first[c];</span>
+
+            // permute data in place
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            for (int k = lo; k &lt;= hi; k++) {</span>
+<span class="nc" id="L121">                int c = charAt(a[k], d) + 1;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">                while (first[c] &gt; k) {</span>
+<span class="nc" id="L123">                    exch(a, k, next[c]++);</span>
+<span class="nc" id="L124">                    c = charAt(a[k], d) + 1;</span>
+                }
+<span class="nc" id="L126">                next[c]++;</span>
+            }
+          
+            // clear first[] and next[] arrays
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            for (int c = 0; c &lt; R+2; c++) {</span>
+<span class="nc" id="L131">                first[c] = 0;</span>
+<span class="nc" id="L132">                next[c] = 0;</span>
+            }
+        }
+<span class="nc" id="L135">    }</span>
+    
+    // insertion sort a[lo..hi], starting at dth character
+    private static void insertion(String[] a, int lo, int hi, int d) {
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(a[j], a[j-1], d); j--)</span>
+<span class="nc" id="L141">                exch(a, j, j-1);</span>
+<span class="nc" id="L142">    }</span>
+
+    // exchange a[i] and a[j]
+    private static void exch(String[] a, int i, int j) {
+<span class="nc" id="L146">        String temp = a[i];</span>
+<span class="nc" id="L147">        a[i] = a[j];</span>
+<span class="nc" id="L148">        a[j] = temp;</span>
+<span class="nc" id="L149">    }</span>
+
+    // is v less than w, starting at character d
+    private static boolean less(String v, String w, int d) {
+        // assert v.substring(0, d).equals(w.substring(0, d));
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int i = d; i &lt;  Math.min(v.length(), w.length()); i++) {</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            if (v.charAt(i) &lt; w.charAt(i)) return true;</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            if (v.charAt(i) &gt; w.charAt(i)) return false;</span>
+        }
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        return v.length() &lt; w.length();</span>
+    }
+
+   /**
+     * Rearranges the array of 32-bit integers in ascending order.
+     * Currently assumes that the integers are nonnegative.
+     *
+     * @param a the array to be sorted
+     */
+    public static void sort(int[] a) {
+<span class="nc" id="L168">        sort(a, 0, a.length-1);</span>
+<span class="nc" id="L169">    }</span>
+
+    // MSD sort from a[lo] to a[hi]
+    private static void sort(int[] a, int lo, int hi) {
+        // one-time allocation of data structures
+<span class="nc" id="L174">        Stack&lt;Integer&gt; st = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L175">        int[] first = new int[R+1];</span>
+<span class="nc" id="L176">        int[] next  = new int[R+1];</span>
+<span class="nc" id="L177">        int mask = R - 1;   // 0xFF;</span>
+<span class="nc" id="L178">        int d = 0;          // byte to sort by</span>
+
+<span class="nc" id="L180">        st.push(lo);</span>
+<span class="nc" id="L181">        st.push(hi);</span>
+<span class="nc" id="L182">        st.push(d);</span>
+        
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        while (!st.isEmpty()) {</span>
+<span class="nc" id="L185">            d = st.pop();</span>
+<span class="nc" id="L186">            hi = st.pop();</span>
+<span class="nc" id="L187">            lo = st.pop();</span>
+        
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            if (hi &lt;= lo + CUTOFF) {</span>
+<span class="nc" id="L190">                insertion(a, lo, hi, d);</span>
+<span class="nc" id="L191">                continue;</span>
+            }
+          
+            // compute frequency counts (need R = 256)
+<span class="nc" id="L195">            int shift = BITS_PER_INT - BITS_PER_BYTE*d - BITS_PER_BYTE;</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">            for (int i = lo; i &lt;= hi; i++) {</span>
+<span class="nc" id="L197">                int c = (a[i] &gt;&gt; shift) &amp; mask;</span>
+<span class="nc" id="L198">                first[c+1]++;</span>
+            }
+
+            // first[c] = location of first int whose dth byte = c
+<span class="nc" id="L202">            first[0] = lo;</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">            for (int c = 0; c &lt; R; c++) {</span>
+<span class="nc" id="L204">                first[c+1] += first[c];</span>
+            
+<span class="nc bnc" id="L206" title="All 4 branches missed.">                if (d &lt; 3 &amp;&amp; first[c+1]-1 &gt; first[c]) { </span>
+                    // add subproblem for byte c
+<span class="nc" id="L208">                    st.push(first[c]);</span>
+<span class="nc" id="L209">                    st.push(first[c+1] - 1);</span>
+<span class="nc" id="L210">                    st.push(d+1); </span>
+                }
+            }
+
+            // next[c] = location to place next string whose dth byte = c
+<span class="nc bnc" id="L215" title="All 2 branches missed.">            for (int c = 0; c &lt; R+1; c++)</span>
+<span class="nc" id="L216">                next[c] = first[c];</span>
+
+            // permute data in place
+<span class="nc bnc" id="L219" title="All 2 branches missed.">            for (int k = lo; k &lt;= hi; k++) {</span>
+<span class="nc" id="L220">                int c = (a[k] &gt;&gt; shift) &amp; mask;</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                while (first[c] &gt; k) {</span>
+<span class="nc" id="L222">                    exch(a, k, next[c]++);</span>
+<span class="nc" id="L223">                    c = (a[k] &gt;&gt; shift) &amp; mask;</span>
+                }
+<span class="nc" id="L225">                next[c]++;</span>
+            }
+          
+            // clear first[] and next[] arrays
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            for (int c = 0; c &lt; R+1; c++) {</span>
+<span class="nc" id="L230">                first[c] = 0;</span>
+<span class="nc" id="L231">                next[c] = 0;</span>
+            }
+        }
+<span class="nc" id="L234">    }</span>
+
+    // insertion sort a[lo..hi], starting at dth byte
+    private static void insertion(int[] a, int lo, int hi, int d) {
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L239" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(a[j], a[j-1], d); j--)</span>
+<span class="nc" id="L240">                exch(a, j, j-1);</span>
+<span class="nc" id="L241">    }</span>
+
+    // exchange a[i] and a[j]
+    private static void exch(int[] a, int i, int j) {
+<span class="nc" id="L245">        int temp = a[i];</span>
+<span class="nc" id="L246">        a[i] = a[j];</span>
+<span class="nc" id="L247">        a[j] = temp;</span>
+<span class="nc" id="L248">    }</span>
+    
+    // is v less than w, starting at byte d
+    private static boolean less(int v, int w, int d) {
+<span class="nc" id="L252">        int mask = R - 1;   // 0xFF;</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        for (int i = d; i &lt; 4; i++) {</span>
+<span class="nc" id="L254">            int shift = BITS_PER_INT - BITS_PER_BYTE*i - BITS_PER_BYTE;</span>
+<span class="nc" id="L255">            int a = (v &gt;&gt; shift) &amp; mask;</span>
+<span class="nc" id="L256">            int b = (w &gt;&gt; shift) &amp; mask;</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">            if (a &lt; b) return true;</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">            if (a &gt; b) return false;</span>
+        }
+<span class="nc" id="L260">        return false;</span>
+    }
+    
+    /**
+     * Reads in a sequence of extended ASCII strings or non-negative ints from standard input;
+     * American flag sorts them;
+     * and prints them to standard output in ascending order.
+     *
+     * @param args the command-line arguments: &quot;int&quot; to read input as non-negative integers
+     */
+    public static void main(String[] args) {
+<span class="nc bnc" id="L271" title="All 4 branches missed.">        if (args.length &gt; 0 &amp;&amp; args[0].equals(&quot;int&quot;)) {</span>
+<span class="nc" id="L272">            int[] a = StdIn.readAllInts();</span>
+<span class="nc" id="L273">            sort(a);</span>
+
+            // print results
+<span class="nc bnc" id="L276" title="All 2 branches missed.">            for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L277">                StdOut.println(a[i]);</span>
+<span class="nc" id="L278">        }</span>
+
+        else {
+<span class="nc" id="L281">            String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L282">            sort(a);</span>
+            // print results
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            for (int i = 0; i &lt; a.length; i++)</span>
+<span class="nc" id="L285">                StdOut.println(a[i]);</span>
+        }
+<span class="nc" id="L287">    }</span>
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

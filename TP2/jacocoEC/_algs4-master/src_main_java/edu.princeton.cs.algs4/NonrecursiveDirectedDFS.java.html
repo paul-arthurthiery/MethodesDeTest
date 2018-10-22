@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>NonrecursiveDirectedDFS.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">NonrecursiveDirectedDFS.java</span></div><h1>NonrecursiveDirectedDFS.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac NonrecursiveDirectedDFS.java
+ *  Execution:    java NonrecursiveDirectedDFS digraph.txt s
+ *  Dependencies: Digraph.java Queue.java Stack.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt
+ *
+ *  Run nonrecurisve depth-first search on an directed graph.
+ *  Runs in O(E + V) time.
+ *
+ *  Explores the vertices in exactly the same order as DirectedDFS.java.
+ *
+ *
+ *  % java NonrecursiveDirectedDFS tinyDG.txt 1
+ *  1
+ *
+ *  % java NonrecursiveDirectedDFS tinyDG.txt 2
+ *  0 1 2 3 4 5
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+
+/**
+ *  The {@code NonrecursiveDirectedDFS} class represents a data type for finding
+ *  the vertices reachable from a source vertex &lt;em&gt;s&lt;/em&gt; in the digraph.
+ *  &lt;p&gt;
+ *  This implementation uses a nonrecursive version of depth-first search
+ *  with an explicit stack.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  It uses extra space (not including the digraph) proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class NonrecursiveDirectedDFS {
+    private boolean[] marked;  // marked[v] = is there an s-&gt;v path?
+    /**
+     * Computes the vertices reachable from the source vertex {@code s} in the digraph {@code G}.
+     * @param  G the digraph
+     * @param  s the source vertex
+     * @throws IllegalArgumentException unless {@code 0 &lt;= s &lt; V}
+     */
+<span class="nc" id="L52">    public NonrecursiveDirectedDFS(Digraph G, int s) {</span>
+<span class="nc" id="L53">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L54">        validateVertex(s);</span>
+
+        // to be able to iterate over each adjacency list, keeping track of which
+        // vertex in each adjacency list needs to be explored next
+<span class="nc" id="L58">        Iterator&lt;Integer&gt;[] adj = (Iterator&lt;Integer&gt;[]) new Iterator[G.V()];</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L60">            adj[v] = G.adj(v).iterator();</span>
+
+        // depth-first search using an explicit stack
+<span class="nc" id="L63">        Stack&lt;Integer&gt; stack = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L64">        marked[s] = true;</span>
+<span class="nc" id="L65">        stack.push(s);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        while (!stack.isEmpty()) {</span>
+<span class="nc" id="L67">            int v = stack.peek();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (adj[v].hasNext()) {</span>
+<span class="nc" id="L69">                int w = adj[v].next();</span>
+                // StdOut.printf(&quot;check %d\n&quot;, w);
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                if (!marked[w]) {</span>
+                    // discovered vertex w for the first time
+<span class="nc" id="L73">                    marked[w] = true;</span>
+                    // edgeTo[w] = v;
+<span class="nc" id="L75">                    stack.push(w);</span>
+                    // StdOut.printf(&quot;dfs(%d)\n&quot;, w);
+                }
+<span class="nc" id="L78">            }</span>
+            else {
+                // StdOut.printf(&quot;%d done\n&quot;, v);
+<span class="nc" id="L81">                stack.pop();</span>
+            }
+        }
+<span class="nc" id="L84">    }</span>
+
+    /**
+     * Is vertex {@code v} reachable from the source vertex {@code s}?
+     * @param  v the vertex
+     * @return {@code true} if vertex {@code v} is reachable from the source vertex {@code s},
+     *         and {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public boolean marked(int v) {
+<span class="nc" id="L94">        validateVertex(v);</span>
+<span class="nc" id="L95">        return marked[v];</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L100">        int V = marked.length;</span>
+<span class="nc bnc" id="L101" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L102">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L103">    }</span>
+
+    /**
+     * Unit tests the {@code NonrecursiveDirectedDFS} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L111">        In in = new In(args[0]);</span>
+<span class="nc" id="L112">        Digraph G = new Digraph(in);</span>
+<span class="nc" id="L113">        int s = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L114">        NonrecursiveDirectedDFS dfs = new NonrecursiveDirectedDFS(G, s);</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            if (dfs.marked(v))</span>
+<span class="nc" id="L117">                StdOut.print(v + &quot; &quot;);</span>
+<span class="nc" id="L118">        StdOut.println();</span>
+<span class="nc" id="L119">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

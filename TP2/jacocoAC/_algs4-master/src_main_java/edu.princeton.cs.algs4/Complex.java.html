@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Complex.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Complex.java</span></div><h1>Complex.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Complex.java
+ *  Execution:    java Complex
+ *  Dependencies: StdOut.java
+ *
+ *  Data type for complex numbers.
+ *
+ *  The data type is &quot;immutable&quot; so once you create and initialize
+ *  a Complex object, you cannot change it. The &quot;final&quot; keyword
+ *  when declaring re and im enforces this rule, making it a
+ *  compile-time error to change the .re or .im fields after
+ *  they've been initialized.
+ *
+ *  % java Complex
+ *  a            = 5.0 + 6.0i
+ *  b            = -3.0 + 4.0i
+ *  Re(a)        = 5.0
+ *  Im(a)        = 6.0
+ *  b + a        = 2.0 + 10.0i
+ *  a - b        = 8.0 + 2.0i
+ *  a * b        = -39.0 + 2.0i
+ *  b * a        = -39.0 + 2.0i
+ *  a / b        = 0.36 - 1.52i
+ *  (a / b) * b  = 5.0 + 6.0i
+ *  conj(a)      = 5.0 - 6.0i
+ *  |a|          = 7.810249675906654
+ *  tan(a)       = -6.685231390246571E-6 + 1.0000103108981198i
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Complex} class represents a complex number.
+ *  Complex numbers are immutable: their values cannot be changed after they
+ *  are created.
+ *  It includes methods for addition, subtraction, multiplication, division,
+ *  conjugation, and other common functions on complex numbers.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/99scientific&quot;&gt;Section 9.9&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Complex {
+    private final double re;   // the real part
+    private final double im;   // the imaginary part
+
+    /**
+     * Initializes a complex number from the specified real and imaginary parts.
+     *
+     * @param real the real part
+     * @param imag the imaginary part
+     */
+<span class="nc" id="L56">    public Complex(double real, double imag) {</span>
+<span class="nc" id="L57">        re = real;</span>
+<span class="nc" id="L58">        im = imag;</span>
+<span class="nc" id="L59">    }</span>
+
+    /**
+     * Returns a string representation of this complex number.
+     *
+     * @return a string representation of this complex number,
+     *         of the form 34 - 56i.
+     */
+    public String toString() {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (im == 0) return re + &quot;&quot;;</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (re == 0) return im + &quot;i&quot;;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (im &lt;  0) return re + &quot; - &quot; + (-im) + &quot;i&quot;;</span>
+<span class="nc" id="L71">        return re + &quot; + &quot; + im + &quot;i&quot;;</span>
+    }
+
+    /**
+     * Returns the absolute value of this complex number.
+     * This quantity is also known as the &lt;em&gt;modulus&lt;/em&gt; or &lt;em&gt;magnitude&lt;/em&gt;.
+     *
+     * @return the absolute value of this complex number
+     */
+    public double abs() {
+<span class="nc" id="L81">        return Math.hypot(re, im);</span>
+    }
+
+    /**
+     * Returns the phase of this complex number.
+     * This quantity is also known as the &lt;em&gt;angle&lt;/em&gt; or &lt;em&gt;argument&lt;/em&gt;.
+     *
+     * @return the phase of this complex number, a real number between -pi and pi
+     */
+    public double phase() {
+<span class="nc" id="L91">        return Math.atan2(im, re);</span>
+    }
+
+    /**
+     * Returns the sum of this complex number and the specified complex number.
+     *
+     * @param  that the other complex number
+     * @return the complex number whose value is {@code (this + that)}
+     */
+    public Complex plus(Complex that) {
+<span class="nc" id="L101">        double real = this.re + that.re;</span>
+<span class="nc" id="L102">        double imag = this.im + that.im;</span>
+<span class="nc" id="L103">        return new Complex(real, imag);</span>
+    }
+
+    /**
+     * Returns the result of subtracting the specified complex number from
+     * this complex number.
+     *
+     * @param  that the other complex number
+     * @return the complex number whose value is {@code (this - that)}
+     */
+    public Complex minus(Complex that) {
+<span class="nc" id="L114">        double real = this.re - that.re;</span>
+<span class="nc" id="L115">        double imag = this.im - that.im;</span>
+<span class="nc" id="L116">        return new Complex(real, imag);</span>
+    }
+
+    /**
+     * Returns the product of this complex number and the specified complex number.
+     *
+     * @param  that the other complex number
+     * @return the complex number whose value is {@code (this * that)}
+     */
+    public Complex times(Complex that) {
+<span class="nc" id="L126">        double real = this.re * that.re - this.im * that.im;</span>
+<span class="nc" id="L127">        double imag = this.re * that.im + this.im * that.re;</span>
+<span class="nc" id="L128">        return new Complex(real, imag);</span>
+    }
+
+    /**
+     * Returns the product of this complex number and the specified scalar.
+     *
+     * @param  alpha the scalar
+     * @return the complex number whose value is {@code (alpha * this)}
+     */
+    public Complex scale(double alpha) {
+<span class="nc" id="L138">        return new Complex(alpha * re, alpha * im);</span>
+    }
+
+    /**
+     * Returns the product of this complex number and the specified scalar.
+     *
+     * @param  alpha the scalar
+     * @return the complex number whose value is {@code (alpha * this)}
+     * @deprecated Replaced by {@link #scale(double)}.
+     */
+    @Deprecated
+    public Complex times(double alpha) {
+<span class="nc" id="L150">        return new Complex(alpha * re, alpha * im);</span>
+    }
+
+    /**
+     * Returns the complex conjugate of this complex number.
+     *
+     * @return the complex conjugate of this complex number
+     */
+    public Complex conjugate() {
+<span class="nc" id="L159">        return new Complex(re, -im);</span>
+    }
+
+    /**
+     * Returns the reciprocal of this complex number.
+     *
+     * @return the complex number whose value is {@code (1 / this)}
+     */
+    public Complex reciprocal() {
+<span class="nc" id="L168">        double scale = re*re + im*im;</span>
+<span class="nc" id="L169">        return new Complex(re / scale, -im / scale);</span>
+    }
+
+    /**
+     * Returns the real part of this complex number.
+     *
+     * @return the real part of this complex number
+     */
+    public double re() {
+<span class="nc" id="L178">        return re;</span>
+    }
+
+    /**
+     * Returns the imaginary part of this complex number.
+     *
+     * @return the imaginary part of this complex number
+     */
+    public double im() {
+<span class="nc" id="L187">        return im;</span>
+    }
+
+    /**
+     * Returns the result of dividing the specified complex number into
+     * this complex number.
+     *
+     * @param  that the other complex number
+     * @return the complex number whose value is {@code (this / that)}
+     */
+    public Complex divides(Complex that) {
+<span class="nc" id="L198">        return this.times(that.reciprocal());</span>
+    }
+
+    /**
+     * Returns the complex exponential of this complex number.
+     *
+     * @return the complex exponential of this complex number
+     */
+    public Complex exp() {
+<span class="nc" id="L207">        return new Complex(Math.exp(re) * Math.cos(im), Math.exp(re) * Math.sin(im));</span>
+    }
+
+    /**
+     * Returns the complex sine of this complex number.
+     *
+     * @return the complex sine of this complex number
+     */
+    public Complex sin() {
+<span class="nc" id="L216">        return new Complex(Math.sin(re) * Math.cosh(im), Math.cos(re) * Math.sinh(im));</span>
+    }
+
+    /**
+     * Returns the complex cosine of this complex number.
+     *
+     * @return the complex cosine of this complex number
+     */
+    public Complex cos() {
+<span class="nc" id="L225">        return new Complex(Math.cos(re) * Math.cosh(im), -Math.sin(re) * Math.sinh(im));</span>
+    }
+
+    /**
+     * Returns the complex tangent of this complex number.
+     *
+     * @return the complex tangent of this complex number
+     */
+    public Complex tan() {
+<span class="nc" id="L234">        return sin().divides(cos());</span>
+    }
+    
+
+    /**
+     * Unit tests the {@code Complex} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L244">        Complex a = new Complex(5.0, 6.0);</span>
+<span class="nc" id="L245">        Complex b = new Complex(-3.0, 4.0);</span>
+
+<span class="nc" id="L247">        StdOut.println(&quot;a            = &quot; + a);</span>
+<span class="nc" id="L248">        StdOut.println(&quot;b            = &quot; + b);</span>
+<span class="nc" id="L249">        StdOut.println(&quot;Re(a)        = &quot; + a.re());</span>
+<span class="nc" id="L250">        StdOut.println(&quot;Im(a)        = &quot; + a.im());</span>
+<span class="nc" id="L251">        StdOut.println(&quot;b + a        = &quot; + b.plus(a));</span>
+<span class="nc" id="L252">        StdOut.println(&quot;a - b        = &quot; + a.minus(b));</span>
+<span class="nc" id="L253">        StdOut.println(&quot;a * b        = &quot; + a.times(b));</span>
+<span class="nc" id="L254">        StdOut.println(&quot;b * a        = &quot; + b.times(a));</span>
+<span class="nc" id="L255">        StdOut.println(&quot;a / b        = &quot; + a.divides(b));</span>
+<span class="nc" id="L256">        StdOut.println(&quot;(a / b) * b  = &quot; + a.divides(b).times(b));</span>
+<span class="nc" id="L257">        StdOut.println(&quot;conj(a)      = &quot; + a.conjugate());</span>
+<span class="nc" id="L258">        StdOut.println(&quot;|a|          = &quot; + a.abs());</span>
+<span class="nc" id="L259">        StdOut.println(&quot;tan(a)       = &quot; + a.tan());</span>
+<span class="nc" id="L260">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

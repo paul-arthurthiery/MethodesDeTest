@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LookupIndex.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LookupIndex.java</span></div><h1>LookupIndex.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LookupIndex.java
+ *  Execution:    java LookupIndex movies.txt &quot;/&quot;
+ *  Dependencies: ST.java Queue.java In.java StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/35applications/aminoI.csv
+ *                https://algs4.cs.princeton.edu/35applications/movies.txt
+ *
+ *  % java LookupIndex aminoI.csv &quot;,&quot;
+ *  Serine
+ *    TCT
+ *    TCA
+ *    TCG
+ *    AGT
+ *    AGC
+ *  TCG
+ *    Serine
+ *
+ *  % java LookupIndex movies.txt &quot;/&quot;
+ *  Bacon, Kevin
+ *    Animal House (1978)
+ *    Apollo 13 (1995)
+ *    Beauty Shop (2005)
+ *    Diner (1982)
+ *    Few Good Men, A (1992)
+ *    Flatliners (1990)
+ *    Footloose (1984)
+ *    Friday the 13th (1980)
+ *    ...
+ *  Tin Men (1987)
+ *    DeBoy, David
+ *    Blumenfeld, Alan
+ *    ...
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LookupIndex} class provides a data-driven client for reading in a
+ *  key-value pairs from a file; then, printing the values corresponding to the
+ *  keys found on standard input. Keys are strings; values are lists of strings.
+ *  The separating delimiter is taken as a command-line argument. This client
+ *  is sometimes known as an &lt;em&gt;inverted index&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/35applications&quot;&gt;Section 3.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class LookupIndex { 
+
+    // Do not instantiate.
+<span class="nc" id="L54">    private LookupIndex() { }</span>
+
+    public static void main(String[] args) {
+<span class="nc" id="L57">        String filename  = args[0];</span>
+<span class="nc" id="L58">        String separator = args[1];</span>
+<span class="nc" id="L59">        In in = new In(filename);</span>
+
+<span class="nc" id="L61">        ST&lt;String, Queue&lt;String&gt;&gt; st = new ST&lt;String, Queue&lt;String&gt;&gt;();</span>
+<span class="nc" id="L62">        ST&lt;String, Queue&lt;String&gt;&gt; ts = new ST&lt;String, Queue&lt;String&gt;&gt;();</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        while (in.hasNextLine()) {</span>
+<span class="nc" id="L65">            String line = in.readLine();</span>
+<span class="nc" id="L66">            String[] fields = line.split(separator);</span>
+<span class="nc" id="L67">            String key = fields[0];</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            for (int i = 1; i &lt; fields.length; i++) {</span>
+<span class="nc" id="L69">                String val = fields[i];</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                if (!st.contains(key)) st.put(key, new Queue&lt;String&gt;());</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                if (!ts.contains(val)) ts.put(val, new Queue&lt;String&gt;());</span>
+<span class="nc" id="L72">                st.get(key).enqueue(val);</span>
+<span class="nc" id="L73">                ts.get(val).enqueue(key);</span>
+            }
+        }
+
+<span class="nc" id="L77">        StdOut.println(&quot;Done indexing&quot;);</span>
+
+        // read queries from standard input, one per line
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L81">            String query = StdIn.readLine();</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (st.contains(query)) </span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                for (String vals : st.get(query))</span>
+<span class="nc" id="L84">                    StdOut.println(&quot;  &quot; + vals);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (ts.contains(query)) </span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                for (String keys : ts.get(query))</span>
+<span class="nc" id="L87">                    StdOut.println(&quot;  &quot; + keys);</span>
+        }
+
+<span class="nc" id="L90">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

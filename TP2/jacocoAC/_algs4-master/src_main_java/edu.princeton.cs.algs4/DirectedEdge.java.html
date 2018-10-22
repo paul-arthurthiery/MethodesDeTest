@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DirectedEdge.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DirectedEdge.java</span></div><h1>DirectedEdge.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DirectedEdge.java
+ *  Execution:    java DirectedEdge
+ *  Dependencies: StdOut.java
+ *
+ *  Immutable weighted directed edge.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+/**
+ *  The {@code DirectedEdge} class represents a weighted edge in an 
+ *  {@link EdgeWeightedDigraph}. Each edge consists of two integers
+ *  (naming the two vertices) and a real-value weight. The data type
+ *  provides methods for accessing the two endpoints of the directed edge and
+ *  the weight.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/44sp&quot;&gt;Section 4.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+
+public class DirectedEdge { 
+    private final int v;
+    private final int w;
+    private final double weight;
+
+    /**
+     * Initializes a directed edge from vertex {@code v} to vertex {@code w} with
+     * the given {@code weight}.
+     * @param v the tail vertex
+     * @param w the head vertex
+     * @param weight the weight of the directed edge
+     * @throws IllegalArgumentException if either {@code v} or {@code w}
+     *    is a negative integer
+     * @throws IllegalArgumentException if {@code weight} is {@code NaN}
+     */
+<span class="nc" id="L40">    public DirectedEdge(int v, int w, double weight) {</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (v &lt; 0) throw new IllegalArgumentException(&quot;Vertex names must be nonnegative integers&quot;);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (w &lt; 0) throw new IllegalArgumentException(&quot;Vertex names must be nonnegative integers&quot;);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (Double.isNaN(weight)) throw new IllegalArgumentException(&quot;Weight is NaN&quot;);</span>
+<span class="nc" id="L44">        this.v = v;</span>
+<span class="nc" id="L45">        this.w = w;</span>
+<span class="nc" id="L46">        this.weight = weight;</span>
+<span class="nc" id="L47">    }</span>
+
+    /**
+     * Returns the tail vertex of the directed edge.
+     * @return the tail vertex of the directed edge
+     */
+    public int from() {
+<span class="nc" id="L54">        return v;</span>
+    }
+
+    /**
+     * Returns the head vertex of the directed edge.
+     * @return the head vertex of the directed edge
+     */
+    public int to() {
+<span class="nc" id="L62">        return w;</span>
+    }
+
+    /**
+     * Returns the weight of the directed edge.
+     * @return the weight of the directed edge
+     */
+    public double weight() {
+<span class="nc" id="L70">        return weight;</span>
+    }
+
+    /**
+     * Returns a string representation of the directed edge.
+     * @return a string representation of the directed edge
+     */
+    public String toString() {
+<span class="nc" id="L78">        return v + &quot;-&gt;&quot; + w + &quot; &quot; + String.format(&quot;%5.2f&quot;, weight);</span>
+    }
+
+    /**
+     * Unit tests the {@code DirectedEdge} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L87">        DirectedEdge e = new DirectedEdge(12, 34, 5.67);</span>
+<span class="nc" id="L88">        StdOut.println(e);</span>
+<span class="nc" id="L89">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Multiway.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Multiway.java</span></div><h1>Multiway.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Multiway.java
+ *  Execution:    java Multiway input1.txt input2.txt input3.txt ...
+ *  Dependencies: IndexMinPQ.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/24pq/m1.txt
+ *                https://algs4.cs.princeton.edu/24pq/m2.txt
+ *                https://algs4.cs.princeton.edu/24pq/m3.txt
+ * 
+ *  Merges together the sorted input stream given as command-line arguments
+ *  into a single sorted output stream on standard output.
+ *
+ *  % more m1.txt 
+ *  A B C F G I I Z
+ *
+ *  % more m2.txt 
+ *  B D H P Q Q
+ * 
+ *  % more m3.txt 
+ *  A B E F J N
+ *
+ *  % java Multiway m1.txt m2.txt m3.txt 
+ *  A A B B B C D E F F G H I I J N P Q Q Z 
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Multiway} class provides a client for reading in several
+ *  sorted text files and merging them together into a single sorted
+ *  text stream.
+ *  This implementation uses a {@link IndexMinPQ} to perform the multiway
+ *  merge. 
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/24pq&quot;&gt;Section 2.4&lt;/a&gt;
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+
+public class Multiway { 
+
+    // This class should not be instantiated.
+<span class="nc" id="L45">    private Multiway() { }</span>
+
+    // merge together the sorted input streams and write the sorted result to standard output
+    private static void merge(In[] streams) {
+<span class="nc" id="L49">        int n = streams.length;</span>
+<span class="nc" id="L50">        IndexMinPQ&lt;String&gt; pq = new IndexMinPQ&lt;String&gt;(n);</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            if (!streams[i].isEmpty())</span>
+<span class="nc" id="L53">                pq.insert(i, streams[i].readString());</span>
+
+        // Extract and print min and read next from its stream. 
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        while (!pq.isEmpty()) {</span>
+<span class="nc" id="L57">            StdOut.print(pq.minKey() + &quot; &quot;);</span>
+<span class="nc" id="L58">            int i = pq.delMin();</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            if (!streams[i].isEmpty())</span>
+<span class="nc" id="L60">                pq.insert(i, streams[i].readString());</span>
+        }
+<span class="nc" id="L62">        StdOut.println();</span>
+<span class="nc" id="L63">    }</span>
+
+
+    /**
+     *  Reads sorted text files specified as command-line arguments;
+     *  merges them together into a sorted output; and writes
+     *  the results to standard output.
+     *  Note: this client does not check that the input files are sorted.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L75">        int n = args.length;</span>
+<span class="nc" id="L76">        In[] streams = new In[n];</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L78">            streams[i] = new In(args[i]);</span>
+<span class="nc" id="L79">        merge(streams);</span>
+<span class="nc" id="L80">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Quick3string.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Quick3string.java</span></div><h1>Quick3string.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Quick3string.java
+ *  Execution:    java Quick3string &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java 
+ *  Data files:   https://algs4.cs.princeton.edu/51radix/words3.txt
+ *                https://algs4.cs.princeton.edu/51radix/shells.txt
+ *
+ *  Reads string from standard input and 3-way string quicksort them.
+ *
+ *  % java Quick3string &lt; shell.txt
+ *  are
+ *  by
+ *  sea
+ *  seashells
+ *  seashells
+ *  sells
+ *  sells
+ *  she
+ *  she
+ *  shells
+ *  shore
+ *  surely
+ *  the
+ *  the
+ *
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Quick3string} class provides static methods for sorting an
+ *  array of strings using 3-way radix quicksort.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/51radix&quot;&gt;Section 5.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L42" title="All 2 branches missed.">public class Quick3string {</span>
+<span class="nc" id="L43">    private static final int CUTOFF =  15;   // cutoff to insertion sort</span>
+
+    // do not instantiate
+<span class="nc" id="L46">    private Quick3string() { } </span>
+
+    /**  
+     * Rearranges the array of strings in ascending order.
+     *
+     * @param a the array to be sorted
+     */
+    public static void sort(String[] a) {
+<span class="nc" id="L54">        StdRandom.shuffle(a);</span>
+<span class="nc" id="L55">        sort(a, 0, a.length-1, 0);</span>
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        assert isSorted(a);</span>
+<span class="nc" id="L57">    }</span>
+
+    // return the dth character of s, -1 if d = length of s
+    private static int charAt(String s, int d) { 
+<span class="nc bnc" id="L61" title="All 6 branches missed.">        assert d &gt;= 0 &amp;&amp; d &lt;= s.length();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (d == s.length()) return -1;</span>
+<span class="nc" id="L63">        return s.charAt(d);</span>
+    }
+
+
+    // 3-way string quicksort a[lo..hi] starting at dth character
+    private static void sort(String[] a, int lo, int hi, int d) { 
+
+        // cutoff to insertion sort for small subarrays
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (hi &lt;= lo + CUTOFF) {</span>
+<span class="nc" id="L72">            insertion(a, lo, hi, d);</span>
+<span class="nc" id="L73">            return;</span>
+        }
+
+<span class="nc" id="L76">        int lt = lo, gt = hi;</span>
+<span class="nc" id="L77">        int v = charAt(a[lo], d);</span>
+<span class="nc" id="L78">        int i = lo + 1;</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        while (i &lt;= gt) {</span>
+<span class="nc" id="L80">            int t = charAt(a[i], d);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            if      (t &lt; v) exch(a, lt++, i++);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            else if (t &gt; v) exch(a, i, gt--);</span>
+<span class="nc" id="L83">            else              i++;</span>
+        }
+
+        // a[lo..lt-1] &lt; v = a[lt..gt] &lt; a[gt+1..hi]. 
+<span class="nc" id="L87">        sort(a, lo, lt-1, d);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (v &gt;= 0) sort(a, lt, gt, d+1);</span>
+<span class="nc" id="L89">        sort(a, gt+1, hi, d);</span>
+<span class="nc" id="L90">    }</span>
+
+    // sort from a[lo] to a[hi], starting at the dth character
+    private static void insertion(String[] a, int lo, int hi, int d) {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L95" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(a[j], a[j-1], d); j--)</span>
+<span class="nc" id="L96">                exch(a, j, j-1);</span>
+<span class="nc" id="L97">    }</span>
+
+    // exchange a[i] and a[j]
+    private static void exch(String[] a, int i, int j) {
+<span class="nc" id="L101">        String temp = a[i];</span>
+<span class="nc" id="L102">        a[i] = a[j];</span>
+<span class="nc" id="L103">        a[j] = temp;</span>
+<span class="nc" id="L104">    }</span>
+
+    // is v less than w, starting at character d
+    // DEPRECATED BECAUSE OF SLOW SUBSTRING EXTRACTION IN JAVA 7
+    // private static boolean less(String v, String w, int d) {
+    //    assert v.substring(0, d).equals(w.substring(0, d));
+    //    return v.substring(d).compareTo(w.substring(d)) &lt; 0; 
+    // }
+
+    // is v less than w, starting at character d
+    private static boolean less(String v, String w, int d) {
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        assert v.substring(0, d).equals(w.substring(0, d));</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        for (int i = d; i &lt; Math.min(v.length(), w.length()); i++) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            if (v.charAt(i) &lt; w.charAt(i)) return true;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (v.charAt(i) &gt; w.charAt(i)) return false;</span>
+        }
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        return v.length() &lt; w.length();</span>
+    }
+
+    // is the array sorted
+    private static boolean isSorted(String[] a) {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (int i = 1; i &lt; a.length; i++)</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            if (a[i].compareTo(a[i-1]) &lt; 0) return false;</span>
+<span class="nc" id="L127">        return true;</span>
+    }
+
+
+    /**
+     * Reads in a sequence of fixed-length strings from standard input;
+     * 3-way radix quicksorts them;
+     * and prints them to standard output in ascending order.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // read in the strings from standard input
+<span class="nc" id="L141">        String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L142">        int n = a.length;</span>
+
+        // sort the strings
+<span class="nc" id="L145">        sort(a);</span>
+
+        // print the results
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L149">            StdOut.println(a[i]);</span>
+<span class="nc" id="L150">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

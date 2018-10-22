@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Bag.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Bag.java</span></div><h1>Bag.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Bag.java
+ *  Execution:    java Bag &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *
+ *  A generic bag or multiset, implemented using a singly linked list.
+ *
+ *  % more tobe.txt 
+ *  to be or not to - be - - that - - - is
+ *
+ *  % java Bag &lt; tobe.txt
+ *  size of bag = 14
+ *  is
+ *  -
+ *  -
+ *  -
+ *  that
+ *  -
+ *  -
+ *  be
+ *  -
+ *  to
+ *  not
+ *  or
+ *  be
+ *  to
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code Bag} class represents a bag (or multiset) of 
+ *  generic items. It supports insertion and iterating over the 
+ *  items in arbitrary order.
+ *  &lt;p&gt;
+ *  This implementation uses a singly linked list with a static nested class Node.
+ *  See {@link LinkedBag} for the version from the
+ *  textbook that uses a non-static nested class.
+ *  See {@link ResizingArrayBag} for a version that uses a resizing array.
+ *  The &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;isEmpty&lt;/em&gt;, and &lt;em&gt;size&lt;/em&gt; operations
+ *  take constant time. Iteration takes time proportional to the number of items.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/13stacks&quot;&gt;Section 1.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ *
+ *  @param &lt;Item&gt; the generic type of an item in this bag
+ */
+public class Bag&lt;Item&gt; implements Iterable&lt;Item&gt; {
+    private Node&lt;Item&gt; first;    // beginning of bag
+    private int n;               // number of elements in bag
+
+    // helper linked list class
+<span class="fc" id="L60">    private static class Node&lt;Item&gt; {</span>
+        private Item item;
+        private Node&lt;Item&gt; next;
+    }
+
+    /**
+     * Initializes an empty bag.
+     */
+<span class="fc" id="L68">    public Bag() {</span>
+<span class="fc" id="L69">        first = null;</span>
+<span class="fc" id="L70">        n = 0;</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Returns true if this bag is empty.
+     *
+     * @return {@code true} if this bag is empty;
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        return first == null;</span>
+    }
+
+    /**
+     * Returns the number of items in this bag.
+     *
+     * @return the number of items in this bag
+     */
+    public int size() {
+<span class="nc" id="L89">        return n;</span>
+    }
+
+    /**
+     * Adds the item to this bag.
+     *
+     * @param  item the item to add to this bag
+     */
+    public void add(Item item) {
+<span class="fc" id="L98">        Node&lt;Item&gt; oldfirst = first;</span>
+<span class="fc" id="L99">        first = new Node&lt;Item&gt;();</span>
+<span class="fc" id="L100">        first.item = item;</span>
+<span class="fc" id="L101">        first.next = oldfirst;</span>
+<span class="fc" id="L102">        n++;</span>
+<span class="fc" id="L103">    }</span>
+
+
+    /**
+     * Returns an iterator that iterates over the items in this bag in arbitrary order.
+     *
+     * @return an iterator that iterates over the items in this bag in arbitrary order
+     */
+    public Iterator&lt;Item&gt; iterator()  {
+<span class="nc" id="L112">        return new ListIterator&lt;Item&gt;(first);  </span>
+    }
+
+    // an iterator, doesn't implement remove() since it's optional
+    private class ListIterator&lt;Item&gt; implements Iterator&lt;Item&gt; {
+        private Node&lt;Item&gt; current;
+
+<span class="nc" id="L119">        public ListIterator(Node&lt;Item&gt; first) {</span>
+<span class="nc" id="L120">            current = first;</span>
+<span class="nc" id="L121">        }</span>
+
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        public boolean hasNext()  { return current != null;                     }</span>
+<span class="nc" id="L124">        public void remove()      { throw new UnsupportedOperationException();  }</span>
+
+        public Item next() {
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L128">            Item item = current.item;</span>
+<span class="nc" id="L129">            current = current.next; </span>
+<span class="nc" id="L130">            return item;</span>
+        }
+    }
+
+    /**
+     * Unit tests the {@code Bag} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L140">        Bag&lt;String&gt; bag = new Bag&lt;String&gt;();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L142">            String item = StdIn.readString();</span>
+<span class="nc" id="L143">            bag.add(item);</span>
+        }
+
+<span class="nc" id="L146">        StdOut.println(&quot;size of bag = &quot; + bag.size());</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        for (String s : bag) {</span>
+<span class="nc" id="L148">            StdOut.println(s);</span>
+        }
+<span class="nc" id="L150">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

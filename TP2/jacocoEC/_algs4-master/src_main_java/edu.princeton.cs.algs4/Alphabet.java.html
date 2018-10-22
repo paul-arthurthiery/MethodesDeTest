@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Alphabet.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Alphabet.java</span></div><h1>Alphabet.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Alphabet.java
+ *  Execution:    java Alphabet
+ *  Dependencies: StdOut.java
+ *  
+ *  A data type for alphabets, for use with string-processing code
+ *  that must convert between an alphabet of size R and the integers
+ *  0 through R-1.
+ *
+ *  Warning: supports only the basic multilingual plane (BMP), i.e,
+ *           Unicode characters between U+0000 and U+FFFF.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+public class Alphabet {
+
+    /**
+     *  The binary alphabet { 0, 1 }.
+     */
+<span class="nc" id="L22">    public static final Alphabet BINARY = new Alphabet(&quot;01&quot;);</span>
+
+    /**
+     *  The octal alphabet { 0, 1, 2, 3, 4, 5, 6, 7 }.
+     */
+<span class="nc" id="L27">    public static final Alphabet OCTAL = new Alphabet(&quot;01234567&quot;);</span>
+
+    /**
+     *  The decimal alphabet { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }.
+     */
+<span class="nc" id="L32">    public static final Alphabet DECIMAL = new Alphabet(&quot;0123456789&quot;);</span>
+
+    /**
+     *  The hexadecimal alphabet { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F }.
+     */
+<span class="nc" id="L37">    public static final Alphabet HEXADECIMAL = new Alphabet(&quot;0123456789ABCDEF&quot;);</span>
+
+    /**
+     *  The DNA alphabet { A, C, T, G }.
+     */
+<span class="nc" id="L42">    public static final Alphabet DNA = new Alphabet(&quot;ACGT&quot;);</span>
+
+    /**
+     *  The lowercase alphabet { a, b, c, ..., z }.
+     */
+<span class="nc" id="L47">    public static final Alphabet LOWERCASE = new Alphabet(&quot;abcdefghijklmnopqrstuvwxyz&quot;);</span>
+
+    /**
+     *  The uppercase alphabet { A, B, C, ..., Z }.
+     */
+
+<span class="nc" id="L53">    public static final Alphabet UPPERCASE = new Alphabet(&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;);</span>
+
+    /**
+     *  The protein alphabet { A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y }.
+     */
+<span class="nc" id="L58">    public static final Alphabet PROTEIN = new Alphabet(&quot;ACDEFGHIKLMNPQRSTVWY&quot;);</span>
+
+    /**
+     *  The base-64 alphabet (64 characters).
+     */
+<span class="nc" id="L63">    public static final Alphabet BASE64 = new Alphabet(&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&quot;);</span>
+
+    /**
+     *  The ASCII alphabet (0-127).
+     */
+<span class="nc" id="L68">    public static final Alphabet ASCII = new Alphabet(128);</span>
+
+    /**
+     *  The extended ASCII alphabet (0-255).
+     */
+<span class="nc" id="L73">    public static final Alphabet EXTENDED_ASCII = new Alphabet(256);</span>
+
+    /**
+     *  The Unicode 16 alphabet (0-65,535).
+     */
+<span class="nc" id="L78">    public static final Alphabet UNICODE16      = new Alphabet(65536);</span>
+
+
+    private char[] alphabet;     // the characters in the alphabet
+    private int[] inverse;       // indices
+    private final int R;         // the radix of the alphabet
+
+    /**
+     * Initializes a new alphabet from the given set of characters.
+     *
+     * @param alpha the set of characters
+     */
+<span class="nc" id="L90">    public Alphabet(String alpha) {</span>
+
+        // check that alphabet contains no duplicate chars
+<span class="nc" id="L93">        boolean[] unicode = new boolean[Character.MAX_VALUE];</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (int i = 0; i &lt; alpha.length(); i++) {</span>
+<span class="nc" id="L95">            char c = alpha.charAt(i);</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            if (unicode[c])</span>
+<span class="nc" id="L97">                throw new IllegalArgumentException(&quot;Illegal alphabet: repeated character = '&quot; + c + &quot;'&quot;);</span>
+<span class="nc" id="L98">            unicode[c] = true;</span>
+        }
+
+<span class="nc" id="L101">        alphabet = alpha.toCharArray();</span>
+<span class="nc" id="L102">        R = alpha.length();</span>
+<span class="nc" id="L103">        inverse = new int[Character.MAX_VALUE];</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        for (int i = 0; i &lt; inverse.length; i++)</span>
+<span class="nc" id="L105">            inverse[i] = -1;</span>
+
+        // can't use char since R can be as big as 65,536
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        for (int c = 0; c &lt; R; c++)</span>
+<span class="nc" id="L109">            inverse[alphabet[c]] = c;</span>
+<span class="nc" id="L110">    }</span>
+
+    /**
+     * Initializes a new alphabet using characters 0 through R-1.
+     *
+     * @param radix the number of characters in the alphabet (the radix R)
+     */
+<span class="nc" id="L117">    private Alphabet(int radix) {</span>
+<span class="nc" id="L118">        this.R = radix;</span>
+<span class="nc" id="L119">        alphabet = new char[R];</span>
+<span class="nc" id="L120">        inverse = new int[R];</span>
+
+        // can't use char since R can be as big as 65,536
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        for (int i = 0; i &lt; R; i++)</span>
+<span class="nc" id="L124">            alphabet[i] = (char) i;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (int i = 0; i &lt; R; i++)</span>
+<span class="nc" id="L126">            inverse[i] = i;</span>
+<span class="nc" id="L127">    }</span>
+
+    /**
+     * Initializes a new alphabet using characters 0 through 255.
+     */
+    public Alphabet() {
+<span class="nc" id="L133">        this(256);</span>
+<span class="nc" id="L134">    }</span>
+
+    /**
+     * Returns true if the argument is a character in this alphabet.
+     *
+     * @param  c the character
+     * @return {@code true} if {@code c} is a character in this alphabet;
+     *         {@code false} otherwise
+     */
+    public boolean contains(char c) {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        return inverse[c] != -1;</span>
+    }
+
+    /**
+     * Returns the number of characters in this alphabet (the radix).
+     * 
+     * @return the number of characters in this alphabet
+     * @deprecated Replaced by {@link #radix()}.
+     */
+    @Deprecated
+    public int R() {
+<span class="nc" id="L155">        return R;</span>
+    }
+
+    /**
+     * Returns the number of characters in this alphabet (the radix).
+     * 
+     * @return the number of characters in this alphabet
+     */
+    public int radix() {
+<span class="nc" id="L164">        return R;</span>
+    }
+
+    /**
+     * Returns the binary logarithm of the number of characters in this alphabet.
+     * 
+     * @return the binary logarithm (rounded up) of the number of characters in this alphabet
+     */
+    public int lgR() {
+<span class="nc" id="L173">        int lgR = 0;</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        for (int t = R-1; t &gt;= 1; t /= 2)</span>
+<span class="nc" id="L175">            lgR++;</span>
+<span class="nc" id="L176">        return lgR;</span>
+    }
+
+    /**
+     * Returns the index corresponding to the argument character.
+     * 
+     * @param  c the character
+     * @return the index corresponding to the character {@code c}
+     * @throws IllegalArgumentException unless {@code c} is a character in this alphabet
+     */
+    public int toIndex(char c) {
+<span class="nc bnc" id="L187" title="All 4 branches missed.">        if (c &gt;= inverse.length || inverse[c] == -1) {</span>
+<span class="nc" id="L188">            throw new IllegalArgumentException(&quot;Character &quot; + c + &quot; not in alphabet&quot;);</span>
+        }
+<span class="nc" id="L190">        return inverse[c];</span>
+    }
+
+    /**
+     * Returns the indices corresponding to the argument characters.
+     * 
+     * @param  s the characters
+     * @return the indices corresponding to the characters {@code s}
+     * @throws IllegalArgumentException unless every character in {@code s}
+     *         is a character in this alphabet
+     */
+    public int[] toIndices(String s) {
+<span class="nc" id="L202">        char[] source = s.toCharArray();</span>
+<span class="nc" id="L203">        int[] target  = new int[s.length()];</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        for (int i = 0; i &lt; source.length; i++)</span>
+<span class="nc" id="L205">            target[i] = toIndex(source[i]);</span>
+<span class="nc" id="L206">        return target;</span>
+    }
+
+    /**
+     * Returns the character corresponding to the argument index.
+     * 
+     * @param  index the index
+     * @return the character corresponding to the index {@code index}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= index &lt; R}
+     */
+    public char toChar(int index) {
+<span class="nc bnc" id="L217" title="All 4 branches missed.">        if (index &lt; 0 || index &gt;= R) {</span>
+<span class="nc" id="L218">            throw new IllegalArgumentException(&quot;index must be between 0 and &quot; + R + &quot;: &quot; + index);</span>
+        }
+<span class="nc" id="L220">        return alphabet[index];</span>
+    }
+
+    /**
+     * Returns the characters corresponding to the argument indices.
+     * 
+     * @param  indices the indices
+     * @return the characters corresponding to the indices {@code indices}
+     * @throws IllegalArgumentException unless {@code 0 &lt; indices[i] &lt; R}
+     *         for every {@code i}
+     */
+    public String toChars(int[] indices) {
+<span class="nc" id="L232">        StringBuilder s = new StringBuilder(indices.length);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        for (int i = 0; i &lt; indices.length; i++)</span>
+<span class="nc" id="L234">            s.append(toChar(indices[i]));</span>
+<span class="nc" id="L235">        return s.toString();</span>
+    }
+
+    /**
+     * Unit tests the {@code Alphabet} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L244">        int[]  encoded1 = Alphabet.BASE64.toIndices(&quot;NowIsTheTimeForAllGoodMen&quot;);</span>
+<span class="nc" id="L245">        String decoded1 = Alphabet.BASE64.toChars(encoded1);</span>
+<span class="nc" id="L246">        StdOut.println(decoded1);</span>
+ 
+<span class="nc" id="L248">        int[]  encoded2 = Alphabet.DNA.toIndices(&quot;AACGAACGGTTTACCCCG&quot;);</span>
+<span class="nc" id="L249">        String decoded2 = Alphabet.DNA.toChars(encoded2);</span>
+<span class="nc" id="L250">        StdOut.println(decoded2);</span>
+
+<span class="nc" id="L252">        int[]  encoded3 = Alphabet.DECIMAL.toIndices(&quot;01234567890123456789&quot;);</span>
+<span class="nc" id="L253">        String decoded3 = Alphabet.DECIMAL.toChars(encoded3);</span>
+<span class="nc" id="L254">        StdOut.println(decoded3);</span>
+<span class="nc" id="L255">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

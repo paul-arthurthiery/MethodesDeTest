@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>GrahamScan.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">GrahamScan.java</span></div><h1>GrahamScan.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac GrahamaScan.java
+ *  Execution:    java GrahamScan &lt; input.txt
+ *  Dependencies: Point2D.java
+ *  Data files:   https://algs4.cs.princeton.edu/99hull/rs1423.txt
+ *                https://algs4.cs.princeton.edu/99hull/kw1260.txt
+ * 
+ *  Create points from standard input and compute the convex hull using
+ *  Graham scan algorithm.
+ *
+ *  May be floating-point issues if x- and y-coordinates are not integers.
+ *
+ *  % java GrahamScan &lt; input100.txt 
+ *  (7486.0, 422.0)
+ *  (29413.0, 596.0)
+ *  (32011.0, 3140.0)
+ *  (30875.0, 28560.0)
+ *  (28462.0, 32343.0)
+ *  (15731.0, 32661.0)
+ *  (822.0, 32301.0)
+ *  (823.0, 15895.0)
+ *  (1444.0, 10362.0)
+ *  (4718.0, 4451.0)
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+
+
+/**
+ *  The {@code GrahamScan} data type provides methods for computing the 
+ *  convex hull of a set of &lt;em&gt;n&lt;/em&gt; points in the plane.
+ *  &lt;p&gt;
+ *  The implementation uses the Graham-Scan convex hull algorithm.
+ *  It runs in O(&lt;em&gt;n&lt;/em&gt; log &lt;em&gt;n&lt;/em&gt;) time in the worst case
+ *  and uses O(&lt;em&gt;n&lt;/em&gt;) extra memory.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/99scientific&quot;&gt;Section 9.9&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L46" title="All 2 branches missed.">public class GrahamScan {</span>
+<span class="nc" id="L47">    private Stack&lt;Point2D&gt; hull = new Stack&lt;Point2D&gt;();</span>
+
+    /**
+     * Computes the convex hull of the specified array of points.
+     *
+     * @param  points the array of points
+     * @throws IllegalArgumentException if {@code points} is {@code null}
+     * @throws IllegalArgumentException if any entry in {@code points[]} is {@code null}
+     * @throws IllegalArgumentException if {@code points.length} is {@code 0}
+     */
+<span class="nc" id="L57">    public GrahamScan(Point2D[] points) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (points == null) throw new IllegalArgumentException(&quot;argument is null&quot;);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (points.length == 0) throw new IllegalArgumentException(&quot;array is of length 0&quot;);</span>
+
+        // defensive copy
+<span class="nc" id="L62">        int n = points.length;</span>
+<span class="nc" id="L63">        Point2D[] a = new Point2D[n];</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (points[i] == null)</span>
+<span class="nc" id="L66">                throw new IllegalArgumentException(&quot;points[&quot; + i + &quot;] is null&quot;);</span>
+<span class="nc" id="L67">            a[i] = points[i];</span>
+        }
+
+        // preprocess so that a[0] has lowest y-coordinate; break ties by x-coordinate
+        // a[0] is an extreme point of the convex hull
+        // (alternatively, could do easily in linear time)
+<span class="nc" id="L73">        Arrays.sort(a);</span>
+
+        // sort by polar angle with respect to base point a[0],
+        // breaking ties by distance to a[0]
+<span class="nc" id="L77">        Arrays.sort(a, 1, n, a[0].polarOrder());</span>
+
+<span class="nc" id="L79">        hull.push(a[0]);       // a[0] is first extreme point</span>
+
+        // find index k1 of first point not equal to a[0]
+        int k1;
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        for (k1 = 1; k1 &lt; n; k1++)</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">            if (!a[0].equals(a[k1])) break;</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (k1 == n) return;        // all points equal</span>
+
+        // find index k2 of first point not collinear with a[0] and a[k1]
+        int k2;
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        for (k2 = k1+1; k2 &lt; n; k2++)</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (Point2D.ccw(a[0], a[k1], a[k2]) != 0) break;</span>
+<span class="nc" id="L91">        hull.push(a[k2-1]);    // a[k2-1] is second extreme point</span>
+
+        // Graham scan; note that a[n-1] is extreme point different from a[0]
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (int i = k2; i &lt; n; i++) {</span>
+<span class="nc" id="L95">            Point2D top = hull.pop();</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            while (Point2D.ccw(hull.peek(), top, a[i]) &lt;= 0) {</span>
+<span class="nc" id="L97">                top = hull.pop();</span>
+            }
+<span class="nc" id="L99">            hull.push(top);</span>
+<span class="nc" id="L100">            hull.push(a[i]);</span>
+        }
+
+<span class="nc bnc" id="L103" title="All 4 branches missed.">        assert isConvex();</span>
+<span class="nc" id="L104">    }</span>
+
+    /**
+     * Returns the extreme points on the convex hull in counterclockwise order.
+     *
+     * @return the extreme points on the convex hull in counterclockwise order
+     */
+    public Iterable&lt;Point2D&gt; hull() {
+<span class="nc" id="L112">        Stack&lt;Point2D&gt; s = new Stack&lt;Point2D&gt;();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (Point2D p : hull) s.push(p);</span>
+<span class="nc" id="L114">        return s;</span>
+    }
+
+    // check that boundary of hull is strictly convex
+    private boolean isConvex() {
+<span class="nc" id="L119">        int n = hull.size();</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (n &lt;= 2) return true;</span>
+
+<span class="nc" id="L122">        Point2D[] points = new Point2D[n];</span>
+<span class="nc" id="L123">        int k = 0;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        for (Point2D p : hull()) {</span>
+<span class="nc" id="L125">            points[k++] = p;</span>
+        }
+
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            if (Point2D.ccw(points[i], points[(i+1) % n], points[(i+2) % n]) &lt;= 0) {</span>
+<span class="nc" id="L130">                return false;</span>
+            }
+        }
+<span class="nc" id="L133">        return true;</span>
+    }
+
+   /**
+     * Unit tests the {@code GrahamScan} data type.
+     * Reads in an integer {@code n} and {@code n} points (specified by
+     * their &lt;em&gt;x&lt;/em&gt;- and &lt;em&gt;y&lt;/em&gt;-coordinates) from standard input;
+     * computes their convex hull; and prints out the points on the
+     * convex hull to standard output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L146">        int n = StdIn.readInt();</span>
+<span class="nc" id="L147">        Point2D[] points = new Point2D[n];</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L149">            int x = StdIn.readInt();</span>
+<span class="nc" id="L150">            int y = StdIn.readInt();</span>
+<span class="nc" id="L151">            points[i] = new Point2D(x, y);</span>
+        }
+<span class="nc" id="L153">        GrahamScan graham = new GrahamScan(points);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (Point2D p : graham.hull())</span>
+<span class="nc" id="L155">            StdOut.println(p);</span>
+<span class="nc" id="L156">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

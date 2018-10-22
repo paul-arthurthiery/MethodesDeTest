@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Counter.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Counter.java</span></div><h1>Counter.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Counter.java
+ *  Execution:    java Counter n trials
+ *  Dependencies: StdRandom.java StdOut.java
+ *
+ *  A mutable data type for an integer counter.
+ *
+ *  The test clients create n counters and performs trials increment
+ *  operations on random counters.
+ *
+ * java Counter 6 600000
+ *  100140 counter0
+ *  100273 counter1
+ *  99848 counter2
+ *  100129 counter3
+ *  99973 counter4
+ *  99637 counter5
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Counter} class is a mutable data type to encapsulate a counter.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Counter implements Comparable&lt;Counter&gt; {
+
+    private final String name;     // counter name
+<span class="nc" id="L36">    private int count = 0;         // current value</span>
+
+    /**
+     * Initializes a new counter starting at 0, with the given id.
+     *
+     * @param id the name of the counter
+     */
+<span class="nc" id="L43">    public Counter(String id) {</span>
+<span class="nc" id="L44">        name = id;</span>
+<span class="nc" id="L45">    } </span>
+
+    /**
+     * Increments the counter by 1.
+     */
+    public void increment() {
+<span class="nc" id="L51">        count++;</span>
+<span class="nc" id="L52">    } </span>
+
+    /**
+     * Returns the current value of this counter.
+     *
+     * @return the current value of this counter
+     */
+    public int tally() {
+<span class="nc" id="L60">        return count;</span>
+    } 
+
+    /**
+     * Returns a string representation of this counter.
+     *
+     * @return a string representation of this counter
+     */
+    public String toString() {
+<span class="nc" id="L69">        return count + &quot; &quot; + name;</span>
+    } 
+
+    /**
+     * Compares this counter to the specified counter.
+     *
+     * @param  that the other counter
+     * @return {@code 0} if the value of this counter equals
+     *         the value of that counter; a negative integer if
+     *         the value of this counter is less than the value of
+     *         that counter; and a positive integer if the value
+     *         of this counter is greater than the value of that
+     *         counter
+     */
+    @Override
+    public int compareTo(Counter that) {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if      (this.count &lt; that.count) return -1;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        else if (this.count &gt; that.count) return +1;</span>
+<span class="nc" id="L87">        else                              return  0;</span>
+    }
+
+
+    /**
+     * Reads two command-line integers n and trials; creates n counters;
+     * increments trials counters at random; and prints results.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L98">        int n = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L99">        int trials = Integer.parseInt(args[1]);</span>
+
+        // create n counters
+<span class="nc" id="L102">        Counter[] hits = new Counter[n];</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L104">            hits[i] = new Counter(&quot;counter&quot; + i);</span>
+        }
+
+        // increment trials counters at random
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        for (int t = 0; t &lt; trials; t++) {</span>
+<span class="nc" id="L109">            hits[StdRandom.uniform(n)].increment();</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L114">            StdOut.println(hits[i]);</span>
+        }
+<span class="nc" id="L116">    } </span>
+} 
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Graph.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Graph.java</span></div><h1>Graph.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Graph.java        
+ *  Execution:    java Graph input.txt
+ *  Dependencies: Bag.java Stack.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/41graph/tinyG.txt
+ *                https://algs4.cs.princeton.edu/41graph/mediumG.txt
+ *                https://algs4.cs.princeton.edu/41graph/largeG.txt
+ *
+ *  A graph, implemented using an array of sets.
+ *  Parallel edges and self-loops allowed.
+ *
+ *  % java Graph tinyG.txt
+ *  13 vertices, 13 edges 
+ *  0: 6 2 1 5 
+ *  1: 0 
+ *  2: 0 
+ *  3: 5 4 
+ *  4: 5 6 3 
+ *  5: 3 4 0 
+ *  6: 0 4 
+ *  7: 8 
+ *  8: 7 
+ *  9: 11 10 12 
+ *  10: 9 
+ *  11: 9 12 
+ *  12: 11 9 
+ *
+ *  % java Graph mediumG.txt
+ *  250 vertices, 1273 edges 
+ *  0: 225 222 211 209 204 202 191 176 163 160 149 114 97 80 68 59 58 49 44 24 15 
+ *  1: 220 203 200 194 189 164 150 130 107 72 
+ *  2: 141 110 108 86 79 51 42 18 14 
+ *  ...
+ *  
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.NoSuchElementException;
+
+/**
+ *  The {@code Graph} class represents an undirected graph of vertices
+ *  named 0 through &lt;em&gt;V&lt;/em&gt; – 1.
+ *  It supports the following two primary operations: add an edge to the graph,
+ *  iterate over all of the vertices adjacent to a vertex. It also provides
+ *  methods for returning the number of vertices &lt;em&gt;V&lt;/em&gt; and the number
+ *  of edges &lt;em&gt;E&lt;/em&gt;. Parallel edges and self-loops are permitted.
+ *  By convention, a self-loop &lt;em&gt;v&lt;/em&gt;-&lt;em&gt;v&lt;/em&gt; appears in the
+ *  adjacency list of &lt;em&gt;v&lt;/em&gt; twice and contributes two to the degree
+ *  of &lt;em&gt;v&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  This implementation uses an adjacency-lists representation, which 
+ *  is a vertex-indexed array of {@link Bag} objects.
+ *  All operations take constant time (in the worst case) except
+ *  iterating over the vertices adjacent to a given vertex, which takes
+ *  time proportional to the number of such vertices.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/41graph&quot;&gt;Section 4.1&lt;/a&gt;
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Graph {
+<span class="fc" id="L65">    private static final String NEWLINE = System.getProperty(&quot;line.separator&quot;);</span>
+
+    private final int V;
+    private int E;
+    private Bag&lt;Integer&gt;[] adj;
+    
+    /**
+     * Initializes an empty graph with {@code V} vertices and 0 edges.
+     * param V the number of vertices
+     *
+     * @param  V number of vertices
+     * @throws IllegalArgumentException if {@code V &lt; 0}
+     */
+<span class="fc" id="L78">    public Graph(int V) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (V &lt; 0) throw new IllegalArgumentException(&quot;Number of vertices must be nonnegative&quot;);</span>
+<span class="fc" id="L80">        this.V = V;</span>
+<span class="fc" id="L81">        this.E = 0;</span>
+<span class="fc" id="L82">        adj = (Bag&lt;Integer&gt;[]) new Bag[V];</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="fc" id="L84">            adj[v] = new Bag&lt;Integer&gt;();</span>
+        }
+<span class="fc" id="L86">    }</span>
+
+    /**  
+     * Initializes a graph from the specified input stream.
+     * The format is the number of vertices &lt;em&gt;V&lt;/em&gt;,
+     * followed by the number of edges &lt;em&gt;E&lt;/em&gt;,
+     * followed by &lt;em&gt;E&lt;/em&gt; pairs of vertices, with each entry separated by whitespace.
+     *
+     * @param  in the input stream
+     * @throws IllegalArgumentException if the endpoints of any edge are not in prescribed range
+     * @throws IllegalArgumentException if the number of vertices or edges is negative
+     * @throws IllegalArgumentException if the input stream is in the wrong format
+     */
+<span class="nc" id="L99">    public Graph(In in) {</span>
+        try {
+<span class="nc" id="L101">            this.V = in.readInt();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            if (V &lt; 0) throw new IllegalArgumentException(&quot;number of vertices in a Graph must be nonnegative&quot;);</span>
+<span class="nc" id="L103">            adj = (Bag&lt;Integer&gt;[]) new Bag[V];</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L105">                adj[v] = new Bag&lt;Integer&gt;();</span>
+            }
+<span class="nc" id="L107">            int E = in.readInt();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            if (E &lt; 0) throw new IllegalArgumentException(&quot;number of edges in a Graph must be nonnegative&quot;);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            for (int i = 0; i &lt; E; i++) {</span>
+<span class="nc" id="L110">                int v = in.readInt();</span>
+<span class="nc" id="L111">                int w = in.readInt();</span>
+<span class="nc" id="L112">                validateVertex(v);</span>
+<span class="nc" id="L113">                validateVertex(w);</span>
+<span class="nc" id="L114">                addEdge(v, w); </span>
+            }
+<span class="nc" id="L116">        }</span>
+<span class="nc" id="L117">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L118">            throw new IllegalArgumentException(&quot;invalid input format in Graph constructor&quot;, e);</span>
+        }
+<span class="nc" id="L120">    }</span>
+
+
+    /**
+     * Initializes a new graph that is a deep copy of {@code G}.
+     *
+     * @param  G the graph to copy
+     */
+    public Graph(Graph G) {
+<span class="nc" id="L129">        this(G.V());</span>
+<span class="nc" id="L130">        this.E = G.E();</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+            // reverse so that adjacency list is in same order as original
+<span class="nc" id="L133">            Stack&lt;Integer&gt; reverse = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            for (int w : G.adj[v]) {</span>
+<span class="nc" id="L135">                reverse.push(w);</span>
+            }
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            for (int w : reverse) {</span>
+<span class="nc" id="L138">                adj[v].add(w);</span>
+            }
+        }
+<span class="nc" id="L141">    }</span>
+
+    /**
+     * Returns the number of vertices in this graph.
+     *
+     * @return the number of vertices in this graph
+     */
+    public int V() {
+<span class="fc" id="L149">        return V;</span>
+    }
+
+    /**
+     * Returns the number of edges in this graph.
+     *
+     * @return the number of edges in this graph
+     */
+    public int E() {
+<span class="fc" id="L158">        return E;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="pc bpc" id="L163" title="2 of 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L164">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Adds the undirected edge v-w to this graph.
+     *
+     * @param  v one vertex in the edge
+     * @param  w the other vertex in the edge
+     * @throws IllegalArgumentException unless both {@code 0 &lt;= v &lt; V} and {@code 0 &lt;= w &lt; V}
+     */
+    public void addEdge(int v, int w) {
+<span class="fc" id="L175">        validateVertex(v);</span>
+<span class="fc" id="L176">        validateVertex(w);</span>
+<span class="fc" id="L177">        E++;</span>
+<span class="fc" id="L178">        adj[v].add(w);</span>
+<span class="fc" id="L179">        adj[w].add(v);</span>
+<span class="fc" id="L180">    }</span>
+
+
+    /**
+     * Returns the vertices adjacent to vertex {@code v}.
+     *
+     * @param  v the vertex
+     * @return the vertices adjacent to vertex {@code v}, as an iterable
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public Iterable&lt;Integer&gt; adj(int v) {
+<span class="nc" id="L191">        validateVertex(v);</span>
+<span class="nc" id="L192">        return adj[v];</span>
+    }
+
+    /**
+     * Returns the degree of vertex {@code v}.
+     *
+     * @param  v the vertex
+     * @return the degree of vertex {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int degree(int v) {
+<span class="nc" id="L203">        validateVertex(v);</span>
+<span class="nc" id="L204">        return adj[v].size();</span>
+    }
+
+
+    /**
+     * Returns a string representation of this graph.
+     *
+     * @return the number of vertices &lt;em&gt;V&lt;/em&gt;, followed by the number of edges &lt;em&gt;E&lt;/em&gt;,
+     *         followed by the &lt;em&gt;V&lt;/em&gt; adjacency lists
+     */
+    public String toString() {
+<span class="nc" id="L215">        StringBuilder s = new StringBuilder();</span>
+<span class="nc" id="L216">        s.append(V + &quot; vertices, &quot; + E + &quot; edges &quot; + NEWLINE);</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L218">            s.append(v + &quot;: &quot;);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">            for (int w : adj[v]) {</span>
+<span class="nc" id="L220">                s.append(w + &quot; &quot;);</span>
+            }
+<span class="nc" id="L222">            s.append(NEWLINE);</span>
+        }
+<span class="nc" id="L224">        return s.toString();</span>
+    }
+
+
+    /**
+     * Unit tests the {@code Graph} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L234">        In in = new In(args[0]);</span>
+<span class="nc" id="L235">        Graph G = new Graph(in);</span>
+<span class="nc" id="L236">        StdOut.println(G);</span>
+<span class="nc" id="L237">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

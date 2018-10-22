@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>BinarySearch.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">BinarySearch.java</span></div><h1>BinarySearch.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac BinarySearch.java
+ *  Execution:    java BinarySearch whitelist.txt &lt; input.txt
+ *  Dependencies: In.java StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/11model/tinyW.txt
+ *                https://algs4.cs.princeton.edu/11model/tinyT.txt
+ *                https://algs4.cs.princeton.edu/11model/largeW.txt
+ *                https://algs4.cs.princeton.edu/11model/largeT.txt
+ *
+ *  % java BinarySearch tinyW.txt &lt; tinyT.txt
+ *  50
+ *  99
+ *  13
+ *
+ *  % java BinarySearch largeW.txt &lt; largeT.txt | more
+ *  499569
+ *  984875
+ *  295754
+ *  207807
+ *  140925
+ *  161828
+ *  [367,966 total values]
+ *  
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+
+/**
+ *  The {@code BinarySearch} class provides a static method for binary
+ *  searching for an integer in a sorted array of integers.
+ *  &lt;p&gt;
+ *  The &lt;em&gt;indexOf&lt;/em&gt; operations takes logarithmic time in the worst case.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/11model&quot;&gt;Section 1.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class BinarySearch {
+
+    /**
+     * This class should not be instantiated.
+     */
+<span class="nc" id="L47">    private BinarySearch() { }</span>
+
+    /**
+     * Returns the index of the specified key in the specified array.
+     *
+     * @param  a the array of integers, must be sorted in ascending order
+     * @param  key the search key
+     * @return index of key in array {@code a} if present; {@code -1} otherwise
+     */
+    public static int indexOf(int[] a, int key) {
+<span class="nc" id="L57">        int lo = 0;</span>
+<span class="nc" id="L58">        int hi = a.length - 1;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        while (lo &lt;= hi) {</span>
+            // Key is in a[lo..hi] or not present.
+<span class="nc" id="L61">            int mid = lo + (hi - lo) / 2;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if      (key &lt; a[mid]) hi = mid - 1;</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            else if (key &gt; a[mid]) lo = mid + 1;</span>
+<span class="nc" id="L64">            else return mid;</span>
+        }
+<span class="nc" id="L66">        return -1;</span>
+    }
+
+    /**
+     * Returns the index of the specified key in the specified array.
+     * This function is poorly named because it does not give the &lt;em&gt;rank&lt;/em&gt;
+     * if the array has duplicate keys or if the key is not in the array.
+     *
+     * @param  key the search key
+     * @param  a the array of integers, must be sorted in ascending order
+     * @return index of key in array {@code a} if present; {@code -1} otherwise
+     * @deprecated Replaced by {@link #indexOf(int[], int)}.
+     */
+    @Deprecated
+    public static int rank(int key, int[] a) {
+<span class="nc" id="L81">        return indexOf(a, key);</span>
+    }
+
+    /**
+     * Reads in a sequence of integers from the whitelist file, specified as
+     * a command-line argument; reads in integers from standard input;
+     * prints to standard output those integers that do &lt;em&gt;not&lt;/em&gt; appear in the file.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // read the integers from a file
+<span class="nc" id="L94">        In in = new In(args[0]);</span>
+<span class="nc" id="L95">        int[] whitelist = in.readAllInts();</span>
+
+        // sort the array
+<span class="nc" id="L98">        Arrays.sort(whitelist);</span>
+
+        // read integer key from standard input; print if not in whitelist
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L102">            int key = StdIn.readInt();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            if (BinarySearch.indexOf(whitelist, key) == -1)</span>
+<span class="nc" id="L104">                StdOut.println(key);</span>
+        }
+<span class="nc" id="L106">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LinearRegression.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LinearRegression.java</span></div><h1>LinearRegression.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LinearRegression.java
+ *  Execution:    java  LinearRegression
+ *  Dependencies: none
+ *  
+ *  Compute least squares solution to y = beta * x + alpha.
+ *  Simple linear regression.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+/**
+ *  The {@code LinearRegression} class performs a simple linear regression
+ *  on an set of &lt;em&gt;n&lt;/em&gt; data points (&lt;em&gt;y&lt;sub&gt;i&lt;/sub&gt;&lt;/em&gt;, &lt;em&gt;x&lt;sub&gt;i&lt;/sub&gt;&lt;/em&gt;).
+ *  That is, it fits a straight line &lt;em&gt;y&lt;/em&gt; = &amp;alpha; + &amp;beta; &lt;em&gt;x&lt;/em&gt;,
+ *  (where &lt;em&gt;y&lt;/em&gt; is the response variable, &lt;em&gt;x&lt;/em&gt; is the predictor variable,
+ *  &amp;alpha; is the &lt;em&gt;y-intercept&lt;/em&gt;, and &amp;beta; is the &lt;em&gt;slope&lt;/em&gt;)
+ *  that minimizes the sum of squared residuals of the linear regression model.
+ *  It also computes associated statistics, including the coefficient of
+ *  determination &lt;em&gt;R&lt;/em&gt;&lt;sup&gt;2&lt;/sup&gt; and the standard deviation of the
+ *  estimates for the slope and &lt;em&gt;y&lt;/em&gt;-intercept.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class LinearRegression {
+    private final double intercept, slope;
+    private final double r2;
+    private final double svar0, svar1;
+
+   /**
+     * Performs a linear regression on the data points {@code (y[i], x[i])}.
+     *
+     * @param  x the values of the predictor variable
+     * @param  y the corresponding values of the response variable
+     * @throws IllegalArgumentException if the lengths of the two arrays are not equal
+     */
+<span class="nc" id="L40">    public LinearRegression(double[] x, double[] y) {</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (x.length != y.length) {</span>
+<span class="nc" id="L42">            throw new IllegalArgumentException(&quot;array lengths are not equal&quot;);</span>
+        }
+<span class="nc" id="L44">        int n = x.length;</span>
+
+        // first pass
+<span class="nc" id="L47">        double sumx = 0.0, sumy = 0.0, sumx2 = 0.0;</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L49">            sumx  += x[i];</span>
+<span class="nc" id="L50">            sumx2 += x[i]*x[i];</span>
+<span class="nc" id="L51">            sumy  += y[i];</span>
+        }
+<span class="nc" id="L53">        double xbar = sumx / n;</span>
+<span class="nc" id="L54">        double ybar = sumy / n;</span>
+
+        // second pass: compute summary statistics
+<span class="nc" id="L57">        double xxbar = 0.0, yybar = 0.0, xybar = 0.0;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L59">            xxbar += (x[i] - xbar) * (x[i] - xbar);</span>
+<span class="nc" id="L60">            yybar += (y[i] - ybar) * (y[i] - ybar);</span>
+<span class="nc" id="L61">            xybar += (x[i] - xbar) * (y[i] - ybar);</span>
+        }
+<span class="nc" id="L63">        slope  = xybar / xxbar;</span>
+<span class="nc" id="L64">        intercept = ybar - slope * xbar;</span>
+
+        // more statistical analysis
+<span class="nc" id="L67">        double rss = 0.0;      // residual sum of squares</span>
+<span class="nc" id="L68">        double ssr = 0.0;      // regression sum of squares</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L70">            double fit = slope*x[i] + intercept;</span>
+<span class="nc" id="L71">            rss += (fit - y[i]) * (fit - y[i]);</span>
+<span class="nc" id="L72">            ssr += (fit - ybar) * (fit - ybar);</span>
+        }
+
+<span class="nc" id="L75">        int degreesOfFreedom = n-2;</span>
+<span class="nc" id="L76">        r2    = ssr / yybar;</span>
+<span class="nc" id="L77">        double svar  = rss / degreesOfFreedom;</span>
+<span class="nc" id="L78">        svar1 = svar / xxbar;</span>
+<span class="nc" id="L79">        svar0 = svar/n + xbar*xbar*svar1;</span>
+<span class="nc" id="L80">    }</span>
+
+   /**
+     * Returns the &lt;em&gt;y&lt;/em&gt;-intercept &amp;alpha; of the best of the best-fit line &lt;em&gt;y&lt;/em&gt; = &amp;alpha; + &amp;beta; &lt;em&gt;x&lt;/em&gt;.
+     *
+     * @return the &lt;em&gt;y&lt;/em&gt;-intercept &amp;alpha; of the best-fit line &lt;em&gt;y = &amp;alpha; + &amp;beta; x&lt;/em&gt;
+     */
+    public double intercept() {
+<span class="nc" id="L88">        return intercept;</span>
+    }
+
+   /**
+     * Returns the slope &amp;beta; of the best of the best-fit line &lt;em&gt;y&lt;/em&gt; = &amp;alpha; + &amp;beta; &lt;em&gt;x&lt;/em&gt;.
+     *
+     * @return the slope &amp;beta; of the best-fit line &lt;em&gt;y&lt;/em&gt; = &amp;alpha; + &amp;beta; &lt;em&gt;x&lt;/em&gt;
+     */
+    public double slope() {
+<span class="nc" id="L97">        return slope;</span>
+    }
+
+   /**
+     * Returns the coefficient of determination &lt;em&gt;R&lt;/em&gt;&lt;sup&gt;2&lt;/sup&gt;.
+     *
+     * @return the coefficient of determination &lt;em&gt;R&lt;/em&gt;&lt;sup&gt;2&lt;/sup&gt;,
+     *         which is a real number between 0 and 1
+     */
+    public double R2() {
+<span class="nc" id="L107">        return r2;</span>
+    }
+
+   /**
+     * Returns the standard error of the estimate for the intercept.
+     *
+     * @return the standard error of the estimate for the intercept
+     */
+    public double interceptStdErr() {
+<span class="nc" id="L116">        return Math.sqrt(svar0);</span>
+    }
+
+   /**
+     * Returns the standard error of the estimate for the slope.
+     *
+     * @return the standard error of the estimate for the slope
+     */
+    public double slopeStdErr() {
+<span class="nc" id="L125">        return Math.sqrt(svar1);</span>
+    }
+
+   /**
+     * Returns the expected response {@code y} given the value of the predictor
+     * variable {@code x}.
+     *
+     * @param  x the value of the predictor variable
+     * @return the expected response {@code y} given the value of the predictor
+     *         variable {@code x}
+     */
+    public double predict(double x) {
+<span class="nc" id="L137">        return slope*x + intercept;</span>
+    }
+
+   /**
+     * Returns a string representation of the simple linear regression model.
+     *
+     * @return a string representation of the simple linear regression model,
+     *         including the best-fit line and the coefficient of determination
+     *         &lt;em&gt;R&lt;/em&gt;&lt;sup&gt;2&lt;/sup&gt;
+     */
+    public String toString() {
+<span class="nc" id="L148">        StringBuilder s = new StringBuilder();</span>
+<span class="nc" id="L149">        s.append(String.format(&quot;%.2f n + %.2f&quot;, slope(), intercept()));</span>
+<span class="nc" id="L150">        s.append(&quot;  (R^2 = &quot; + String.format(&quot;%.3f&quot;, R2()) + &quot;)&quot;);</span>
+<span class="nc" id="L151">        return s.toString();</span>
+    }
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

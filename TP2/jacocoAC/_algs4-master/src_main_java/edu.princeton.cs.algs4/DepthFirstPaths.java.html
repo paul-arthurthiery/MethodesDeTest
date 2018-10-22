@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DepthFirstPaths.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DepthFirstPaths.java</span></div><h1>DepthFirstPaths.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DepthFirstPaths.java
+ *  Execution:    java DepthFirstPaths G s
+ *  Dependencies: Graph.java Stack.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/41graph/tinyCG.txt
+ *                https://algs4.cs.princeton.edu/41graph/tinyG.txt
+ *                https://algs4.cs.princeton.edu/41graph/mediumG.txt
+ *                https://algs4.cs.princeton.edu/41graph/largeG.txt
+ *
+ *  Run depth first search on an undirected graph.
+ *  Runs in O(E + V) time.
+ *
+ *  %  java Graph tinyCG.txt
+ *  6 8
+ *  0: 2 1 5 
+ *  1: 0 2 
+ *  2: 0 1 3 4 
+ *  3: 5 4 2 
+ *  4: 3 2 
+ *  5: 3 0 
+ *
+ *  % java DepthFirstPaths tinyCG.txt 0
+ *  0 to 0:  0
+ *  0 to 1:  0-2-1
+ *  0 to 2:  0-2
+ *  0 to 3:  0-2-3
+ *  0 to 4:  0-2-3-4
+ *  0 to 5:  0-2-3-5
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code DepthFirstPaths} class represents a data type for finding
+ *  paths from a source vertex &lt;em&gt;s&lt;/em&gt; to every other vertex
+ *  in an undirected graph.
+ *  &lt;p&gt;
+ *  This implementation uses depth-first search.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Each call to {@link #hasPathTo(int)} takes constant time;
+ *  each call to {@link #pathTo(int)} takes time proportional to the length
+ *  of the path.
+ *  It uses extra space (not including the graph) proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/41graph&quot;&gt;Section 4.1&lt;/a&gt;   
+ *  of &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class DepthFirstPaths {
+    private boolean[] marked;    // marked[v] = is there an s-v path?
+    private int[] edgeTo;        // edgeTo[v] = last edge on s-v path
+    private final int s;         // source vertex
+
+    /**
+     * Computes a path between {@code s} and every other vertex in graph {@code G}.
+     * @param G the graph
+     * @param s the source vertex
+     * @throws IllegalArgumentException unless {@code 0 &lt;= s &lt; V}
+     */
+<span class="nc" id="L64">    public DepthFirstPaths(Graph G, int s) {</span>
+<span class="nc" id="L65">        this.s = s;</span>
+<span class="nc" id="L66">        edgeTo = new int[G.V()];</span>
+<span class="nc" id="L67">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L68">        validateVertex(s);</span>
+<span class="nc" id="L69">        dfs(G, s);</span>
+<span class="nc" id="L70">    }</span>
+
+    // depth first search from v
+    private void dfs(Graph G, int v) {
+<span class="nc" id="L74">        marked[v] = true;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (!marked[w]) {</span>
+<span class="nc" id="L77">                edgeTo[w] = v;</span>
+<span class="nc" id="L78">                dfs(G, w);</span>
+            }
+        }
+<span class="nc" id="L81">    }</span>
+
+    /**
+     * Is there a path between the source vertex {@code s} and vertex {@code v}?
+     * @param v the vertex
+     * @return {@code true} if there is a path, {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public boolean hasPathTo(int v) {
+<span class="nc" id="L90">        validateVertex(v);</span>
+<span class="nc" id="L91">        return marked[v];</span>
+    }
+
+    /**
+     * Returns a path between the source vertex {@code s} and vertex {@code v}, or
+     * {@code null} if no such path.
+     * @param  v the vertex
+     * @return the sequence of vertices on a path between the source vertex
+     *         {@code s} and vertex {@code v}, as an Iterable
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public Iterable&lt;Integer&gt; pathTo(int v) {
+<span class="nc" id="L103">        validateVertex(v);</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (!hasPathTo(v)) return null;</span>
+<span class="nc" id="L105">        Stack&lt;Integer&gt; path = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        for (int x = v; x != s; x = edgeTo[x])</span>
+<span class="nc" id="L107">            path.push(x);</span>
+<span class="nc" id="L108">        path.push(s);</span>
+<span class="nc" id="L109">        return path;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L114">        int V = marked.length;</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L116">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L117">    }</span>
+
+    /**
+     * Unit tests the {@code DepthFirstPaths} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L125">        In in = new In(args[0]);</span>
+<span class="nc" id="L126">        Graph G = new Graph(in);</span>
+<span class="nc" id="L127">        int s = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L128">        DepthFirstPaths dfs = new DepthFirstPaths(G, s);</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (dfs.hasPathTo(v)) {</span>
+<span class="nc" id="L132">                StdOut.printf(&quot;%d to %d:  &quot;, s, v);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                for (int x : dfs.pathTo(v)) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                    if (x == s) StdOut.print(x);</span>
+<span class="nc" id="L135">                    else        StdOut.print(&quot;-&quot; + x);</span>
+                }
+<span class="nc" id="L137">                StdOut.println();</span>
+<span class="nc" id="L138">            }</span>
+
+            else {
+<span class="nc" id="L141">                StdOut.printf(&quot;%d to %d:  not connected\n&quot;, s, v);</span>
+            }
+
+        }
+<span class="nc" id="L145">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

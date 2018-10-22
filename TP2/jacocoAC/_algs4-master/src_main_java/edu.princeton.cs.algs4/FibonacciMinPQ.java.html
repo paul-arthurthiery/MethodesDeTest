@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>FibonacciMinPQ.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">FibonacciMinPQ.java</span></div><h1>FibonacciMinPQ.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation: javac FibonacciMinPQ.java
+ *  Execution:
+ *
+ *  A Fibonacci heap.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import java.util.Comparator;
+
+/*
+ *  The FibonacciMinPQ class represents a priority queue of generic keys.
+ *  It supports the usual insert and delete-the-minimum operations, 
+ *  along with the merging of two heaps together.
+ *  It also supports methods for peeking at the minimum key,
+ *  testing if the priority queue is empty, and iterating through
+ *  the keys.
+ *  It is possible to build the priority queue using a Comparator.
+ *  If not, the natural order relation between the keys will be used.
+ *  
+ *  This implementation uses a Fibonacci heap.
+ *  The delete-the-minimum operation takes amortized logarithmic time.
+ *  The insert, min-key, is-empty, size, union and constructor take constant time.
+ *
+ *  @author Tristan Claverie
+ */
+public class FibonacciMinPQ&lt;Key&gt; implements Iterable&lt;Key&gt; {
+	private Node head;					//Head of the circular root list
+	private Node min;					//Minimum Node of the root list
+	private int size;					//Number of keys in the heap
+	private final Comparator&lt;Key&gt; comp;	//Comparator over the keys
+<span class="nc" id="L37">	private HashMap&lt;Integer, Node&gt; table = new HashMap&lt;Integer, Node&gt;(); //Used for the consolidate operation</span>
+	
+	//Represents a Node of a tree
+<span class="nc" id="L40">	private class Node {</span>
+		Key key;						//Key of this Node
+		int order;						//Order of the tree rooted by this Node
+		Node prev, next;				//Siblings of this Node
+		Node child;						//Child of this Node
+	}
+	
+	/**
+	 * Initializes an empty priority queue
+	 * Worst case is O(1)
+	 * @param C a Comparator over the Keys
+	 */
+<span class="nc" id="L52">	public FibonacciMinPQ(Comparator&lt;Key&gt; C) {</span>
+<span class="nc" id="L53">		comp = C;</span>
+<span class="nc" id="L54">	}</span>
+	
+    /**
+     * Initializes an empty priority queue
+     * Worst case is O(1)
+     */
+<span class="nc" id="L60">	public FibonacciMinPQ() {</span>
+<span class="nc" id="L61">		comp = new MyComparator();</span>
+<span class="nc" id="L62">	}</span>
+	
+	/**
+	 * Initializes a priority queue with given keys
+	 * Worst case is O(n)
+	 * @param a an array of keys
+	 */
+<span class="nc" id="L69">	public FibonacciMinPQ(Key[] a) {</span>
+<span class="nc" id="L70">		comp = new MyComparator();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">		for (Key k : a) insert(k);</span>
+<span class="nc" id="L72">	}</span>
+	
+	/**
+	 * Initializes a priority queue with given keys
+	 * Worst case is O(n)
+	 * @param C a comparator over the keys
+	 * @param a an array of keys
+	 */
+<span class="nc" id="L80">	public FibonacciMinPQ(Comparator&lt;Key&gt; C, Key[] a) {</span>
+<span class="nc" id="L81">		comp = C;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">		for (Key k : a) insert(k);</span>
+<span class="nc" id="L83">	}</span>
+
+	/**
+	 * Whether the priority queue is empty
+	 * Worst case is O(1)
+	 * @return true if the priority queue is empty, false if not
+	 */
+	public boolean isEmpty() {
+<span class="nc bnc" id="L91" title="All 2 branches missed.">		return size == 0;</span>
+	}
+
+	/**
+	 * Number of elements currently on the priority queue
+	 * Worst case is O(1)
+	 * @return the number of elements on the priority queue
+	 */
+	public int size() {
+<span class="nc" id="L100">		return size;</span>
+	}
+
+	/**
+	 * Insert a key in the queue
+	 * Worst case is O(1)
+	 * @param key a Key
+	 */
+	public void insert(Key key) {
+<span class="nc" id="L109">		Node x = new Node();</span>
+<span class="nc" id="L110">		x.key = key;</span>
+<span class="nc" id="L111">		size++;</span>
+<span class="nc" id="L112">		head = insert(x, head);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">		if (min == null) min = head;</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">		else 			 min = (greater(min.key, key)) ? head : min;</span>
+<span class="nc" id="L115">	}</span>
+
+	/**
+	 * Gets the minimum key currently in the queue
+	 * Worst case is O(1)
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the minimum key currently in the priority queue
+	 */
+	public Key minKey() {
+<span class="nc bnc" id="L124" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L125">		return min.key;</span>
+	}
+
+	/**
+	 * Deletes the minimum key
+	 * Worst case is O(log(n)) (amortized)
+	 * @throws java.util.NoSuchElementException if the priority queue is empty
+	 * @return the minimum key
+	 */
+	public Key delMin() {
+<span class="nc bnc" id="L135" title="All 2 branches missed.">		if (isEmpty()) throw new NoSuchElementException(&quot;Priority queue is empty&quot;);</span>
+<span class="nc" id="L136">		head = cut(min, head);</span>
+<span class="nc" id="L137">		Node x = min.child;</span>
+<span class="nc" id="L138">		Key key = min.key;</span>
+<span class="nc" id="L139">		min.key = null;</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">		if (x != null) {</span>
+<span class="nc" id="L141">			head = meld(head, x);</span>
+<span class="nc" id="L142">			min.child = null;</span>
+		}
+<span class="nc" id="L144">		size--;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">		if (!isEmpty()) consolidate();</span>
+<span class="nc" id="L146">		else 			min = null;</span>
+<span class="nc" id="L147">		return key;</span>
+	}
+	
+	/**
+	 * Merges two heaps together
+	 * This operation is destructive
+	 * Worst case is O(1)
+	 * @param that a Fibonacci heap
+	 * @return the union of the two heaps
+	 */
+	public FibonacciMinPQ&lt;Key&gt; union(FibonacciMinPQ&lt;Key&gt; that) {
+<span class="nc" id="L158">		this.head = meld(head, that.head);</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">		this.min = (greater(this.min.key, that.min.key)) ? that.min : this.min;</span>
+<span class="nc" id="L160">		this.size = this.size+that.size;</span>
+<span class="nc" id="L161">		return this;</span>
+	}
+	
+	/*************************************
+	 * General helper functions
+	 ************************************/
+	
+	//Compares two keys
+	private boolean greater(Key n, Key m) {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">		if (n == null) return false;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">		if (m == null) return true;</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">		return comp.compare(n,m) &gt; 0;</span>
+	}
+	
+	//Assuming root1 holds a greater key than root2, root2 becomes the new root
+	private void link(Node root1, Node root2) {
+<span class="nc" id="L177">		root2.child = insert(root1, root2.child);</span>
+<span class="nc" id="L178">		root2.order++;</span>
+<span class="nc" id="L179">	}</span>
+	
+	/*************************************
+	 * Function for consolidating all trees in the root list
+	 ************************************/
+	
+	//Coalesce the roots, thus reshapes the tree
+	private void consolidate() {
+<span class="nc" id="L187">		table.clear();</span>
+<span class="nc" id="L188">		Node x = head;</span>
+<span class="nc" id="L189">		int maxOrder = 0;</span>
+<span class="nc" id="L190">		min = head;</span>
+<span class="nc" id="L191">		Node y = null; Node z = null;</span>
+		do {
+<span class="nc" id="L193">			y = x;</span>
+<span class="nc" id="L194">			x = x.next;</span>
+<span class="nc" id="L195">			z = table.get(y.order);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">			while (z != null) {</span>
+<span class="nc" id="L197">				table.remove(y.order);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">				if (greater(y.key, z.key)) {</span>
+<span class="nc" id="L199">					link(y, z);</span>
+<span class="nc" id="L200">					y = z;</span>
+<span class="nc" id="L201">				} else {</span>
+<span class="nc" id="L202">					link(z, y);</span>
+				}
+<span class="nc" id="L204">				z = table.get(y.order);</span>
+			}
+<span class="nc" id="L206">			table.put(y.order, y);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">			if (y.order &gt; maxOrder) maxOrder = y.order;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">		} while (x != head);</span>
+<span class="nc" id="L209">		head = null;</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">		for (Node n : table.values()) {</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">			if (n != null) {</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">				min = greater(min.key, n.key) ? n : min;</span>
+<span class="nc" id="L213">				head = insert(n, head);</span>
+			}
+		}
+<span class="nc" id="L216">	}</span>
+	
+	/*************************************
+	 * General helper functions for manipulating circular lists
+	 ************************************/
+	
+	//Inserts a Node in a circular list containing head, returns a new head
+	private Node insert(Node x, Node head) {
+<span class="nc bnc" id="L224" title="All 2 branches missed.">		if (head == null) {</span>
+<span class="nc" id="L225">			x.prev = x;</span>
+<span class="nc" id="L226">			x.next = x;</span>
+<span class="nc" id="L227">		} else {</span>
+<span class="nc" id="L228">			head.prev.next = x;</span>
+<span class="nc" id="L229">			x.next = head;</span>
+<span class="nc" id="L230">			x.prev = head.prev;</span>
+<span class="nc" id="L231">			head.prev = x;</span>
+		}
+<span class="nc" id="L233">		return x;</span>
+	}
+	
+	//Removes a tree from the list defined by the head pointer
+	private Node cut(Node x, Node head) {
+<span class="nc bnc" id="L238" title="All 2 branches missed.">		if (x.next == x) {</span>
+<span class="nc" id="L239">			x.next = null;</span>
+<span class="nc" id="L240">			x.prev = null;</span>
+<span class="nc" id="L241">			return null;</span>
+		} else {
+<span class="nc" id="L243">			x.next.prev = x.prev;</span>
+<span class="nc" id="L244">			x.prev.next = x.next;</span>
+<span class="nc" id="L245">			Node res = x.next;</span>
+<span class="nc" id="L246">			x.next = null;</span>
+<span class="nc" id="L247">			x.prev = null;</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">			if (head == x)  return res;</span>
+<span class="nc" id="L249">			else 			return head;</span>
+		}
+	}
+	
+	//Merges two root lists together
+	private Node meld(Node x, Node y) {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">		if (x == null) return y;</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">		if (y == null) return x;</span>
+<span class="nc" id="L257">		x.prev.next = y.next;</span>
+<span class="nc" id="L258">		y.next.prev = x.prev;</span>
+<span class="nc" id="L259">		x.prev = y;</span>
+<span class="nc" id="L260">		y.next = x;</span>
+<span class="nc" id="L261">		return x;</span>
+	}
+	
+	/*************************************
+	 * Iterator
+	 ************************************/
+	
+	/**
+	 * Gets an Iterator over the Keys in the priority queue in ascending order
+	 * The Iterator does not implement the remove() method
+	 * iterator() : Worst case is O(n)
+	 * next() : 	Worst case is O(log(n)) (amortized)
+	 * hasNext() : 	Worst case is O(1)
+	 * @return an Iterator over the Keys in the priority queue in ascending order
+	 */
+	
+	public Iterator&lt;Key&gt; iterator() {
+<span class="nc" id="L278">		return new MyIterator();</span>
+	}
+	
+	private class MyIterator implements Iterator&lt;Key&gt; {
+		private FibonacciMinPQ&lt;Key&gt; copy;
+		
+		
+		//Constructor takes linear time
+<span class="nc" id="L286">		public MyIterator() {</span>
+<span class="nc" id="L287">			copy = new FibonacciMinPQ&lt;Key&gt;(comp);</span>
+<span class="nc" id="L288">			insertAll(head);</span>
+<span class="nc" id="L289">		}</span>
+		
+		private void insertAll(Node head) {
+<span class="nc bnc" id="L292" title="All 2 branches missed.">			if (head == null) return;</span>
+<span class="nc" id="L293">			Node x = head;</span>
+			do {
+<span class="nc" id="L295">				copy.insert(x.key);</span>
+<span class="nc" id="L296">				insertAll(x.child);</span>
+<span class="nc" id="L297">				x = x.next;</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">			} while (x != head);</span>
+<span class="nc" id="L299">		}</span>
+		
+		public void remove() {
+<span class="nc" id="L302">			throw new UnsupportedOperationException();</span>
+		}
+		
+		public boolean hasNext() {
+<span class="nc bnc" id="L306" title="All 2 branches missed.">			return !copy.isEmpty();</span>
+		}
+		
+		//Takes amortized logarithmic time
+		public Key next() {
+<span class="nc bnc" id="L311" title="All 2 branches missed.">			if (!hasNext()) throw new NoSuchElementException();</span>
+<span class="nc" id="L312">			return copy.delMin();</span>
+		}
+	}
+	
+	/*************************************
+	 * Comparator
+	 ************************************/
+	
+	//default Comparator
+<span class="nc" id="L321">	private class MyComparator implements Comparator&lt;Key&gt; {</span>
+		@Override
+		public int compare(Key key1, Key key2) {
+<span class="nc" id="L324">			return ((Comparable&lt;Key&gt;) key1).compareTo(key2);</span>
+		}
+	}
+	
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

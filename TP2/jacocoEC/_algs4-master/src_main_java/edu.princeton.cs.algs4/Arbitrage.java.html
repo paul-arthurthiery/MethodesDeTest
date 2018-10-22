@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Arbitrage.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Arbitrage.java</span></div><h1>Arbitrage.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Arbitrage.java
+ *  Execution:    java Arbitrage &lt; input.txt
+ *  Dependencies: EdgeWeightedDigraph.java DirectedEdge.java
+ *                BellmanFordSP.java
+ *  Data file:    https://algs4.cs.princeton.edu/44sp/rates.txt
+ *
+ *  Arbitrage detection.
+ *
+ *  % more rates.txt
+ *  5
+ *  USD 1      0.741  0.657  1.061  1.005
+ *  EUR 1.349  1      0.888  1.433  1.366
+ *  GBP 1.521  1.126  1      1.614  1.538
+ *  CHF 0.942  0.698  0.619  1      0.953
+ *  CAD 0.995  0.732  0.650  1.049  1
+ *
+ *  % java Arbitrage &lt; rates.txt
+ *  1000.00000 USD =  741.00000 EUR
+ *   741.00000 EUR = 1012.20600 CAD
+ *  1012.20600 CAD = 1007.14497 USD
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Arbitrage} class provides a client that finds an arbitrage
+ *  opportunity in a currency exchange table by constructing a
+ *  complete-digraph representation of the exchange table and then finding
+ *  a negative cycle in the digraph.
+ *  &lt;p&gt;
+ *  This implementation uses the Bellman-Ford algorithm to find a
+ *  negative cycle in the complete digraph.
+ *  The running time is proportional to &lt;em&gt;V&lt;/em&gt;&lt;sup&gt;3&lt;/sup&gt; in the
+ *  worst case, where &lt;em&gt;V&lt;/em&gt; is the number of currencies.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/44sp&quot;&gt;Section 4.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Arbitrage {
+
+    // this class cannot be instantiated
+<span class="nc" id="L48">    private Arbitrage() { }</span>
+
+    /**
+     *  Reads the currency exchange table from standard input and
+     *  prints an arbitrage opportunity to standard output (if one exists).
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // V currencies
+<span class="nc" id="L59">        int V = StdIn.readInt();</span>
+<span class="nc" id="L60">        String[] name = new String[V];</span>
+
+        // create complete network
+<span class="nc" id="L63">        EdgeWeightedDigraph G = new EdgeWeightedDigraph(V);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L65">            name[v] = StdIn.readString();</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            for (int w = 0; w &lt; V; w++) {</span>
+<span class="nc" id="L67">                double rate = StdIn.readDouble();</span>
+<span class="nc" id="L68">                DirectedEdge e = new DirectedEdge(v, w, -Math.log(rate));</span>
+<span class="nc" id="L69">                G.addEdge(e);</span>
+            }
+        }
+
+        // find negative cycle
+<span class="nc" id="L74">        BellmanFordSP spt = new BellmanFordSP(G, 0);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (spt.hasNegativeCycle()) {</span>
+<span class="nc" id="L76">            double stake = 1000.0;</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            for (DirectedEdge e : spt.negativeCycle()) {</span>
+<span class="nc" id="L78">                StdOut.printf(&quot;%10.5f %s &quot;, stake, name[e.from()]);</span>
+<span class="nc" id="L79">                stake *= Math.exp(-e.weight());</span>
+<span class="nc" id="L80">                StdOut.printf(&quot;= %10.5f %s\n&quot;, stake, name[e.to()]);</span>
+            }
+<span class="nc" id="L82">        }</span>
+        else {
+<span class="nc" id="L84">            StdOut.println(&quot;No arbitrage opportunity&quot;);</span>
+        }
+<span class="nc" id="L86">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>ThreeSumFast.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">ThreeSumFast.java</span></div><h1>ThreeSumFast.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac ThreeSumFast.java
+ *  Execution:    java ThreeSumFast input.txt
+ *  Dependencies: StdOut.java In.java Stopwatch.java
+ *  Data files:   https://algs4.cs.princeton.edu/14analysis/1Kints.txt
+ *                https://algs4.cs.princeton.edu/14analysis/2Kints.txt
+ *                https://algs4.cs.princeton.edu/14analysis/4Kints.txt
+ *                https://algs4.cs.princeton.edu/14analysis/8Kints.txt
+ *                https://algs4.cs.princeton.edu/14analysis/16Kints.txt
+ *                https://algs4.cs.princeton.edu/14analysis/32Kints.txt
+ *                https://algs4.cs.princeton.edu/14analysis/1Mints.txt
+ *
+ *  A program with n^2 log n running time. Reads n integers
+ *  and counts the number of triples that sum to exactly 0.
+ *
+ *  Limitations
+ *  -----------
+ *     - we ignore integer overflow
+ *     - doesn't handle case when input has duplicates
+ *
+ *
+ *  % java ThreeSumFast 1Kints.txt
+ *  70
+ *  
+ *  % java ThreeSumFast 2Kints.txt
+ *  528
+ *                
+ *  % java ThreeSumFast 4Kints.txt
+ *  4039
+ * 
+ *  % java ThreeSumFast 8Kints.txt
+ *  32074
+ *
+ *  % java ThreeSumFast 16Kints.txt
+ *  255181
+ *
+ *  % java ThreeSumFast 32Kints.txt
+ *  2052358
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Arrays;
+
+/**
+ *  The {@code ThreeSumFast} class provides static methods for counting
+ *  and printing the number of triples in an array of distinct integers that
+ *  sum to 0 (ignoring integer overflow).
+ *  &lt;p&gt;
+ *  This implementation uses sorting and binary search and takes time 
+ *  proportional to n^2 log n, where n is the number of integers.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/14analysis&quot;&gt;Section 1.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class ThreeSumFast {
+
+    // Do not instantiate.
+<span class="nc" id="L63">    private ThreeSumFast() { }</span>
+
+    // returns true if the sorted array a[] contains any duplicated integers
+    private static boolean containsDuplicates(int[] a) {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (int i = 1; i &lt; a.length; i++)</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (a[i] == a[i-1]) return true;</span>
+<span class="nc" id="L69">        return false;</span>
+    }
+
+    /**
+     * Prints to standard output the (i, j, k) with {@code i &lt; j &lt; k}
+     * such that {@code a[i] + a[j] + a[k] == 0}.
+     *
+     * @param a the array of integers
+     * @throws IllegalArgumentException if the array contains duplicate integers
+     */
+    public static void printAll(int[] a) {
+<span class="nc" id="L80">        int n = a.length;</span>
+<span class="nc" id="L81">        Arrays.sort(a);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (containsDuplicates(a)) throw new IllegalArgumentException(&quot;array contains duplicate integers&quot;);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">            for (int j = i+1; j &lt; n; j++) {</span>
+<span class="nc" id="L85">                int k = Arrays.binarySearch(a, -(a[i] + a[j]));</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                if (k &gt; j) StdOut.println(a[i] + &quot; &quot; + a[j] + &quot; &quot; + a[k]);</span>
+            }
+        }
+<span class="nc" id="L89">    } </span>
+
+    /**
+     * Returns the number of triples (i, j, k) with {@code i &lt; j &lt; k}
+     * such that {@code a[i] + a[j] + a[k] == 0}.
+     *
+     * @param a the array of integers
+     * @return the number of triples (i, j, k) with {@code i &lt; j &lt; k}
+     * such that {@code a[i] + a[j] + a[k] == 0}
+     */
+    public static int count(int[] a) {
+<span class="nc" id="L100">        int n = a.length;</span>
+<span class="nc" id="L101">        Arrays.sort(a);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (containsDuplicates(a)) throw new IllegalArgumentException(&quot;array contains duplicate integers&quot;);</span>
+<span class="nc" id="L103">        int count = 0;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            for (int j = i+1; j &lt; n; j++) {</span>
+<span class="nc" id="L106">                int k = Arrays.binarySearch(a, -(a[i] + a[j]));</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                if (k &gt; j) count++;</span>
+            }
+        }
+<span class="nc" id="L110">        return count;</span>
+    } 
+
+    /**
+     * Reads in a sequence of distinct integers from a file, specified as a command-line argument;
+     * counts the number of triples sum to exactly zero; prints out the time to perform
+     * the computation.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args)  { 
+<span class="nc" id="L121">        In in = new In(args[0]);</span>
+<span class="nc" id="L122">        int[] a = in.readAllInts();</span>
+<span class="nc" id="L123">        int count = count(a);</span>
+<span class="nc" id="L124">        StdOut.println(count);</span>
+<span class="nc" id="L125">    } </span>
+} 
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

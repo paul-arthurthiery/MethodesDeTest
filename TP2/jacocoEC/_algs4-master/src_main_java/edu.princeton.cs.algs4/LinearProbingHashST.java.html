@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LinearProbingHashST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LinearProbingHashST.java</span></div><h1>LinearProbingHashST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LinearProbingHashST.java
+ *  Execution:    java LinearProbingHashST &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/34hash/tinyST.txt
+ *  
+ *  Symbol-table implementation with linear-probing hash table.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LinearProbingHashST} class represents a symbol table of generic
+ *  key-value pairs.
+ *  It supports the usual &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; methods.
+ *  It also provides a &lt;em&gt;keys&lt;/em&gt; method for iterating over all of the keys.
+ *  A symbol table implements the &lt;em&gt;associative array&lt;/em&gt; abstraction:
+ *  when associating a value with a key that is already in the symbol table,
+ *  the convention is to replace the old value with the new value.
+ *  Unlike {@link java.util.Map}, this class uses the convention that
+ *  values cannot be {@code null}—setting the
+ *  value associated with a key to {@code null} is equivalent to deleting the key
+ *  from the symbol table.
+ *  &lt;p&gt;
+ *  This implementation uses a linear probing hash table. It requires that
+ *  the key type overrides the {@code equals()} and {@code hashCode()} methods.
+ *  The expected time per &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, or &lt;em&gt;remove&lt;/em&gt;
+ *  operation is constant, subject to the uniform hashing assumption.
+ *  The &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; operations take constant time.
+ *  Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/34hash&quot;&gt;Section 3.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  For other implementations, see {@link ST}, {@link BinarySearchST},
+ *  {@link SequentialSearchST}, {@link BST}, {@link RedBlackBST}, and
+ *  {@link SeparateChainingHashST},
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L43" title="All 2 branches missed.">public class LinearProbingHashST&lt;Key, Value&gt; {</span>
+<span class="nc" id="L44">    private static final int INIT_CAPACITY = 4;</span>
+
+    private int n;           // number of key-value pairs in the symbol table
+    private int m;           // size of linear probing table
+    private Key[] keys;      // the keys
+    private Value[] vals;    // the values
+
+
+    /**
+     * Initializes an empty symbol table.
+     */
+    public LinearProbingHashST() {
+<span class="nc" id="L56">        this(INIT_CAPACITY);</span>
+<span class="nc" id="L57">    }</span>
+
+    /**
+     * Initializes an empty symbol table with the specified initial capacity.
+     *
+     * @param capacity the initial capacity
+     */
+<span class="nc" id="L64">    public LinearProbingHashST(int capacity) {</span>
+<span class="nc" id="L65">        m = capacity;</span>
+<span class="nc" id="L66">        n = 0;</span>
+<span class="nc" id="L67">        keys = (Key[])   new Object[m];</span>
+<span class="nc" id="L68">        vals = (Value[]) new Object[m];</span>
+<span class="nc" id="L69">    }</span>
+
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     *
+     * @return the number of key-value pairs in this symbol table
+     */
+    public int size() {
+<span class="nc" id="L77">        return n;</span>
+    }
+
+    /**
+     * Returns true if this symbol table is empty.
+     *
+     * @return {@code true} if this symbol table is empty;
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns true if this symbol table contains the specified key.
+     *
+     * @param  key the key
+     * @return {@code true} if this symbol table contains {@code key};
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(Key key) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to contains() is null&quot;);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        return get(key) != null;</span>
+    }
+
+    // hash function for keys - returns value between 0 and M-1
+    private int hash(Key key) {
+<span class="nc" id="L105">        return (key.hashCode() &amp; 0x7fffffff) % m;</span>
+    }
+
+    // resizes the hash table to the given capacity by re-hashing all of the keys
+    private void resize(int capacity) {
+<span class="nc" id="L110">        LinearProbingHashST&lt;Key, Value&gt; temp = new LinearProbingHashST&lt;Key, Value&gt;(capacity);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            if (keys[i] != null) {</span>
+<span class="nc" id="L113">                temp.put(keys[i], vals[i]);</span>
+            }
+        }
+<span class="nc" id="L116">        keys = temp.keys;</span>
+<span class="nc" id="L117">        vals = temp.vals;</span>
+<span class="nc" id="L118">        m    = temp.m;</span>
+<span class="nc" id="L119">    }</span>
+
+    /**
+     * Inserts the specified key-value pair into the symbol table, overwriting the old 
+     * value with the new value if the symbol table already contains the specified key.
+     * Deletes the specified key (and its associated value) from this symbol table
+     * if the specified value is {@code null}.
+     *
+     * @param  key the key
+     * @param  val the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(Key key, Value val) {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;first argument to put() is null&quot;);</span>
+
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (val == null) {</span>
+<span class="nc" id="L135">            delete(key);</span>
+<span class="nc" id="L136">            return;</span>
+        }
+
+        // double table size if 50% full
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (n &gt;= m/2) resize(2*m);</span>
+
+        int i;
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (i = hash(key); keys[i] != null; i = (i + 1) % m) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (keys[i].equals(key)) {</span>
+<span class="nc" id="L145">                vals[i] = val;</span>
+<span class="nc" id="L146">                return;</span>
+            }
+        }
+<span class="nc" id="L149">        keys[i] = key;</span>
+<span class="nc" id="L150">        vals[i] = val;</span>
+<span class="nc" id="L151">        n++;</span>
+<span class="nc" id="L152">    }</span>
+
+    /**
+     * Returns the value associated with the specified key.
+     * @param key the key
+     * @return the value associated with {@code key};
+     *         {@code null} if no such value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Value get(Key key) {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to get() is null&quot;);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        for (int i = hash(key); keys[i] != null; i = (i + 1) % m)</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">            if (keys[i].equals(key))</span>
+<span class="nc" id="L165">                return vals[i];</span>
+<span class="nc" id="L166">        return null;</span>
+    }
+
+    /**
+     * Removes the specified key and its associated value from this symbol table     
+     * (if the key is in this symbol table).    
+     *
+     * @param  key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(Key key) {
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to delete() is null&quot;);</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (!contains(key)) return;</span>
+
+        // find position i of key
+<span class="nc" id="L181">        int i = hash(key);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        while (!key.equals(keys[i])) {</span>
+<span class="nc" id="L183">            i = (i + 1) % m;</span>
+        }
+
+        // delete key and associated value
+<span class="nc" id="L187">        keys[i] = null;</span>
+<span class="nc" id="L188">        vals[i] = null;</span>
+
+        // rehash all keys in same cluster
+<span class="nc" id="L191">        i = (i + 1) % m;</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        while (keys[i] != null) {</span>
+            // delete keys[i] an vals[i] and reinsert
+<span class="nc" id="L194">            Key   keyToRehash = keys[i];</span>
+<span class="nc" id="L195">            Value valToRehash = vals[i];</span>
+<span class="nc" id="L196">            keys[i] = null;</span>
+<span class="nc" id="L197">            vals[i] = null;</span>
+<span class="nc" id="L198">            n--;</span>
+<span class="nc" id="L199">            put(keyToRehash, valToRehash);</span>
+<span class="nc" id="L200">            i = (i + 1) % m;</span>
+        }
+
+<span class="nc" id="L203">        n--;</span>
+
+        // halves size of array if it's 12.5% full or less
+<span class="nc bnc" id="L206" title="All 4 branches missed.">        if (n &gt; 0 &amp;&amp; n &lt;= m/8) resize(m/2);</span>
+
+<span class="nc bnc" id="L208" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L209">    }</span>
+
+    /**
+     * Returns all keys in this symbol table as an {@code Iterable}.
+     * To iterate over all of the keys in the symbol table named {@code st},
+     * use the foreach notation: {@code for (Key key : st.keys())}.
+     *
+     * @return all keys in this symbol table
+     */
+    public Iterable&lt;Key&gt; keys() {
+<span class="nc" id="L219">        Queue&lt;Key&gt; queue = new Queue&lt;Key&gt;();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if (keys[i] != null) queue.enqueue(keys[i]);</span>
+<span class="nc" id="L222">        return queue;</span>
+    }
+
+    // integrity check - don't check after each put() because
+    // integrity not maintained during a delete()
+    private boolean check() {
+
+        // check that hash table is at most 50% full
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        if (m &lt; 2*n) {</span>
+<span class="nc" id="L231">            System.err.println(&quot;Hash table size m = &quot; + m + &quot;; array size n = &quot; + n);</span>
+<span class="nc" id="L232">            return false;</span>
+        }
+
+        // check that each key in table can be found by get()
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            if (keys[i] == null) continue;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            else if (get(keys[i]) != vals[i]) {</span>
+<span class="nc" id="L239">                System.err.println(&quot;get[&quot; + keys[i] + &quot;] = &quot; + get(keys[i]) + &quot;; vals[i] = &quot; + vals[i]);</span>
+<span class="nc" id="L240">                return false;</span>
+            }
+        }
+<span class="nc" id="L243">        return true;</span>
+    }
+
+
+    /**
+     * Unit tests the {@code LinearProbingHashST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L253">        LinearProbingHashST&lt;String, Integer&gt; st = new LinearProbingHashST&lt;String, Integer&gt;();</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        for (int i = 0; !StdIn.isEmpty(); i++) {</span>
+<span class="nc" id="L255">            String key = StdIn.readString();</span>
+<span class="nc" id="L256">            st.put(key, i);</span>
+        }
+
+        // print keys
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        for (String s : st.keys()) </span>
+<span class="nc" id="L261">            StdOut.println(s + &quot; &quot; + st.get(s)); </span>
+<span class="nc" id="L262">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

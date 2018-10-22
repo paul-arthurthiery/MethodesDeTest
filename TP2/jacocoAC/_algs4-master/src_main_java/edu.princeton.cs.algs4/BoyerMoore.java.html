@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>BoyerMoore.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">BoyerMoore.java</span></div><h1>BoyerMoore.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac BoyerMoore.java
+ *  Execution:    java BoyerMoore pattern text
+ *  Dependencies: StdOut.java
+ *
+ *  Reads in two strings, the pattern and the input text, and
+ *  searches for the pattern in the input text using the
+ *  bad-character rule part of the Boyer-Moore algorithm.
+ *  (does not implement the strong good suffix rule)
+ *
+ *  % java BoyerMoore abracadabra abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad 
+ *  pattern:               abracadabra
+ *
+ *  % java BoyerMoore rab abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad 
+ *  pattern:         rab
+ *
+ *  % java BoyerMoore bcara abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad 
+ *  pattern:                                   bcara
+ *
+ *  % java BoyerMoore rabrabracad abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad
+ *  pattern:                        rabrabracad
+ *
+ *  % java BoyerMoore abacad abacadabrabracabracadabrabrabracad
+ *  text:    abacadabrabracabracadabrabrabracad
+ *  pattern: abacad
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code BoyerMoore} class finds the first occurrence of a pattern string
+ *  in a text string.
+ *  &lt;p&gt;
+ *  This implementation uses the Boyer-Moore algorithm (with the bad-character
+ *  rule, but not the strong good suffix rule).
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/53substring&quot;&gt;Section 5.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+public class BoyerMoore {
+    private final int R;     // the radix
+    private int[] right;     // the bad-character skip array
+
+    private char[] pattern;  // store the pattern as a character array
+    private String pat;      // or as a string
+
+    /**
+     * Preprocesses the pattern string.
+     *
+     * @param pat the pattern string
+     */
+<span class="nc" id="L58">    public BoyerMoore(String pat) {</span>
+<span class="nc" id="L59">        this.R = 256;</span>
+<span class="nc" id="L60">        this.pat = pat;</span>
+
+        // position of rightmost occurrence of c in the pattern
+<span class="nc" id="L63">        right = new int[R];</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        for (int c = 0; c &lt; R; c++)</span>
+<span class="nc" id="L65">            right[c] = -1;</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        for (int j = 0; j &lt; pat.length(); j++)</span>
+<span class="nc" id="L67">            right[pat.charAt(j)] = j;</span>
+<span class="nc" id="L68">    }</span>
+
+    /**
+     * Preprocesses the pattern string.
+     *
+     * @param pattern the pattern string
+     * @param R the alphabet size
+     */
+<span class="nc" id="L76">    public BoyerMoore(char[] pattern, int R) {</span>
+<span class="nc" id="L77">        this.R = R;</span>
+<span class="nc" id="L78">        this.pattern = new char[pattern.length];</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        for (int j = 0; j &lt; pattern.length; j++)</span>
+<span class="nc" id="L80">            this.pattern[j] = pattern[j];</span>
+
+        // position of rightmost occurrence of c in the pattern
+<span class="nc" id="L83">        right = new int[R];</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        for (int c = 0; c &lt; R; c++)</span>
+<span class="nc" id="L85">            right[c] = -1;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (int j = 0; j &lt; pattern.length; j++)</span>
+<span class="nc" id="L87">            right[pattern[j]] = j;</span>
+<span class="nc" id="L88">    }</span>
+
+    /**
+     * Returns the index of the first occurrrence of the pattern string
+     * in the text string.
+     *
+     * @param  txt the text string
+     * @return the index of the first occurrence of the pattern string
+     *         in the text string; n if no such match
+     */
+    public int search(String txt) {
+<span class="nc" id="L99">        int m = pat.length();</span>
+<span class="nc" id="L100">        int n = txt.length();</span>
+        int skip;
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        for (int i = 0; i &lt;= n - m; i += skip) {</span>
+<span class="nc" id="L103">            skip = 0;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            for (int j = m-1; j &gt;= 0; j--) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">                if (pat.charAt(j) != txt.charAt(i+j)) {</span>
+<span class="nc" id="L106">                    skip = Math.max(1, j - right[txt.charAt(i+j)]);</span>
+<span class="nc" id="L107">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (skip == 0) return i;    // found</span>
+        }
+<span class="nc" id="L112">        return n;                       // not found</span>
+    }
+
+
+    /**
+     * Returns the index of the first occurrrence of the pattern string
+     * in the text string.
+     *
+     * @param  text the text string
+     * @return the index of the first occurrence of the pattern string
+     *         in the text string; n if no such match
+     */
+    public int search(char[] text) {
+<span class="nc" id="L125">        int m = pattern.length;</span>
+<span class="nc" id="L126">        int n = text.length;</span>
+        int skip;
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        for (int i = 0; i &lt;= n - m; i += skip) {</span>
+<span class="nc" id="L129">            skip = 0;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            for (int j = m-1; j &gt;= 0; j--) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                if (pattern[j] != text[i+j]) {</span>
+<span class="nc" id="L132">                    skip = Math.max(1, j - right[text[i+j]]);</span>
+<span class="nc" id="L133">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            if (skip == 0) return i;    // found</span>
+        }
+<span class="nc" id="L138">        return n;                       // not found</span>
+    }
+
+
+    /**
+     * Takes a pattern string and an input string as command-line arguments;
+     * searches for the pattern string in the text string; and prints
+     * the first occurrence of the pattern string in the text string.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L150">        String pat = args[0];</span>
+<span class="nc" id="L151">        String txt = args[1];</span>
+<span class="nc" id="L152">        char[] pattern = pat.toCharArray();</span>
+<span class="nc" id="L153">        char[] text    = txt.toCharArray();</span>
+
+<span class="nc" id="L155">        BoyerMoore boyermoore1 = new BoyerMoore(pat);</span>
+<span class="nc" id="L156">        BoyerMoore boyermoore2 = new BoyerMoore(pattern, 256);</span>
+<span class="nc" id="L157">        int offset1 = boyermoore1.search(txt);</span>
+<span class="nc" id="L158">        int offset2 = boyermoore2.search(text);</span>
+
+        // print results
+<span class="nc" id="L161">        StdOut.println(&quot;text:    &quot; + txt);</span>
+
+<span class="nc" id="L163">        StdOut.print(&quot;pattern: &quot;);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        for (int i = 0; i &lt; offset1; i++)</span>
+<span class="nc" id="L165">            StdOut.print(&quot; &quot;);</span>
+<span class="nc" id="L166">        StdOut.println(pat);</span>
+
+<span class="nc" id="L168">        StdOut.print(&quot;pattern: &quot;);</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        for (int i = 0; i &lt; offset2; i++)</span>
+<span class="nc" id="L170">            StdOut.print(&quot; &quot;);</span>
+<span class="nc" id="L171">        StdOut.println(pat);</span>
+<span class="nc" id="L172">    }</span>
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

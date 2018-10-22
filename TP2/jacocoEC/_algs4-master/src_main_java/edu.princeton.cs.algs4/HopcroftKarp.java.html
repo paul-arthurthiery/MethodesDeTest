@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>HopcroftKarp.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">HopcroftKarp.java</span></div><h1>HopcroftKarp.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac HopcroftKarp.java
+ *  Execution:    java HopcroftKarp V1 V2 E
+ *  Dependencies: FordFulkerson.java FlowNetwork.java FlowEdge.java
+ *                BipartiteX.java
+ *
+ *  Find a maximum cardinality matching (and minimum cardinality vertex cover)
+ *  in a bipartite graph using Hopcroft-Karp algorithm.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+
+/**
+ *  The {@code HopcroftKarp} class represents a data type for computing a
+ *  &lt;em&gt;maximum (cardinality) matching&lt;/em&gt; and a
+ *  &lt;em&gt;minimum (cardinality) vertex cover&lt;/em&gt; in a bipartite graph.
+ *  A &lt;em&gt;bipartite graph&lt;/em&gt; in a graph whose vertices can be partitioned
+ *  into two disjoint sets such that every edge has one endpoint in either set.
+ *  A &lt;em&gt;matching&lt;/em&gt; in a graph is a subset of its edges with no common
+ *  vertices. A &lt;em&gt;maximum matching&lt;/em&gt; is a matching with the maximum number
+ *  of edges.
+ *  A &lt;em&gt;perfect matching&lt;/em&gt; is a matching which matches all vertices in the graph.
+ *  A &lt;em&gt;vertex cover&lt;/em&gt; in a graph is a subset of its vertices such that
+ *  every edge is incident to at least one vertex. A &lt;em&gt;minimum vertex cover&lt;/em&gt;
+ *  is a vertex cover with the minimum number of vertices.
+ *  By Konig's theorem, in any biparite
+ *  graph, the maximum number of edges in matching equals the minimum number
+ *  of vertices in a vertex cover.
+ *  The maximum matching problem in &lt;em&gt;nonbipartite&lt;/em&gt; graphs is
+ *  also important, but all known algorithms for this more general problem
+ *  are substantially more complicated.
+ *  &lt;p&gt;
+ *  This implementation uses the &lt;em&gt;Hopcroft-Karp algorithm&lt;/em&gt;.
+ *  The order of growth of the running time in the worst case is
+ *  (&lt;em&gt;E&lt;/em&gt; + &lt;em&gt;V&lt;/em&gt;) sqrt(&lt;em&gt;V&lt;/em&gt;),
+ *  where &lt;em&gt;E&lt;/em&gt; is the number of edges and &lt;em&gt;V&lt;/em&gt; is the number
+ *  of vertices in the graph. It uses extra space (not including the graph)
+ *  proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  See also {@link BipartiteMatching}, which solves the problem in
+ *  O(&lt;em&gt;E V&lt;/em&gt;) time using the &lt;em&gt;alternating path algorithm&lt;/em&gt;
+ *  and &lt;a href = &quot;https://algs4.cs.princeton.edu/65reductions/BipartiteMatchingToMaxflow.java.html&quot;&gt;BipartiteMatchingToMaxflow&lt;/a&gt;,
+ *  which solves the problem in O(&lt;em&gt;E V&lt;/em&gt;) time via a reduction
+ *  to the maxflow problem.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://algs4.cs.princeton.edu/65reductions&quot;&gt;Section 6.5&lt;/a&gt;
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L56" title="All 2 branches missed.">public class HopcroftKarp {</span>
+<span class="nc" id="L57">    private static final int UNMATCHED = -1;</span>
+
+    private final int V;                 // number of vertices in the graph
+    private BipartiteX bipartition;      // the bipartition
+    private int cardinality;             // cardinality of current matching
+    private int[] mate;                  // mate[v] =  w if v-w is an edge in current matching
+                                         //         = -1 if v is not in current matching
+    private boolean[] inMinVertexCover;  // inMinVertexCover[v] = true iff v is in min vertex cover
+    private boolean[] marked;            // marked[v] = true iff v is reachable via alternating path
+    private int[] distTo;                // distTo[v] = number of edges on shortest path to v
+
+    /**
+     * Determines a maximum matching (and a minimum vertex cover)
+     * in a bipartite graph.
+     *
+     * @param  G the bipartite graph
+     * @throws IllegalArgumentException if {@code G} is not bipartite
+     */
+<span class="nc" id="L75">    public HopcroftKarp(Graph G) {</span>
+<span class="nc" id="L76">        bipartition = new BipartiteX(G);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (!bipartition.isBipartite()) {</span>
+<span class="nc" id="L78">            throw new IllegalArgumentException(&quot;graph is not bipartite&quot;);</span>
+        }
+
+        // initialize empty matching
+<span class="nc" id="L82">        this.V = G.V();</span>
+<span class="nc" id="L83">        mate = new int[V];</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc" id="L85">            mate[v] = UNMATCHED;</span>
+
+        // the call to hasAugmentingPath() provides enough info to reconstruct level graph
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        while (hasAugmentingPath(G)) {</span>
+
+            // to be able to iterate over each adjacency list, keeping track of which
+            // vertex in each adjacency list needs to be explored next
+<span class="nc" id="L92">            Iterator&lt;Integer&gt;[] adj = (Iterator&lt;Integer&gt;[]) new Iterator[G.V()];</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L94">                adj[v] = G.adj(v).iterator();</span>
+
+            // for each unmatched vertex s on one side of bipartition
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            for (int s = 0; s &lt; V; s++) {</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">                if (isMatched(s) || !bipartition.color(s)) continue;   // or use distTo[s] == 0</span>
+
+                // find augmenting path from s using nonrecursive DFS
+<span class="nc" id="L101">                Stack&lt;Integer&gt; path = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L102">                path.push(s);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                while (!path.isEmpty()) {</span>
+<span class="nc" id="L104">                    int v = path.peek();</span>
+
+                    // retreat, no more edges in level graph leaving v
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                    if (!adj[v].hasNext())</span>
+<span class="nc" id="L108">                        path.pop();</span>
+
+                    // advance
+                    else {
+                        // process edge v-w only if it is an edge in level graph
+<span class="nc" id="L113">                        int w = adj[v].next();</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                        if (!isLevelGraphEdge(v, w)) continue;</span>
+
+                        // add w to augmenting path
+<span class="nc" id="L117">                        path.push(w);</span>
+
+                        // augmenting path found: update the matching
+<span class="nc bnc" id="L120" title="All 2 branches missed.">                        if (!isMatched(w)) {</span>
+                            // StdOut.println(&quot;augmenting path: &quot; + toString(path));
+
+<span class="nc bnc" id="L123" title="All 2 branches missed.">                            while (!path.isEmpty()) {</span>
+<span class="nc" id="L124">                                int x = path.pop();</span>
+<span class="nc" id="L125">                                int y = path.pop();</span>
+<span class="nc" id="L126">                                mate[x] = y;</span>
+<span class="nc" id="L127">                                mate[y] = x;</span>
+                            }
+<span class="nc" id="L129">                            cardinality++;</span>
+                        }
+                    }
+                }
+            }
+        }
+
+        // also find a min vertex cover
+<span class="nc" id="L137">        inMinVertexCover = new boolean[V];</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L139" title="All 4 branches missed.">            if (bipartition.color(v) &amp;&amp; !marked[v]) inMinVertexCover[v] = true;</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">            if (!bipartition.color(v) &amp;&amp; marked[v]) inMinVertexCover[v] = true;</span>
+        }
+
+<span class="nc bnc" id="L143" title="All 4 branches missed.">        assert certifySolution(G);</span>
+<span class="nc" id="L144">    }</span>
+
+    // string representation of augmenting path (chop off last vertex)
+    private static String toString(Iterable&lt;Integer&gt; path) {
+<span class="nc" id="L148">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        for (int v : path)</span>
+<span class="nc" id="L150">            sb.append(v + &quot;-&quot;);</span>
+<span class="nc" id="L151">        String s = sb.toString();</span>
+<span class="nc" id="L152">        s = s.substring(0, s.lastIndexOf('-'));</span>
+<span class="nc" id="L153">        return s;</span>
+    }
+
+   // is the edge v-w in the level graph?
+    private boolean isLevelGraphEdge(int v, int w) {
+<span class="nc bnc" id="L158" title="All 4 branches missed.">        return (distTo[w] == distTo[v] + 1) &amp;&amp; isResidualGraphEdge(v, w);</span>
+    }
+
+   // is the edge v-w a forward edge not in the matching or a reverse edge in the matching?
+    private boolean isResidualGraphEdge(int v, int w) {
+<span class="nc bnc" id="L163" title="All 4 branches missed.">        if ((mate[v] != w) &amp;&amp;  bipartition.color(v)) return true;</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        if ((mate[v] == w) &amp;&amp; !bipartition.color(v)) return true;</span>
+<span class="nc" id="L165">        return false;</span>
+    }
+
+    /*
+     * is there an augmenting path?
+     *   - if so, upon termination adj[] contains the level graph;
+     *   - if not, upon termination marked[] specifies those vertices reachable via an alternating
+     *     path from one side of the bipartition
+     *
+     * an alternating path is a path whose edges belong alternately to the matching and not
+     * to the matching
+     *
+     * an augmenting path is an alternating path that starts and ends at unmatched vertices
+     */
+    private boolean hasAugmentingPath(Graph G) {
+
+        // shortest path distances
+<span class="nc" id="L182">        marked = new boolean[V];</span>
+<span class="nc" id="L183">        distTo = new int[V];</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc" id="L185">            distTo[v] = Integer.MAX_VALUE;</span>
+
+        // breadth-first search (starting from all unmatched vertices on one side of bipartition)
+<span class="nc" id="L188">        Queue&lt;Integer&gt; queue = new Queue&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L190" title="All 4 branches missed.">            if (bipartition.color(v) &amp;&amp; !isMatched(v)) {</span>
+<span class="nc" id="L191">                queue.enqueue(v);</span>
+<span class="nc" id="L192">                marked[v] = true;</span>
+<span class="nc" id="L193">                distTo[v] = 0;</span>
+            }
+        }
+
+        // run BFS until an augmenting path is found
+        // (and keep going until all vertices at that distance are explored)
+<span class="nc" id="L199">        boolean hasAugmentingPath = false;</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        while (!queue.isEmpty()) {</span>
+<span class="nc" id="L201">            int v = queue.dequeue();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+
+                // forward edge not in matching or backwards edge in matching
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                if (isResidualGraphEdge(v, w)) {</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                    if (!marked[w]) {</span>
+<span class="nc" id="L207">                        distTo[w] = distTo[v] + 1;</span>
+<span class="nc" id="L208">                        marked[w] = true;</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">                        if (!isMatched(w))</span>
+<span class="nc" id="L210">                            hasAugmentingPath = true;</span>
+
+                        // stop enqueuing vertices once an alternating path has been discovered
+                        // (no vertex on same side will be marked if its shortest path distance longer)
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                        if (!hasAugmentingPath) queue.enqueue(w);</span>
+                    }
+                }
+            }
+        }
+
+<span class="nc" id="L220">        return hasAugmentingPath;</span>
+    }
+
+    /**
+     * Returns the vertex to which the specified vertex is matched in
+     * the maximum matching computed by the algorithm.
+     *
+     * @param  v the vertex
+     * @return the vertex to which vertex {@code v} is matched in the
+     *         maximum matching; {@code -1} if the vertex is not matched
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     *
+     */
+    public int mate(int v) {
+<span class="nc" id="L234">        validate(v);</span>
+<span class="nc" id="L235">        return mate[v];</span>
+    }
+
+    /**
+     * Returns true if the specified vertex is matched in the maximum matching
+     * computed by the algorithm.
+     *
+     * @param  v the vertex
+     * @return {@code true} if vertex {@code v} is matched in maximum matching;
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     *
+     */
+    public boolean isMatched(int v) {
+<span class="nc" id="L249">        validate(v);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        return mate[v] != UNMATCHED;</span>
+    }
+
+    /**
+     * Returns the number of edges in any maximum matching.
+     *
+     * @return the number of edges in any maximum matching
+     */
+    public int size() {
+<span class="nc" id="L259">        return cardinality;</span>
+    }
+
+    /**
+     * Returns true if the graph contains a perfect matching.
+     * That is, the number of edges in a maximum matching is equal to one half
+     * of the number of vertices in the graph (so that every vertex is matched).
+     *
+     * @return {@code true} if the graph contains a perfect matching;
+     *         {@code false} otherwise
+     */
+    public boolean isPerfect() {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        return cardinality * 2 == V;</span>
+    }
+
+    /**
+     * Returns true if the specified vertex is in the minimum vertex cover
+     * computed by the algorithm.
+     *
+     * @param  v the vertex
+     * @return {@code true} if vertex {@code v} is in the minimum vertex cover;
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public boolean inMinVertexCover(int v) {
+<span class="nc" id="L284">        validate(v);</span>
+<span class="nc" id="L285">        return inMinVertexCover[v];</span>
+    }
+
+    // throw an exception if vertex is invalid
+    private void validate(int v) {
+<span class="nc bnc" id="L290" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L291">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L292">    }</span>
+
+    /**************************************************************************
+     *   
+     *  The code below is solely for testing correctness of the data type.
+     *
+     **************************************************************************/
+
+    // check that mate[] and inVertexCover[] define a max matching and min vertex cover, respectively
+    private boolean certifySolution(Graph G) {
+
+        // check that mate(v) = w iff mate(w) = v
+<span class="nc bnc" id="L304" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">            if (mate(v) == -1) continue;</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">            if (mate(mate(v)) != v) return false;</span>
+        }
+
+        // check that size() is consistent with mate()
+<span class="nc" id="L310">        int matchedVertices = 0;</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">            if (mate(v) != -1) matchedVertices++;</span>
+        }
+<span class="nc bnc" id="L314" title="All 2 branches missed.">        if (2*size() != matchedVertices) return false;</span>
+
+        // check that size() is consistent with minVertexCover()
+<span class="nc" id="L317">        int sizeOfMinVertexCover = 0;</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">            if (inMinVertexCover(v)) sizeOfMinVertexCover++;</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (size() != sizeOfMinVertexCover) return false;</span>
+
+        // check that mate() uses each vertex at most once
+<span class="nc" id="L323">        boolean[] isMatched = new boolean[V];</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc" id="L325">            int w = mate[v];</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">            if (w == -1) continue;</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">            if (v == w) return false;</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">            if (v &gt;= w) continue;</span>
+<span class="nc bnc" id="L329" title="All 4 branches missed.">            if (isMatched[v] || isMatched[w]) return false;</span>
+<span class="nc" id="L330">            isMatched[v] = true;</span>
+<span class="nc" id="L331">            isMatched[w] = true;</span>
+        }
+
+        // check that mate() uses only edges that appear in the graph
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">            if (mate(v) == -1) continue;</span>
+<span class="nc" id="L337">            boolean isEdge = false;</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                if (mate(v) == w) isEdge = true;</span>
+            }
+<span class="nc bnc" id="L341" title="All 2 branches missed.">            if (!isEdge) return false;</span>
+        }
+
+        // check that inMinVertexCover() is a vertex cover
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">            for (int w : G.adj(v))</span>
+<span class="nc bnc" id="L347" title="All 4 branches missed.">                if (!inMinVertexCover(v) &amp;&amp; !inMinVertexCover(w)) return false;</span>
+
+<span class="nc" id="L349">        return true;</span>
+    }
+
+    /** 
+     * Unit tests the {@code HopcroftKarp} data type.   
+     * Takes three command-line arguments {@code V1}, {@code V2}, and {@code E};
+     * creates a random bipartite graph with {@code V1} + {@code V2} vertices
+     * and {@code E} edges; computes a maximum matching and minimum vertex cover;
+     * and prints the results.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+<span class="nc" id="L363">        int V1 = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L364">        int V2 = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L365">        int E  = Integer.parseInt(args[2]);</span>
+<span class="nc" id="L366">        Graph G = GraphGenerator.bipartite(V1, V2, E);</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">        if (G.V() &lt; 1000) StdOut.println(G);</span>
+
+<span class="nc" id="L369">        HopcroftKarp matching = new HopcroftKarp(G);</span>
+
+        // print maximum matching
+<span class="nc" id="L372">        StdOut.printf(&quot;Number of edges in max matching        = %d\n&quot;, matching.size());</span>
+<span class="nc" id="L373">        StdOut.printf(&quot;Number of vertices in min vertex cover = %d\n&quot;, matching.size());</span>
+<span class="nc" id="L374">        StdOut.printf(&quot;Graph has a perfect matching           = %b\n&quot;, matching.isPerfect());</span>
+<span class="nc" id="L375">        StdOut.println();</span>
+
+<span class="nc bnc" id="L377" title="All 2 branches missed.">        if (G.V() &gt;= 1000) return;</span>
+
+<span class="nc" id="L379">        StdOut.print(&quot;Max matching: &quot;);</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L381">            int w = matching.mate(v);</span>
+<span class="nc bnc" id="L382" title="All 4 branches missed.">            if (matching.isMatched(v) &amp;&amp; v &lt; w)  // print each edge only once</span>
+<span class="nc" id="L383">                StdOut.print(v + &quot;-&quot; + w + &quot; &quot;);</span>
+        }
+<span class="nc" id="L385">        StdOut.println();</span>
+
+        // print minimum vertex cover
+<span class="nc" id="L388">        StdOut.print(&quot;Min vertex cover: &quot;);</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">            if (matching.inMinVertexCover(v))</span>
+<span class="nc" id="L391">                StdOut.print(v + &quot; &quot;);</span>
+<span class="nc" id="L392">        StdOut.println();</span>
+<span class="nc" id="L393">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

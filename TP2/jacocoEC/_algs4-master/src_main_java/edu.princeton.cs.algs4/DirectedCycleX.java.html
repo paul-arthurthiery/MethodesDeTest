@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DirectedCycleX.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DirectedCycleX.java</span></div><h1>DirectedCycleX.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DirectedCycleX.java
+ *  Execution:    java DirectedCycleX V E F
+ *  Dependencies: Queue.java Digraph.java Stack.java
+ *
+ *  Find a directed cycle in a digraph, using a nonrecursive, queue-based
+ *  algorithm. Runs in O(E + V) time.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code DirectedCycleX} class represents a data type for 
+ *  determining whether a digraph has a directed cycle.
+ *  The &lt;em&gt;hasCycle&lt;/em&gt; operation determines whether the digraph has
+ *  a simple directed cycle and, if so, the &lt;em&gt;cycle&lt;/em&gt; operation
+ *  returns one.
+ *  &lt;p&gt;
+ *  This implementation uses a nonrecursive, queue-based algorithm.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;hasCycle&lt;/em&gt; operation takes constant time;
+ *  the &lt;em&gt;cycle&lt;/em&gt; operation takes time proportional
+ *  to the length of the cycle.
+ *  &lt;p&gt;
+ *  See {@link DirectedCycle} for a recursive version that uses depth-first search.
+ *  See {@link Topological} or {@link TopologicalX} to compute a topological order
+ *  when the digraph is acyclic.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">public class DirectedCycleX {</span>
+    private Stack&lt;Integer&gt; cycle;     // the directed cycle; null if digraph is acyclic
+
+<span class="nc" id="L43">    public DirectedCycleX(Digraph G) {</span>
+
+        // indegrees of remaining vertices
+<span class="nc" id="L46">        int[] indegree = new int[G.V()];</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc" id="L48">            indegree[v] = G.indegree(v);</span>
+        }
+
+        // initialize queue to contain all vertices with indegree = 0
+<span class="nc" id="L52">        Queue&lt;Integer&gt; queue = new Queue&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            if (indegree[v] == 0) queue.enqueue(v);</span>
+
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        while (!queue.isEmpty()) {</span>
+<span class="nc" id="L57">            int v = queue.dequeue();</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc" id="L59">                indegree[w]--;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                if (indegree[w] == 0) queue.enqueue(w);</span>
+            }
+        }
+
+        // there is a directed cycle in subgraph of vertices with indegree &gt;= 1.
+<span class="nc" id="L65">        int[] edgeTo = new int[G.V()];</span>
+<span class="nc" id="L66">        int root = -1;  // any vertex with indegree &gt;= -1</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (indegree[v] == 0) continue;</span>
+<span class="nc" id="L69">            else root = v;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                if (indegree[w] &gt; 0) {</span>
+<span class="nc" id="L72">                    edgeTo[w] = v;</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (root != -1) {</span>
+
+            // find any vertex on cycle
+<span class="nc" id="L80">            boolean[] visited = new boolean[G.V()];</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            while (!visited[root]) {</span>
+<span class="nc" id="L82">                visited[root] = true;</span>
+<span class="nc" id="L83">                root = edgeTo[root];</span>
+            }
+
+            // extract cycle
+<span class="nc" id="L87">            cycle = new Stack&lt;Integer&gt;();</span>
+<span class="nc" id="L88">            int v = root;</span>
+            do {
+<span class="nc" id="L90">                cycle.push(v);</span>
+<span class="nc" id="L91">                v = edgeTo[v];</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            } while (v != root);</span>
+<span class="nc" id="L93">            cycle.push(root);</span>
+        }
+
+<span class="nc bnc" id="L96" title="All 4 branches missed.">        assert check();</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Returns a directed cycle if the digraph has a directed cycle, and {@code null} otherwise.
+     * @return a directed cycle (as an iterable) if the digraph has a directed cycle,
+     *    and {@code null} otherwise
+     */
+    public Iterable&lt;Integer&gt; cycle() {
+<span class="nc" id="L105">        return cycle;</span>
+    }
+
+    /**
+     * Does the digraph have a directed cycle?
+     * @return {@code true} if the digraph has a directed cycle, {@code false} otherwise
+     */
+    public boolean hasCycle() {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        return cycle != null;</span>
+    }
+
+    // certify that digraph has a directed cycle if it reports one
+    private boolean check() {
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (hasCycle()) {</span>
+            // verify cycle
+<span class="nc" id="L121">            int first = -1, last = -1;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            for (int v : cycle()) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">                if (first == -1) first = v;</span>
+<span class="nc" id="L124">                last = v;</span>
+            }
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            if (first != last) {</span>
+<span class="nc" id="L127">                System.err.printf(&quot;cycle begins with %d and ends with %d\n&quot;, first, last);</span>
+<span class="nc" id="L128">                return false;</span>
+            }
+        }
+
+
+<span class="nc" id="L133">        return true;</span>
+    }
+
+
+    public static void main(String[] args) {
+
+        // create random DAG with V vertices and E edges; then add F random edges
+<span class="nc" id="L140">        int V = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L141">        int E = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L142">        int F = Integer.parseInt(args[2]);</span>
+<span class="nc" id="L143">        Digraph G = DigraphGenerator.dag(V, E);</span>
+
+        // add F extra edges
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (int i = 0; i &lt; F; i++) {</span>
+<span class="nc" id="L147">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L148">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L149">            G.addEdge(v, w);</span>
+        }
+
+<span class="nc" id="L152">        StdOut.println(G);</span>
+
+
+<span class="nc" id="L155">        DirectedCycleX finder = new DirectedCycleX(G);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (finder.hasCycle()) {</span>
+<span class="nc" id="L157">            StdOut.print(&quot;Directed cycle: &quot;);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            for (int v : finder.cycle()) {</span>
+<span class="nc" id="L159">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L161">            StdOut.println();</span>
+<span class="nc" id="L162">        }</span>
+
+        else {
+<span class="nc" id="L165">            StdOut.println(&quot;No directed cycle&quot;);</span>
+        }
+<span class="nc" id="L167">        StdOut.println();</span>
+<span class="nc" id="L168">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

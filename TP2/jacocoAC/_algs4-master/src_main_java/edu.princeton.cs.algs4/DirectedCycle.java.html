@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DirectedCycle.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DirectedCycle.java</span></div><h1>DirectedCycle.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DirectedCycle.java
+ *  Execution:    java DirectedCycle input.txt
+ *  Dependencies: Digraph.java Stack.java StdOut.java In.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/tinyDAG.txt
+ *
+ *  Finds a directed cycle in a digraph.
+ *  Runs in O(E + V) time.
+ *
+ *  % java DirectedCycle tinyDG.txt 
+ *  Directed cycle: 3 5 4 3 
+ *
+ *  %  java DirectedCycle tinyDAG.txt 
+ *  No directed cycle
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code DirectedCycle} class represents a data type for 
+ *  determining whether a digraph has a directed cycle.
+ *  The &lt;em&gt;hasCycle&lt;/em&gt; operation determines whether the digraph has
+ *  a simple directed cycle and, if so, the &lt;em&gt;cycle&lt;/em&gt; operation
+ *  returns one.
+ *  &lt;p&gt;
+ *  This implementation uses depth-first search.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;hasCycle&lt;/em&gt; operation takes constant time;
+ *  the &lt;em&gt;cycle&lt;/em&gt; operation takes time proportional
+ *  to the length of the cycle.
+ *  &lt;p&gt;
+ *  See {@link Topological} to compute a topological order if the
+ *  digraph is acyclic.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L46" title="All 2 branches missed.">public class DirectedCycle {</span>
+    private boolean[] marked;        // marked[v] = has vertex v been marked?
+    private int[] edgeTo;            // edgeTo[v] = previous vertex on path to v
+    private boolean[] onStack;       // onStack[v] = is vertex on the stack?
+    private Stack&lt;Integer&gt; cycle;    // directed cycle (or null if no such cycle)
+
+    /**
+     * Determines whether the digraph {@code G} has a directed cycle and, if so,
+     * finds such a cycle.
+     * @param G the digraph
+     */
+<span class="nc" id="L57">    public DirectedCycle(Digraph G) {</span>
+<span class="nc" id="L58">        marked  = new boolean[G.V()];</span>
+<span class="nc" id="L59">        onStack = new boolean[G.V()];</span>
+<span class="nc" id="L60">        edgeTo  = new int[G.V()];</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">            if (!marked[v] &amp;&amp; cycle == null) dfs(G, v);</span>
+<span class="nc" id="L63">    }</span>
+
+    // check that algorithm computes either the topological order or finds a directed cycle
+    private void dfs(Digraph G, int v) {
+<span class="nc" id="L67">        onStack[v] = true;</span>
+<span class="nc" id="L68">        marked[v] = true;</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (int w : G.adj(v)) {</span>
+
+            // short circuit if directed cycle found
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if (cycle != null) return;</span>
+
+            // found new vertex, so recur
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            else if (!marked[w]) {</span>
+<span class="nc" id="L76">                edgeTo[w] = v;</span>
+<span class="nc" id="L77">                dfs(G, w);</span>
+<span class="nc" id="L78">            }</span>
+
+            // trace back directed cycle
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            else if (onStack[w]) {</span>
+<span class="nc" id="L82">                cycle = new Stack&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                for (int x = v; x != w; x = edgeTo[x]) {</span>
+<span class="nc" id="L84">                    cycle.push(x);</span>
+                }
+<span class="nc" id="L86">                cycle.push(w);</span>
+<span class="nc" id="L87">                cycle.push(v);</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">                assert check();</span>
+            }
+        }
+<span class="nc" id="L91">        onStack[v] = false;</span>
+<span class="nc" id="L92">    }</span>
+
+    /**
+     * Does the digraph have a directed cycle?
+     * @return {@code true} if the digraph has a directed cycle, {@code false} otherwise
+     */
+    public boolean hasCycle() {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        return cycle != null;</span>
+    }
+
+    /**
+     * Returns a directed cycle if the digraph has a directed cycle, and {@code null} otherwise.
+     * @return a directed cycle (as an iterable) if the digraph has a directed cycle,
+     *    and {@code null} otherwise
+     */
+    public Iterable&lt;Integer&gt; cycle() {
+<span class="nc" id="L108">        return cycle;</span>
+    }
+
+
+    // certify that digraph has a directed cycle if it reports one
+    private boolean check() {
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (hasCycle()) {</span>
+            // verify cycle
+<span class="nc" id="L117">            int first = -1, last = -1;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            for (int v : cycle()) {</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">                if (first == -1) first = v;</span>
+<span class="nc" id="L120">                last = v;</span>
+            }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            if (first != last) {</span>
+<span class="nc" id="L123">                System.err.printf(&quot;cycle begins with %d and ends with %d\n&quot;, first, last);</span>
+<span class="nc" id="L124">                return false;</span>
+            }
+        }
+
+
+<span class="nc" id="L129">        return true;</span>
+    }
+
+    /**
+     * Unit tests the {@code DirectedCycle} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L138">        In in = new In(args[0]);</span>
+<span class="nc" id="L139">        Digraph G = new Digraph(in);</span>
+
+<span class="nc" id="L141">        DirectedCycle finder = new DirectedCycle(G);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (finder.hasCycle()) {</span>
+<span class="nc" id="L143">            StdOut.print(&quot;Directed cycle: &quot;);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            for (int v : finder.cycle()) {</span>
+<span class="nc" id="L145">                StdOut.print(v + &quot; &quot;);</span>
+            }
+<span class="nc" id="L147">            StdOut.println();</span>
+<span class="nc" id="L148">        }</span>
+
+        else {
+<span class="nc" id="L151">            StdOut.println(&quot;No directed cycle&quot;);</span>
+        }
+<span class="nc" id="L153">        StdOut.println();</span>
+<span class="nc" id="L154">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

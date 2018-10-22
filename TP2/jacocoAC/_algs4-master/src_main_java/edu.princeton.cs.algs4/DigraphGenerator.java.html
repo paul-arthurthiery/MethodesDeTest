@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>DigraphGenerator.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">DigraphGenerator.java</span></div><h1>DigraphGenerator.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac DigraphGenerator.java
+ *  Execution:    java DigraphGenerator V E
+ *  Dependencies: Digraph.java
+ *
+ *  A digraph generator.
+ *  
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code DigraphGenerator} class provides static methods for creating
+ *  various digraphs, including Erdos-Renyi random digraphs, random DAGs,
+ *  random rooted trees, random rooted DAGs, random tournaments, path digraphs,
+ *  cycle digraphs, and the complete digraph.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class DigraphGenerator {
+    private static final class Edge implements Comparable&lt;Edge&gt; {
+        private final int v;
+        private final int w;
+
+<span class="nc" id="L29">        private Edge(int v, int w) {</span>
+<span class="nc" id="L30">            this.v = v;</span>
+<span class="nc" id="L31">            this.w = w;</span>
+<span class="nc" id="L32">        }</span>
+
+        public int compareTo(Edge that) {
+<span class="nc bnc" id="L35" title="All 2 branches missed.">            if (this.v &lt; that.v) return -1;</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (this.v &gt; that.v) return +1;</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">            if (this.w &lt; that.w) return -1;</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (this.w &gt; that.w) return +1;</span>
+<span class="nc" id="L39">            return 0;</span>
+        }
+    }
+
+    // this class cannot be instantiated
+<span class="nc" id="L44">    private DigraphGenerator() { }</span>
+
+    /**
+     * Returns a random simple digraph containing {@code V} vertices and {@code E} edges.
+     * @param V the number of vertices
+     * @param E the number of vertices
+     * @return a random simple digraph on {@code V} vertices, containing a total
+     *     of {@code E} edges
+     * @throws IllegalArgumentException if no such simple digraph exists
+     */
+    public static Digraph simple(int V, int E) {
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (E &gt; (long) V*(V-1)) throw new IllegalArgumentException(&quot;Too many edges&quot;);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (E &lt; 0)              throw new IllegalArgumentException(&quot;Too few edges&quot;);</span>
+<span class="nc" id="L57">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L58">        SET&lt;Edge&gt; set = new SET&lt;Edge&gt;();</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        while (G.E() &lt; E) {</span>
+<span class="nc" id="L60">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L61">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L62">            Edge e = new Edge(v, w);</span>
+<span class="nc bnc" id="L63" title="All 4 branches missed.">            if ((v != w) &amp;&amp; !set.contains(e)) {</span>
+<span class="nc" id="L64">                set.add(e);</span>
+<span class="nc" id="L65">                G.addEdge(v, w);</span>
+            }
+        }
+<span class="nc" id="L68">        return G;</span>
+    }
+
+   /**
+     * Returns a random simple digraph on {@code V} vertices, with an 
+     * edge between any two vertices with probability {@code p}. This is sometimes
+     * referred to as the Erdos-Renyi random digraph model.
+     * This implementations takes time propotional to V^2 (even if {@code p} is small).
+     * @param V the number of vertices
+     * @param p the probability of choosing an edge
+     * @return a random simple digraph on {@code V} vertices, with an edge between
+     *     any two vertices with probability {@code p}
+     * @throws IllegalArgumentException if probability is not between 0 and 1
+     */
+    public static Digraph simple(int V, double p) {
+<span class="nc bnc" id="L83" title="All 4 branches missed.">        if (p &lt; 0.0 || p &gt; 1.0)</span>
+<span class="nc" id="L84">            throw new IllegalArgumentException(&quot;Probability must be between 0 and 1&quot;);</span>
+<span class="nc" id="L85">        Digraph G = new Digraph(V);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            for (int w = 0; w &lt; V; w++)</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                if (v != w)</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                    if (StdRandom.bernoulli(p))</span>
+<span class="nc" id="L90">                        G.addEdge(v, w);</span>
+<span class="nc" id="L91">        return G;</span>
+    }
+
+    /**
+     * Returns the complete digraph on {@code V} vertices.
+     * @param V the number of vertices
+     * @return the complete digraph on {@code V} vertices
+     */
+    public static Digraph complete(int V) {
+<span class="nc" id="L100">        return simple(V, V*(V-1));</span>
+    }
+
+    /**
+     * Returns a random simple DAG containing {@code V} vertices and {@code E} edges.
+     * Note: it is not uniformly selected at random among all such DAGs.
+     * @param V the number of vertices
+     * @param E the number of vertices
+     * @return a random simple DAG on {@code V} vertices, containing a total
+     *     of {@code E} edges
+     * @throws IllegalArgumentException if no such simple DAG exists
+     */
+    public static Digraph dag(int V, int E) {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (E &gt; (long) V*(V-1) / 2) throw new IllegalArgumentException(&quot;Too many edges&quot;);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (E &lt; 0)                  throw new IllegalArgumentException(&quot;Too few edges&quot;);</span>
+<span class="nc" id="L115">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L116">        SET&lt;Edge&gt; set = new SET&lt;Edge&gt;();</span>
+<span class="nc" id="L117">        int[] vertices = new int[V];</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L119">            vertices[i] = i;</span>
+<span class="nc" id="L120">        StdRandom.shuffle(vertices);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        while (G.E() &lt; E) {</span>
+<span class="nc" id="L122">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L123">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L124">            Edge e = new Edge(v, w);</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">            if ((v &lt; w) &amp;&amp; !set.contains(e)) {</span>
+<span class="nc" id="L126">                set.add(e);</span>
+<span class="nc" id="L127">                G.addEdge(vertices[v], vertices[w]);</span>
+            }
+        }
+<span class="nc" id="L130">        return G;</span>
+    }
+
+    // tournament
+    /**
+     * Returns a random tournament digraph on {@code V} vertices. A tournament digraph
+     * is a DAG in which for every two vertices, there is one directed edge.
+     * A tournament is an oriented complete graph.
+     * @param V the number of vertices
+     * @return a random tournament digraph on {@code V} vertices
+     */
+    public static Digraph tournament(int V) {
+<span class="nc" id="L142">        Digraph G = new Digraph(V);</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            for (int w = v+1; w &lt; G.V(); w++) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                if (StdRandom.bernoulli(0.5)) G.addEdge(v, w);</span>
+<span class="nc" id="L146">                else                          G.addEdge(w, v);</span>
+            }
+        }
+<span class="nc" id="L149">        return G;</span>
+    }
+
+    /**
+     * Returns a random rooted-in DAG on {@code V} vertices and {@code E} edges.
+     * A rooted in-tree is a DAG in which there is a single vertex
+     * reachable from every other vertex.
+     * The DAG returned is not chosen uniformly at random among all such DAGs.
+     * @param V the number of vertices
+     * @param E the number of edges
+     * @return a random rooted-in DAG on {@code V} vertices and {@code E} edges
+     */
+    public static Digraph rootedInDAG(int V, int E) {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (E &gt; (long) V*(V-1) / 2) throw new IllegalArgumentException(&quot;Too many edges&quot;);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (E &lt; V-1)                throw new IllegalArgumentException(&quot;Too few edges&quot;);</span>
+<span class="nc" id="L164">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L165">        SET&lt;Edge&gt; set = new SET&lt;Edge&gt;();</span>
+
+        // fix a topological order
+<span class="nc" id="L168">        int[] vertices = new int[V];</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L170">            vertices[i] = i;</span>
+<span class="nc" id="L171">        StdRandom.shuffle(vertices);</span>
+
+        // one edge pointing from each vertex, other than the root = vertices[V-1]
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        for (int v = 0; v &lt; V-1; v++) {</span>
+<span class="nc" id="L175">            int w = StdRandom.uniform(v+1, V);</span>
+<span class="nc" id="L176">            Edge e = new Edge(v, w);</span>
+<span class="nc" id="L177">            set.add(e);</span>
+<span class="nc" id="L178">            G.addEdge(vertices[v], vertices[w]);</span>
+        }
+
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        while (G.E() &lt; E) {</span>
+<span class="nc" id="L182">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L183">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L184">            Edge e = new Edge(v, w);</span>
+<span class="nc bnc" id="L185" title="All 4 branches missed.">            if ((v &lt; w) &amp;&amp; !set.contains(e)) {</span>
+<span class="nc" id="L186">                set.add(e);</span>
+<span class="nc" id="L187">                G.addEdge(vertices[v], vertices[w]);</span>
+            }
+        }
+<span class="nc" id="L190">        return G;</span>
+    }
+
+    /**
+     * Returns a random rooted-out DAG on {@code V} vertices and {@code E} edges.
+     * A rooted out-tree is a DAG in which every vertex is reachable from a
+     * single vertex.
+     * The DAG returned is not chosen uniformly at random among all such DAGs.
+     * @param V the number of vertices
+     * @param E the number of edges
+     * @return a random rooted-out DAG on {@code V} vertices and {@code E} edges
+     */
+    public static Digraph rootedOutDAG(int V, int E) {
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (E &gt; (long) V*(V-1) / 2) throw new IllegalArgumentException(&quot;Too many edges&quot;);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (E &lt; V-1)                throw new IllegalArgumentException(&quot;Too few edges&quot;);</span>
+<span class="nc" id="L205">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L206">        SET&lt;Edge&gt; set = new SET&lt;Edge&gt;();</span>
+
+        // fix a topological order
+<span class="nc" id="L209">        int[] vertices = new int[V];</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L211">            vertices[i] = i;</span>
+<span class="nc" id="L212">        StdRandom.shuffle(vertices);</span>
+
+        // one edge pointing from each vertex, other than the root = vertices[V-1]
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        for (int v = 0; v &lt; V-1; v++) {</span>
+<span class="nc" id="L216">            int w = StdRandom.uniform(v+1, V);</span>
+<span class="nc" id="L217">            Edge e = new Edge(w, v);</span>
+<span class="nc" id="L218">            set.add(e);</span>
+<span class="nc" id="L219">            G.addEdge(vertices[w], vertices[v]);</span>
+        }
+
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        while (G.E() &lt; E) {</span>
+<span class="nc" id="L223">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L224">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L225">            Edge e = new Edge(w, v);</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">            if ((v &lt; w) &amp;&amp; !set.contains(e)) {</span>
+<span class="nc" id="L227">                set.add(e);</span>
+<span class="nc" id="L228">                G.addEdge(vertices[w], vertices[v]);</span>
+            }
+        }
+<span class="nc" id="L231">        return G;</span>
+    }
+
+    /**
+     * Returns a random rooted-in tree on {@code V} vertices.
+     * A rooted in-tree is an oriented tree in which there is a single vertex
+     * reachable from every other vertex.
+     * The tree returned is not chosen uniformly at random among all such trees.
+     * @param V the number of vertices
+     * @return a random rooted-in tree on {@code V} vertices
+     */
+    public static Digraph rootedInTree(int V) {
+<span class="nc" id="L243">        return rootedInDAG(V, V-1);</span>
+    }
+
+    /**
+     * Returns a random rooted-out tree on {@code V} vertices. A rooted out-tree
+     * is an oriented tree in which each vertex is reachable from a single vertex.
+     * It is also known as a &lt;em&gt;arborescence&lt;/em&gt; or &lt;em&gt;branching&lt;/em&gt;.
+     * The tree returned is not chosen uniformly at random among all such trees.
+     * @param V the number of vertices
+     * @return a random rooted-out tree on {@code V} vertices
+     */
+    public static Digraph rootedOutTree(int V) {
+<span class="nc" id="L255">        return rootedOutDAG(V, V-1);</span>
+    }
+
+    /**
+     * Returns a path digraph on {@code V} vertices.
+     * @param V the number of vertices in the path
+     * @return a digraph that is a directed path on {@code V} vertices
+     */
+    public static Digraph path(int V) {
+<span class="nc" id="L264">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L265">        int[] vertices = new int[V];</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L267">            vertices[i] = i;</span>
+<span class="nc" id="L268">        StdRandom.shuffle(vertices);</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        for (int i = 0; i &lt; V-1; i++) {</span>
+<span class="nc" id="L270">            G.addEdge(vertices[i], vertices[i+1]);</span>
+        }
+<span class="nc" id="L272">        return G;</span>
+    }
+
+    /**
+     * Returns a complete binary tree digraph on {@code V} vertices.
+     * @param V the number of vertices in the binary tree
+     * @return a digraph that is a complete binary tree on {@code V} vertices
+     */
+    public static Digraph binaryTree(int V) {
+<span class="nc" id="L281">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L282">        int[] vertices = new int[V];</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L284">            vertices[i] = i;</span>
+<span class="nc" id="L285">        StdRandom.shuffle(vertices);</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        for (int i = 1; i &lt; V; i++) {</span>
+<span class="nc" id="L287">            G.addEdge(vertices[i], vertices[(i-1)/2]);</span>
+        }
+<span class="nc" id="L289">        return G;</span>
+    }
+
+    /**
+     * Returns a cycle digraph on {@code V} vertices.
+     * @param V the number of vertices in the cycle
+     * @return a digraph that is a directed cycle on {@code V} vertices
+     */
+    public static Digraph cycle(int V) {
+<span class="nc" id="L298">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L299">        int[] vertices = new int[V];</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        for (int i = 0; i &lt; V; i++)</span>
+<span class="nc" id="L301">            vertices[i] = i;</span>
+<span class="nc" id="L302">        StdRandom.shuffle(vertices);</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        for (int i = 0; i &lt; V-1; i++) {</span>
+<span class="nc" id="L304">            G.addEdge(vertices[i], vertices[i+1]);</span>
+        }
+<span class="nc" id="L306">        G.addEdge(vertices[V-1], vertices[0]);</span>
+<span class="nc" id="L307">        return G;</span>
+    }
+
+    /**
+     * Returns an Eulerian cycle digraph on {@code V} vertices.
+     *
+     * @param  V the number of vertices in the cycle
+     * @param  E the number of edges in the cycle
+     * @return a digraph that is a directed Eulerian cycle on {@code V} vertices
+     *         and {@code E} edges
+     * @throws IllegalArgumentException if either {@code V &lt;= 0} or {@code E &lt;= 0}
+     */
+    public static Digraph eulerianCycle(int V, int E) {
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (E &lt;= 0)</span>
+<span class="nc" id="L321">            throw new IllegalArgumentException(&quot;An Eulerian cycle must have at least one edge&quot;);</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (V &lt;= 0)</span>
+<span class="nc" id="L323">            throw new IllegalArgumentException(&quot;An Eulerian cycle must have at least one vertex&quot;);</span>
+<span class="nc" id="L324">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L325">        int[] vertices = new int[E];</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        for (int i = 0; i &lt; E; i++)</span>
+<span class="nc" id="L327">            vertices[i] = StdRandom.uniform(V);</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        for (int i = 0; i &lt; E-1; i++) {</span>
+<span class="nc" id="L329">            G.addEdge(vertices[i], vertices[i+1]);</span>
+        }
+<span class="nc" id="L331">        G.addEdge(vertices[E-1], vertices[0]);</span>
+<span class="nc" id="L332">        return G;</span>
+    }
+
+    /**
+     * Returns an Eulerian path digraph on {@code V} vertices.
+     *
+     * @param  V the number of vertices in the path
+     * @param  E the number of edges in the path
+     * @return a digraph that is a directed Eulerian path on {@code V} vertices
+     *         and {@code E} edges
+     * @throws IllegalArgumentException if either {@code V &lt;= 0} or {@code E &lt; 0}
+     */
+    public static Digraph eulerianPath(int V, int E) {
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        if (E &lt; 0)</span>
+<span class="nc" id="L346">            throw new IllegalArgumentException(&quot;negative number of edges&quot;);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (V &lt;= 0)</span>
+<span class="nc" id="L348">            throw new IllegalArgumentException(&quot;An Eulerian path must have at least one vertex&quot;);</span>
+<span class="nc" id="L349">        Digraph G = new Digraph(V);</span>
+<span class="nc" id="L350">        int[] vertices = new int[E+1];</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">        for (int i = 0; i &lt; E+1; i++)</span>
+<span class="nc" id="L352">            vertices[i] = StdRandom.uniform(V);</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">        for (int i = 0; i &lt; E; i++) {</span>
+<span class="nc" id="L354">            G.addEdge(vertices[i], vertices[i+1]);</span>
+        }
+<span class="nc" id="L356">        return G;</span>
+    }
+
+   /**
+     * Returns a random simple digraph on {@code V} vertices, {@code E}
+     * edges and (at least) {@code c} strong components. The vertices are randomly
+     * assigned integer labels between {@code 0} and {@code c-1} (corresponding to 
+     * strong components). Then, a strong component is creates among the vertices
+     * with the same label. Next, random edges (either between two vertices with
+     * the same labels or from a vetex with a smaller label to a vertex with a 
+     * larger label). The number of components will be equal to the number of
+     * distinct labels that are assigned to vertices.
+     *
+     * @param V the number of vertices
+     * @param E the number of edges
+     * @param c the (maximum) number of strong components
+     * @return a random simple digraph on {@code V} vertices and
+               {@code E} edges, with (at most) {@code c} strong components
+     * @throws IllegalArgumentException if {@code c} is larger than {@code V}
+     */
+    public static Digraph strong(int V, int E, int c) {
+<span class="nc bnc" id="L377" title="All 4 branches missed.">        if (c &gt;= V || c &lt;= 0)</span>
+<span class="nc" id="L378">            throw new IllegalArgumentException(&quot;Number of components must be between 1 and V&quot;);</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        if (E &lt;= 2*(V-c))</span>
+<span class="nc" id="L380">            throw new IllegalArgumentException(&quot;Number of edges must be at least 2(V-c)&quot;);</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">        if (E &gt; (long) V*(V-1) / 2)</span>
+<span class="nc" id="L382">            throw new IllegalArgumentException(&quot;Too many edges&quot;);</span>
+
+        // the digraph
+<span class="nc" id="L385">        Digraph G = new Digraph(V);</span>
+
+        // edges added to G (to avoid duplicate edges)
+<span class="nc" id="L388">        SET&lt;Edge&gt; set = new SET&lt;Edge&gt;();</span>
+
+<span class="nc" id="L390">        int[] label = new int[V];</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">        for (int v = 0; v &lt; V; v++)</span>
+<span class="nc" id="L392">            label[v] = StdRandom.uniform(c);</span>
+
+        // make all vertices with label c a strong component by
+        // combining a rooted in-tree and a rooted out-tree
+<span class="nc bnc" id="L396" title="All 2 branches missed.">        for (int i = 0; i &lt; c; i++) {</span>
+            // how many vertices in component c
+<span class="nc" id="L398">            int count = 0;</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">            for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">                if (label[v] == i) count++;</span>
+            }
+
+            // if (count == 0) System.err.println(&quot;less than desired number of strong components&quot;);
+
+<span class="nc" id="L405">            int[] vertices = new int[count];</span>
+<span class="nc" id="L406">            int j = 0;</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">            for (int v = 0; v &lt; V; v++) {</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">                if (label[v] == i) vertices[j++] = v;</span>
+            }
+<span class="nc" id="L410">            StdRandom.shuffle(vertices);</span>
+
+            // rooted-in tree with root = vertices[count-1]
+<span class="nc bnc" id="L413" title="All 2 branches missed.">            for (int v = 0; v &lt; count-1; v++) {</span>
+<span class="nc" id="L414">                int w = StdRandom.uniform(v+1, count);</span>
+<span class="nc" id="L415">                Edge e = new Edge(w, v);</span>
+<span class="nc" id="L416">                set.add(e);</span>
+<span class="nc" id="L417">                G.addEdge(vertices[w], vertices[v]);</span>
+            }
+
+            // rooted-out tree with root = vertices[count-1]
+<span class="nc bnc" id="L421" title="All 2 branches missed.">            for (int v = 0; v &lt; count-1; v++) {</span>
+<span class="nc" id="L422">                int w = StdRandom.uniform(v+1, count);</span>
+<span class="nc" id="L423">                Edge e = new Edge(v, w);</span>
+<span class="nc" id="L424">                set.add(e);</span>
+<span class="nc" id="L425">                G.addEdge(vertices[v], vertices[w]);</span>
+            }
+        }
+
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        while (G.E() &lt; E) {</span>
+<span class="nc" id="L430">            int v = StdRandom.uniform(V);</span>
+<span class="nc" id="L431">            int w = StdRandom.uniform(V);</span>
+<span class="nc" id="L432">            Edge e = new Edge(v, w);</span>
+<span class="nc bnc" id="L433" title="All 6 branches missed.">            if (!set.contains(e) &amp;&amp; v != w &amp;&amp; label[v] &lt;= label[w]) {</span>
+<span class="nc" id="L434">                set.add(e);</span>
+<span class="nc" id="L435">                G.addEdge(v, w);</span>
+            }
+        }
+
+<span class="nc" id="L439">        return G;</span>
+    }
+
+    /**
+     * Unit tests the {@code DigraphGenerator} library.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L448">        int V = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L449">        int E = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L450">        StdOut.println(&quot;complete graph&quot;);</span>
+<span class="nc" id="L451">        StdOut.println(complete(V));</span>
+<span class="nc" id="L452">        StdOut.println();</span>
+
+<span class="nc" id="L454">        StdOut.println(&quot;simple&quot;);</span>
+<span class="nc" id="L455">        StdOut.println(simple(V, E));</span>
+<span class="nc" id="L456">        StdOut.println();</span>
+
+<span class="nc" id="L458">        StdOut.println(&quot;path&quot;);</span>
+<span class="nc" id="L459">        StdOut.println(path(V));</span>
+<span class="nc" id="L460">        StdOut.println();</span>
+
+<span class="nc" id="L462">        StdOut.println(&quot;cycle&quot;);</span>
+<span class="nc" id="L463">        StdOut.println(cycle(V));</span>
+<span class="nc" id="L464">        StdOut.println();</span>
+
+<span class="nc" id="L466">        StdOut.println(&quot;Eulierian path&quot;);</span>
+<span class="nc" id="L467">        StdOut.println(eulerianPath(V, E));</span>
+<span class="nc" id="L468">        StdOut.println();</span>
+
+<span class="nc" id="L470">        StdOut.println(&quot;Eulierian cycle&quot;);</span>
+<span class="nc" id="L471">        StdOut.println(eulerianCycle(V, E));</span>
+<span class="nc" id="L472">        StdOut.println();</span>
+
+<span class="nc" id="L474">        StdOut.println(&quot;binary tree&quot;);</span>
+<span class="nc" id="L475">        StdOut.println(binaryTree(V));</span>
+<span class="nc" id="L476">        StdOut.println();</span>
+
+<span class="nc" id="L478">        StdOut.println(&quot;tournament&quot;);</span>
+<span class="nc" id="L479">        StdOut.println(tournament(V));</span>
+<span class="nc" id="L480">        StdOut.println();</span>
+
+<span class="nc" id="L482">        StdOut.println(&quot;DAG&quot;);</span>
+<span class="nc" id="L483">        StdOut.println(dag(V, E));</span>
+<span class="nc" id="L484">        StdOut.println();</span>
+
+<span class="nc" id="L486">        StdOut.println(&quot;rooted-in DAG&quot;);</span>
+<span class="nc" id="L487">        StdOut.println(rootedInDAG(V, E));</span>
+<span class="nc" id="L488">        StdOut.println();</span>
+
+<span class="nc" id="L490">        StdOut.println(&quot;rooted-out DAG&quot;);</span>
+<span class="nc" id="L491">        StdOut.println(rootedOutDAG(V, E));</span>
+<span class="nc" id="L492">        StdOut.println();</span>
+
+<span class="nc" id="L494">        StdOut.println(&quot;rooted-in tree&quot;);</span>
+<span class="nc" id="L495">        StdOut.println(rootedInTree(V));</span>
+<span class="nc" id="L496">        StdOut.println();</span>
+
+<span class="nc" id="L498">        StdOut.println(&quot;rooted-out DAG&quot;);</span>
+<span class="nc" id="L499">        StdOut.println(rootedOutTree(V));</span>
+<span class="nc" id="L500">        StdOut.println();</span>
+<span class="nc" id="L501">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

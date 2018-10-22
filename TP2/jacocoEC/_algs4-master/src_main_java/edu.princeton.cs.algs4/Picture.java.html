@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Picture.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Picture.java</span></div><h1>Picture.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Picture.java
+ *  Execution:    java Picture imagename
+ *  Dependencies: none
+ *
+ *  Data type for manipulating individual pixels of an image. The original
+ *  image can be read from a file in JPG, GIF, or PNG format, or the
+ *  user can create a blank image of a given dimension. Includes methods for
+ *  displaying the image in a window on the screen or saving to a file.
+ *
+ *  % java Picture mandrill.jpg
+ *
+ *  Remarks
+ *  -------
+ *   - pixel (x, y) is column x and row y, where (0, 0) is upper left
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.awt.Color;
+import java.awt.FileDialog;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+
+
+/**
+ *  This class provides methods for manipulating individual pixels of
+ *  an image using the RGB color format. The alpha component (for transparency)
+ *  is not currently supported.
+ *  The original image can be read from a {@code PNG}, {@code GIF},
+ *  or {@code JPEG} file or the user can create a blank image of a given dimension.
+ *  This class includes methods for displaying the image in a window on
+ *  the screen or saving it to a file.
+ *  &lt;p&gt;
+ *  Pixel (&lt;em&gt;col&lt;/em&gt;, &lt;em&gt;row&lt;/em&gt;) is column &lt;em&gt;col&lt;/em&gt; and row &lt;em&gt;row&lt;/em&gt;.
+ *  By default, the origin (0, 0) is the pixel in the top-left corner,
+ *  which is a common convention in image processing.
+ *  The method {@link #setOriginLowerLeft()} change the origin to the lower left.
+ *  &lt;p&gt;
+ *  The {@code get()} and {@code set()} methods use {@link Color} objects to get
+ *  or set the color of the specified pixel.
+ *  The {@code getRGB()} and {@code setRGB()} methods use a 32-bit {@code int}
+ *  to encode the color, thereby avoiding the need to create temporary
+ *  {@code Color} objects. The red (R), green (G), and blue (B) components 
+ *  are encoded using the least significant 24 bits.
+ *  Given a 32-bit {@code int} encoding the color, the following code extracts
+ *  the RGB components:
+ * &lt;blockquote&gt;&lt;pre&gt;
+ *  int r = (rgb &gt;&gt; 16) &amp; 0xFF;
+ *  int g = (rgb &gt;&gt;  8) &amp; 0xFF;
+ *  int b = (rgb &gt;&gt;  0) &amp; 0xFF;
+ *  &lt;/pre&gt;&lt;/blockquote&gt; 
+ *  Given the RGB components (8-bits each) of a color,
+ *  the following statement packs it into a 32-bit {@code int}:
+ * &lt;blockquote&gt;&lt;pre&gt;
+ *  int rgb = (r &lt;&lt; 16) + (g &lt;&lt; 8) + (b &lt;&lt; 0);
+ * &lt;/pre&gt;&lt;/blockquote&gt; 
+ *  &lt;p&gt;
+ *  A &lt;em&gt;W&lt;/em&gt;-by-&lt;en&gt;H&lt;/em&gt; picture uses ~ 4 &lt;em&gt;W H&lt;/em&gt; bytes of memory,
+ *  since the color of each pixel is encoded as a 32-bit &lt;code&gt;int&lt;/code&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://introcs.cs.princeton.edu/31datatype&quot;&gt;Section 3.1&lt;/a&gt; of
+ *  &lt;i&gt;Computer Science: An Interdisciplinary Approach&lt;/i&gt;
+ *  by Robert Sedgewick and Kevin Wayne.
+ *  See {@link GrayscalePicture} for a version that supports grayscale images.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public final class Picture implements ActionListener {
+    private BufferedImage image;               // the rasterized image
+    private JFrame frame;                      // on-screen view
+    private String filename;                   // name of file
+<span class="nc" id="L91">    private boolean isOriginUpperLeft = true;  // location of origin</span>
+    private final int width, height;           // width and height
+
+   /**
+     * Creates a {@code width}-by-{@code height} picture, with {@code width} columns
+     * and {@code height} rows, where each pixel is black.
+     *
+     * @param width the width of the picture
+     * @param height the height of the picture
+     * @throws IllegalArgumentException if {@code width} is negative
+     * @throws IllegalArgumentException if {@code height} is negative
+     */
+<span class="nc" id="L103">    public Picture(int width, int height) {</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (width  &lt; 0) throw new IllegalArgumentException(&quot;width must be non-negative&quot;);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (height &lt; 0) throw new IllegalArgumentException(&quot;height must be non-negative&quot;);</span>
+<span class="nc" id="L106">        this.width  = width;</span>
+<span class="nc" id="L107">        this.height = height;</span>
+<span class="nc" id="L108">        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);</span>
+        // set to TYPE_INT_ARGB here and in next constructor to support transparency
+<span class="nc" id="L110">    }</span>
+
+   /**
+     * Creates a new picture that is a deep copy of the argument picture.
+     *
+     * @param  picture the picture to copy
+     * @throws IllegalArgumentException if {@code picture} is {@code null}
+     */
+<span class="nc" id="L118">    public Picture(Picture picture) {</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (picture == null) throw new IllegalArgumentException(&quot;constructor argument is null&quot;);</span>
+
+<span class="nc" id="L121">        width  = picture.width();</span>
+<span class="nc" id="L122">        height = picture.height();</span>
+<span class="nc" id="L123">        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);</span>
+<span class="nc" id="L124">        filename = picture.filename;</span>
+<span class="nc" id="L125">        isOriginUpperLeft = picture.isOriginUpperLeft;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        for (int col = 0; col &lt; width(); col++)</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            for (int row = 0; row &lt; height(); row++)</span>
+<span class="nc" id="L128">                image.setRGB(col, row, picture.image.getRGB(col, row));</span>
+<span class="nc" id="L129">    }</span>
+
+   /**
+     * Creates a picture by reading an image from a file or URL.
+     *
+     * @param  filename the name of the file (.png, .gif, or .jpg) or URL.
+     * @throws IllegalArgumentException if cannot read image
+     * @throws IllegalArgumentException if {@code filename} is {@code null}
+     */
+<span class="nc" id="L138">    public Picture(String filename) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (filename == null) throw new IllegalArgumentException(&quot;constructor argument is null&quot;);</span>
+
+<span class="nc" id="L141">        this.filename = filename;</span>
+        try {
+            // try to read from file in working directory
+<span class="nc" id="L144">            File file = new File(filename);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            if (file.isFile()) {</span>
+<span class="nc" id="L146">                image = ImageIO.read(file);</span>
+<span class="nc" id="L147">            }</span>
+
+            // now try to read from file in same directory as this .class file
+            else {
+<span class="nc" id="L151">                URL url = getClass().getResource(filename);</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">                if (url == null) {</span>
+<span class="nc" id="L153">                    url = new URL(filename);</span>
+                }
+<span class="nc" id="L155">                image = ImageIO.read(url);</span>
+            }
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (image == null) {</span>
+<span class="nc" id="L159">                throw new IllegalArgumentException(&quot;could not read image file: &quot; + filename);</span>
+            }
+
+<span class="nc" id="L162">            width  = image.getWidth(null);</span>
+<span class="nc" id="L163">            height = image.getHeight(null);</span>
+<span class="nc" id="L164">        }</span>
+<span class="nc" id="L165">        catch (IOException ioe) {</span>
+<span class="nc" id="L166">            throw new IllegalArgumentException(&quot;could not open image file: &quot; + filename, ioe);</span>
+        }
+<span class="nc" id="L168">    }</span>
+
+   /**
+     * Creates a picture by reading the image from a PNG, GIF, or JPEG file.
+     *
+     * @param file the file
+     * @throws IllegalArgumentException if cannot read image
+     * @throws IllegalArgumentException if {@code file} is {@code null}
+     */
+<span class="nc" id="L177">    public Picture(File file) {</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (file == null) throw new IllegalArgumentException(&quot;constructor argument is null&quot;);</span>
+
+        try {
+<span class="nc" id="L181">            image = ImageIO.read(file);</span>
+<span class="nc" id="L182">        }</span>
+<span class="nc" id="L183">        catch (IOException ioe) {</span>
+<span class="nc" id="L184">            throw new IllegalArgumentException(&quot;could not open file: &quot; + file, ioe);</span>
+        }
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (image == null) {</span>
+<span class="nc" id="L187">            throw new IllegalArgumentException(&quot;could not read file: &quot; + file);</span>
+        }
+<span class="nc" id="L189">        width  = image.getWidth(null);</span>
+<span class="nc" id="L190">        height = image.getHeight(null);</span>
+<span class="nc" id="L191">        filename = file.getName();</span>
+<span class="nc" id="L192">    }</span>
+
+   /**
+     * Returns a {@link JLabel} containing this picture, for embedding in a {@link JPanel},
+     * {@link JFrame} or other GUI widget.
+     *
+     * @return the {@code JLabel}
+     */
+    public JLabel getJLabel() {
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (image == null) return null;         // no image available</span>
+<span class="nc" id="L202">        ImageIcon icon = new ImageIcon(image);</span>
+<span class="nc" id="L203">        return new JLabel(icon);</span>
+    }
+
+   /**
+     * Sets the origin to be the upper left pixel. This is the default.
+     */
+    public void setOriginUpperLeft() {
+<span class="nc" id="L210">        isOriginUpperLeft = true;</span>
+<span class="nc" id="L211">    }</span>
+
+   /**
+     * Sets the origin to be the lower left pixel.
+     */
+    public void setOriginLowerLeft() {
+<span class="nc" id="L217">        isOriginUpperLeft = false;</span>
+<span class="nc" id="L218">    }</span>
+
+   /**
+     * Displays the picture in a window on the screen.
+     */
+    public void show() {
+
+        // create the GUI for viewing the image if needed
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (frame == null) {</span>
+<span class="nc" id="L227">            frame = new JFrame();</span>
+
+<span class="nc" id="L229">            JMenuBar menuBar = new JMenuBar();</span>
+<span class="nc" id="L230">            JMenu menu = new JMenu(&quot;File&quot;);</span>
+<span class="nc" id="L231">            menuBar.add(menu);</span>
+<span class="nc" id="L232">            JMenuItem menuItem1 = new JMenuItem(&quot; Save...   &quot;);</span>
+<span class="nc" id="L233">            menuItem1.addActionListener(this);</span>
+            // use getMenuShortcutKeyMaskEx() in Java 10 (getMenuShortcutKeyMask() deprecated)           
+<span class="nc" id="L235">            menuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,</span>
+<span class="nc" id="L236">                                     Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));</span>
+<span class="nc" id="L237">            menu.add(menuItem1);</span>
+<span class="nc" id="L238">            frame.setJMenuBar(menuBar);</span>
+
+
+
+<span class="nc" id="L242">            frame.setContentPane(getJLabel());</span>
+            // f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+<span class="nc" id="L244">            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (filename == null) frame.setTitle(width + &quot;-by-&quot; + height);</span>
+<span class="nc" id="L246">            else                  frame.setTitle(filename);</span>
+<span class="nc" id="L247">            frame.setResizable(false);</span>
+<span class="nc" id="L248">            frame.pack();</span>
+<span class="nc" id="L249">            frame.setVisible(true);</span>
+        }
+
+        // draw
+<span class="nc" id="L253">        frame.repaint();</span>
+<span class="nc" id="L254">    }</span>
+
+   /**
+     * Returns the height of the picture.
+     *
+     * @return the height of the picture (in pixels)
+     */
+    public int height() {
+<span class="nc" id="L262">        return height;</span>
+    }
+
+   /**
+     * Returns the width of the picture.
+     *
+     * @return the width of the picture (in pixels)
+     */
+    public int width() {
+<span class="nc" id="L271">        return width;</span>
+    }
+
+    private void validateRowIndex(int row) {
+<span class="nc bnc" id="L275" title="All 4 branches missed.">        if (row &lt; 0 || row &gt;= height())</span>
+<span class="nc" id="L276">            throw new IllegalArgumentException(&quot;row index must be between 0 and &quot; + (height() - 1) + &quot;: &quot; + row);</span>
+<span class="nc" id="L277">    }</span>
+
+    private void validateColumnIndex(int col) {
+<span class="nc bnc" id="L280" title="All 4 branches missed.">        if (col &lt; 0 || col &gt;= width())</span>
+<span class="nc" id="L281">            throw new IllegalArgumentException(&quot;column index must be between 0 and &quot; + (width() - 1) + &quot;: &quot; + col);</span>
+<span class="nc" id="L282">    }</span>
+
+   /**
+     * Returns the color of pixel ({@code col}, {@code row}) as a {@link java.awt.Color}.
+     *
+     * @param col the column index
+     * @param row the row index
+     * @return the color of pixel ({@code col}, {@code row})
+     * @throws IllegalArgumentException unless both {@code 0 &lt;= col &lt; width} and {@code 0 &lt;= row &lt; height}
+     */
+    public Color get(int col, int row) {
+<span class="nc" id="L293">        validateColumnIndex(col);</span>
+<span class="nc" id="L294">        validateRowIndex(row);</span>
+<span class="nc" id="L295">        int rgb = getRGB(col, row);</span>
+<span class="nc" id="L296">        return new Color(rgb);</span>
+    }
+
+   /**
+     * Returns the color of pixel ({@code col}, {@code row}) as an {@code int}.
+     * Using this method can be more efficient than {@link #get(int, int)} because
+     * it does not create a {@code Color} object.
+     *
+     * @param col the column index
+     * @param row the row index
+     * @return the integer representation of the color of pixel ({@code col}, {@code row})
+     * @throws IllegalArgumentException unless both {@code 0 &lt;= col &lt; width} and {@code 0 &lt;= row &lt; height}
+     */
+    public int getRGB(int col, int row) {
+<span class="nc" id="L310">        validateColumnIndex(col);</span>
+<span class="nc" id="L311">        validateRowIndex(row);</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (isOriginUpperLeft) return image.getRGB(col, row);</span>
+<span class="nc" id="L313">        else                   return image.getRGB(col, height - row - 1);</span>
+    }
+
+   /**
+     * Sets the color of pixel ({@code col}, {@code row}) to given color.
+     *
+     * @param col the column index
+     * @param row the row index
+     * @param color the color
+     * @throws IllegalArgumentException unless both {@code 0 &lt;= col &lt; width} and {@code 0 &lt;= row &lt; height}
+     * @throws IllegalArgumentException if {@code color} is {@code null}
+     */
+    public void set(int col, int row, Color color) {
+<span class="nc" id="L326">        validateColumnIndex(col);</span>
+<span class="nc" id="L327">        validateRowIndex(row);</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        if (color == null) throw new IllegalArgumentException(&quot;color argument is null&quot;);</span>
+<span class="nc" id="L329">        int rgb = color.getRGB();</span>
+<span class="nc" id="L330">        setRGB(col, row, rgb);</span>
+<span class="nc" id="L331">    }</span>
+
+   /**
+     * Sets the color of pixel ({@code col}, {@code row}) to given color.
+     *
+     * @param col the column index
+     * @param row the row index
+     * @param rgb the integer representation of the color
+     * @throws IllegalArgumentException unless both {@code 0 &lt;= col &lt; width} and {@code 0 &lt;= row &lt; height}
+     */
+    public void setRGB(int col, int row, int rgb) {
+<span class="nc" id="L342">        validateColumnIndex(col);</span>
+<span class="nc" id="L343">        validateRowIndex(row);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        if (isOriginUpperLeft) image.setRGB(col, row, rgb);</span>
+<span class="nc" id="L345">        else                   image.setRGB(col, height - row - 1, rgb);</span>
+<span class="nc" id="L346">    }</span>
+
+   /**
+     * Returns true if this picture is equal to the argument picture.
+     *
+     * @param other the other picture
+     * @return {@code true} if this picture is the same dimension as {@code other}
+     *         and if all pixels have the same color; {@code false} otherwise
+     */
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L356" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L359">        Picture that = (Picture) other;</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">        if (this.width()  != that.width())  return false;</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (this.height() != that.height()) return false;</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">        for (int col = 0; col &lt; width(); col++)</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">            for (int row = 0; row &lt; height(); row++)</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">                if (this.getRGB(col, row) != that.getRGB(col, row)) return false;</span>
+<span class="nc" id="L365">        return true;</span>
+    }
+
+   /**
+     * Returns a string representation of this picture.
+     * The result is a &lt;code&gt;width&lt;/code&gt;-by-&lt;code&gt;height&lt;/code&gt; matrix of pixels,
+     * where the color of a pixel is represented using 6 hex digits to encode
+     * the red, green, and blue components.
+     *
+     * @return a string representation of this picture
+     */
+    public String toString() {
+<span class="nc" id="L377">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L378">        sb.append(width +&quot;-by-&quot; + height + &quot; picture (RGB values given in hex)\n&quot;);</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        for (int row = 0; row &lt; height; row++) {</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">            for (int col = 0; col &lt; width; col++) {</span>
+<span class="nc" id="L381">                int rgb = 0;</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">                if (isOriginUpperLeft) rgb = image.getRGB(col, row);</span>
+<span class="nc" id="L383">                else                   rgb = image.getRGB(col, height - row - 1);</span>
+<span class="nc" id="L384">                sb.append(String.format(&quot;#%06X &quot;, rgb &amp; 0xFFFFFF));</span>
+            }
+<span class="nc" id="L386">            sb.append(&quot;\n&quot;);</span>
+        }
+<span class="nc" id="L388">        return sb.toString().trim();</span>
+    }
+
+    /**
+     * This operation is not supported because pictures are mutable.
+     *
+     * @return does not return a value
+     * @throws UnsupportedOperationException if called
+     */
+    public int hashCode() {
+<span class="nc" id="L398">        throw new UnsupportedOperationException(&quot;hashCode() is not supported because pictures are mutable&quot;);</span>
+    }
+
+   /**
+     * Saves the picture to a file in either PNG or JPEG format.
+     * The filetype extension must be either .png or .jpg.
+     *
+     * @param name the name of the file
+     * @throws IllegalArgumentException if {@code name} is {@code null}
+     */
+    public void save(String name) {
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (name == null) throw new IllegalArgumentException(&quot;argument to save() is null&quot;);</span>
+<span class="nc" id="L410">        save(new File(name));</span>
+<span class="nc" id="L411">        filename = name;</span>
+<span class="nc" id="L412">    }</span>
+
+   /**
+     * Saves the picture to a file in a PNG or JPEG image format.
+     *
+     * @param  file the file
+     * @throws IllegalArgumentException if {@code file} is {@code null}
+     */
+    public void save(File file) {
+<span class="nc bnc" id="L421" title="All 2 branches missed.">        if (file == null) throw new IllegalArgumentException(&quot;argument to save() is null&quot;);</span>
+<span class="nc" id="L422">        filename = file.getName();</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        if (frame != null) frame.setTitle(filename);</span>
+<span class="nc" id="L424">        String suffix = filename.substring(filename.lastIndexOf('.') + 1);</span>
+<span class="nc bnc" id="L425" title="All 4 branches missed.">        if (&quot;jpg&quot;.equalsIgnoreCase(suffix) || &quot;png&quot;.equalsIgnoreCase(suffix)) {</span>
+            try {
+<span class="nc" id="L427">                ImageIO.write(image, suffix, file);</span>
+<span class="nc" id="L428">            }</span>
+<span class="nc" id="L429">            catch (IOException e) {</span>
+<span class="nc" id="L430">                e.printStackTrace();</span>
+            }
+<span class="nc" id="L432">        }</span>
+        else {
+<span class="nc" id="L434">            System.out.println(&quot;Error: filename must end in .jpg or .png&quot;);</span>
+        }
+<span class="nc" id="L436">    }</span>
+
+   /**
+     * Opens a save dialog box when the user selects &quot;Save As&quot; from the menu.
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L443">        FileDialog chooser = new FileDialog(frame,</span>
+<span class="nc" id="L444">                             &quot;Use a .png or .jpg extension&quot;, FileDialog.SAVE);</span>
+<span class="nc" id="L445">        chooser.setVisible(true);</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">        if (chooser.getFile() != null) {</span>
+<span class="nc" id="L447">            save(chooser.getDirectory() + File.separator + chooser.getFile());</span>
+        }
+<span class="nc" id="L449">    }</span>
+
+   /**
+     * Unit tests this {@code Picture} data type.
+     * Reads a picture specified by the command-line argument,
+     * and shows it in a window on the screen.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L459">        Picture picture = new Picture(args[0]);</span>
+<span class="nc" id="L460">        System.out.printf(&quot;%d-by-%d\n&quot;, picture.width(), picture.height());</span>
+<span class="nc" id="L461">        picture.show();</span>
+<span class="nc" id="L462">    }</span>
+
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

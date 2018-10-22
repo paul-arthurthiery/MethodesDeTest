@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>TrieST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">TrieST.java</span></div><h1>TrieST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac TrieST.java
+ *  Execution:    java TrieST &lt; words.txt
+ *  Dependencies: StdIn.java
+ *  Data files:   https://algs4.cs.princeton.edu/52trie/shellsST.txt
+ *
+ *  A string symbol table for extended ASCII strings, implemented
+ *  using a 256-way trie.
+ *
+ *  % java TrieST &lt; shellsST.txt 
+ *  by 4
+ *  sea 6
+ *  sells 1
+ *  she 0
+ *  shells 3
+ *  shore 7
+ *  the 5
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code TrieST} class represents an symbol table of key-value
+ *  pairs, with string keys and generic values.
+ *  It supports the usual &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;get&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; methods.
+ *  It also provides character-based methods for finding the string
+ *  in the symbol table that is the &lt;em&gt;longest prefix&lt;/em&gt; of a given prefix,
+ *  finding all strings in the symbol table that &lt;em&gt;start with&lt;/em&gt; a given prefix,
+ *  and finding all strings in the symbol table that &lt;em&gt;match&lt;/em&gt; a given pattern.
+ *  A symbol table implements the &lt;em&gt;associative array&lt;/em&gt; abstraction:
+ *  when associating a value with a key that is already in the symbol table,
+ *  the convention is to replace the old value with the new value.
+ *  Unlike {@link java.util.Map}, this class uses the convention that
+ *  values cannot be {@code null}—setting the
+ *  value associated with a key to {@code null} is equivalent to deleting the key
+ *  from the symbol table.
+ *  &lt;p&gt;
+ *  This implementation uses a 256-way trie.
+ *  The &lt;em&gt;put&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, &lt;em&gt;delete&lt;/em&gt;, and
+ *  &lt;em&gt;longest prefix&lt;/em&gt; operations take time proportional to the length
+ *  of the key (in the worst case). Construction takes constant time.
+ *  The &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt; operations take constant time.
+ *  Construction takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/52trie&quot;&gt;Section 5.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+public class TrieST&lt;Value&gt; {
+    private static final int R = 256;        // extended ASCII
+
+
+    private Node root;      // root of trie
+    private int n;          // number of keys in trie
+
+    // R-way trie node
+<span class="nc" id="L58">    private static class Node {</span>
+        private Object val;
+<span class="nc" id="L60">        private Node[] next = new Node[R];</span>
+    }
+
+   /**
+     * Initializes an empty string symbol table.
+     */
+<span class="nc" id="L66">    public TrieST() {</span>
+<span class="nc" id="L67">    }</span>
+
+
+    /**
+     * Returns the value associated with the given key.
+     * @param key the key
+     * @return the value associated with the given key if the key is in the symbol table
+     *     and {@code null} if the key is not in the symbol table
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public Value get(String key) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to get() is null&quot;);</span>
+<span class="nc" id="L79">        Node x = get(root, key, 0);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (x == null) return null;</span>
+<span class="nc" id="L81">        return (Value) x.val;</span>
+    }
+
+    /**
+     * Does this symbol table contain the given key?
+     * @param key the key
+     * @return {@code true} if this symbol table contains {@code key} and
+     *     {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public boolean contains(String key) {
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to contains() is null&quot;);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        return get(key) != null;</span>
+    }
+
+    private Node get(Node x, String key, int d) {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (x == null) return null;</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (d == key.length()) return x;</span>
+<span class="nc" id="L99">        char c = key.charAt(d);</span>
+<span class="nc" id="L100">        return get(x.next[c], key, d+1);</span>
+    }
+
+    /**
+     * Inserts the key-value pair into the symbol table, overwriting the old value
+     * with the new value if the key is already in the symbol table.
+     * If the value is {@code null}, this effectively deletes the key from the symbol table.
+     * @param key the key
+     * @param val the value
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void put(String key, Value val) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;first argument to put() is null&quot;);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (val == null) delete(key);</span>
+<span class="nc" id="L114">        else root = put(root, key, val, 0);</span>
+<span class="nc" id="L115">    }</span>
+
+    private Node put(Node x, String key, Value val, int d) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (x == null) x = new Node();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (d == key.length()) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            if (x.val == null) n++;</span>
+<span class="nc" id="L121">            x.val = val;</span>
+<span class="nc" id="L122">            return x;</span>
+        }
+<span class="nc" id="L124">        char c = key.charAt(d);</span>
+<span class="nc" id="L125">        x.next[c] = put(x.next[c], key, val, d+1);</span>
+<span class="nc" id="L126">        return x;</span>
+    }
+
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     * @return the number of key-value pairs in this symbol table
+     */
+    public int size() {
+<span class="nc" id="L134">        return n;</span>
+    }
+
+    /**
+     * Is this symbol table empty?
+     * @return {@code true} if this symbol table is empty and {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns all keys in the symbol table as an {@code Iterable}.
+     * To iterate over all of the keys in the symbol table named {@code st},
+     * use the foreach notation: {@code for (Key key : st.keys())}.
+     * @return all keys in the symbol table as an {@code Iterable}
+     */
+    public Iterable&lt;String&gt; keys() {
+<span class="nc" id="L152">        return keysWithPrefix(&quot;&quot;);</span>
+    }
+
+    /**
+     * Returns all of the keys in the set that start with {@code prefix}.
+     * @param prefix the prefix
+     * @return all of the keys in the set that start with {@code prefix},
+     *     as an iterable
+     */
+    public Iterable&lt;String&gt; keysWithPrefix(String prefix) {
+<span class="nc" id="L162">        Queue&lt;String&gt; results = new Queue&lt;String&gt;();</span>
+<span class="nc" id="L163">        Node x = get(root, prefix, 0);</span>
+<span class="nc" id="L164">        collect(x, new StringBuilder(prefix), results);</span>
+<span class="nc" id="L165">        return results;</span>
+    }
+
+    private void collect(Node x, StringBuilder prefix, Queue&lt;String&gt; results) {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (x == null) return;</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (x.val != null) results.enqueue(prefix.toString());</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        for (char c = 0; c &lt; R; c++) {</span>
+<span class="nc" id="L172">            prefix.append(c);</span>
+<span class="nc" id="L173">            collect(x.next[c], prefix, results);</span>
+<span class="nc" id="L174">            prefix.deleteCharAt(prefix.length() - 1);</span>
+        }
+<span class="nc" id="L176">    }</span>
+
+    /**
+     * Returns all of the keys in the symbol table that match {@code pattern},
+     * where . symbol is treated as a wildcard character.
+     * @param pattern the pattern
+     * @return all of the keys in the symbol table that match {@code pattern},
+     *     as an iterable, where . is treated as a wildcard character.
+     */
+    public Iterable&lt;String&gt; keysThatMatch(String pattern) {
+<span class="nc" id="L186">        Queue&lt;String&gt; results = new Queue&lt;String&gt;();</span>
+<span class="nc" id="L187">        collect(root, new StringBuilder(), pattern, results);</span>
+<span class="nc" id="L188">        return results;</span>
+    }
+
+    private void collect(Node x, StringBuilder prefix, String pattern, Queue&lt;String&gt; results) {
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (x == null) return;</span>
+<span class="nc" id="L193">        int d = prefix.length();</span>
+<span class="nc bnc" id="L194" title="All 4 branches missed.">        if (d == pattern.length() &amp;&amp; x.val != null)</span>
+<span class="nc" id="L195">            results.enqueue(prefix.toString());</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (d == pattern.length())</span>
+<span class="nc" id="L197">            return;</span>
+<span class="nc" id="L198">        char c = pattern.charAt(d);</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        if (c == '.') {</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            for (char ch = 0; ch &lt; R; ch++) {</span>
+<span class="nc" id="L201">                prefix.append(ch);</span>
+<span class="nc" id="L202">                collect(x.next[ch], prefix, pattern, results);</span>
+<span class="nc" id="L203">                prefix.deleteCharAt(prefix.length() - 1);</span>
+            }
+<span class="nc" id="L205">        }</span>
+        else {
+<span class="nc" id="L207">            prefix.append(c);</span>
+<span class="nc" id="L208">            collect(x.next[c], prefix, pattern, results);</span>
+<span class="nc" id="L209">            prefix.deleteCharAt(prefix.length() - 1);</span>
+        }
+<span class="nc" id="L211">    }</span>
+
+    /**
+     * Returns the string in the symbol table that is the longest prefix of {@code query},
+     * or {@code null}, if no such string.
+     * @param query the query string
+     * @return the string in the symbol table that is the longest prefix of {@code query},
+     *     or {@code null} if no such string
+     * @throws IllegalArgumentException if {@code query} is {@code null}
+     */
+    public String longestPrefixOf(String query) {
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (query == null) throw new IllegalArgumentException(&quot;argument to longestPrefixOf() is null&quot;);</span>
+<span class="nc" id="L223">        int length = longestPrefixOf(root, query, 0, -1);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (length == -1) return null;</span>
+<span class="nc" id="L225">        else return query.substring(0, length);</span>
+    }
+
+    // returns the length of the longest string key in the subtrie
+    // rooted at x that is a prefix of the query string,
+    // assuming the first d character match and we have already
+    // found a prefix match of given length (-1 if no such match)
+    private int longestPrefixOf(Node x, String query, int d, int length) {
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (x == null) return length;</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (x.val != null) length = d;</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (d == query.length()) return length;</span>
+<span class="nc" id="L236">        char c = query.charAt(d);</span>
+<span class="nc" id="L237">        return longestPrefixOf(x.next[c], query, d+1, length);</span>
+    }
+
+    /**
+     * Removes the key from the set if the key is present.
+     * @param key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     */
+    public void delete(String key) {
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;argument to delete() is null&quot;);</span>
+<span class="nc" id="L247">        root = delete(root, key, 0);</span>
+<span class="nc" id="L248">    }</span>
+
+    private Node delete(Node x, String key, int d) {
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (x == null) return null;</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (d == key.length()) {</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">            if (x.val != null) n--;</span>
+<span class="nc" id="L254">            x.val = null;</span>
+<span class="nc" id="L255">        }</span>
+        else {
+<span class="nc" id="L257">            char c = key.charAt(d);</span>
+<span class="nc" id="L258">            x.next[c] = delete(x.next[c], key, d+1);</span>
+        }
+
+        // remove subtrie rooted at x if it is completely empty
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (x.val != null) return x;</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        for (int c = 0; c &lt; R; c++)</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">            if (x.next[c] != null)</span>
+<span class="nc" id="L265">                return x;</span>
+<span class="nc" id="L266">        return null;</span>
+    }
+
+    /**
+     * Unit tests the {@code TrieST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // build symbol table from standard input
+<span class="nc" id="L277">        TrieST&lt;Integer&gt; st = new TrieST&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (int i = 0; !StdIn.isEmpty(); i++) {</span>
+<span class="nc" id="L279">            String key = StdIn.readString();</span>
+<span class="nc" id="L280">            st.put(key, i);</span>
+        }
+
+        // print results
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        if (st.size() &lt; 100) {</span>
+<span class="nc" id="L285">            StdOut.println(&quot;keys(\&quot;\&quot;):&quot;);</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">            for (String key : st.keys()) {</span>
+<span class="nc" id="L287">                StdOut.println(key + &quot; &quot; + st.get(key));</span>
+            }
+<span class="nc" id="L289">            StdOut.println();</span>
+        }
+
+<span class="nc" id="L292">        StdOut.println(&quot;longestPrefixOf(\&quot;shellsort\&quot;):&quot;);</span>
+<span class="nc" id="L293">        StdOut.println(st.longestPrefixOf(&quot;shellsort&quot;));</span>
+<span class="nc" id="L294">        StdOut.println();</span>
+
+<span class="nc" id="L296">        StdOut.println(&quot;longestPrefixOf(\&quot;quicksort\&quot;):&quot;);</span>
+<span class="nc" id="L297">        StdOut.println(st.longestPrefixOf(&quot;quicksort&quot;));</span>
+<span class="nc" id="L298">        StdOut.println();</span>
+
+<span class="nc" id="L300">        StdOut.println(&quot;keysWithPrefix(\&quot;shor\&quot;):&quot;);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        for (String s : st.keysWithPrefix(&quot;shor&quot;))</span>
+<span class="nc" id="L302">            StdOut.println(s);</span>
+<span class="nc" id="L303">        StdOut.println();</span>
+
+<span class="nc" id="L305">        StdOut.println(&quot;keysThatMatch(\&quot;.he.l.\&quot;):&quot;);</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">        for (String s : st.keysThatMatch(&quot;.he.l.&quot;))</span>
+<span class="nc" id="L307">            StdOut.println(s);</span>
+<span class="nc" id="L308">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

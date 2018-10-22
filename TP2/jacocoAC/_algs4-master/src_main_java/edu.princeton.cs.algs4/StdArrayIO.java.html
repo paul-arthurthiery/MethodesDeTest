@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>StdArrayIO.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">StdArrayIO.java</span></div><h1>StdArrayIO.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac StdArrayIO.java
+ *  Execution:    java StdArrayIO &lt; input.txt
+ *  Dependencies: StdOut.java
+ *  Data files:    https://introcs.cs.princeton.edu/java/22library/tinyDouble1D.txt
+ *                 https://introcs.cs.princeton.edu/java/22library/tinyDouble2D.txt
+ *                 https://introcs.cs.princeton.edu/java/22library/tinyBoolean2D.txt
+ *
+ *  A library for reading in 1D and 2D arrays of integers, doubles,
+ *  and booleans from standard input and printing them out to
+ *  standard output.
+ *
+ *  % more tinyDouble1D.txt 
+ *  4
+ *    .000  .246  .222  -.032
+ *
+ *  % more tinyDouble2D.txt 
+ *  4 3 
+ *    .000  .270  .000 
+ *    .246  .224 -.036 
+ *    .222  .176  .0893 
+ *   -.032  .739  .270 
+ *
+ *  % more tinyBoolean2D.txt 
+ *  4 3 
+ *    1 1 0
+ *    0 0 0
+ *    0 1 1
+ *    1 1 1
+ *
+ *  % cat tinyDouble1D.txt tinyDouble2D.txt tinyBoolean2D.txt | java StdArrayIO
+ *  4
+ *    0.00000   0.24600   0.22200  -0.03200 
+ *  
+ *  4 3
+ *    0.00000   0.27000   0.00000 
+ *    0.24600   0.22400  -0.03600 
+ *    0.22200   0.17600   0.08930 
+ *    0.03200   0.73900   0.27000 
+ *
+ *  4 3
+ *  1 1 0 
+ *  0 0 0 
+ *  0 1 1 
+ *  1 1 1 
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+/**
+ *  &lt;i&gt;Standard array IO&lt;/i&gt;. This class provides methods for reading
+ *  in 1D and 2D arrays from standard input and printing out to 
+ *  standard output.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://introcs.cs.princeton.edu/22libary&quot;&gt;Section 2.2&lt;/a&gt; of
+ *  &lt;i&gt;Computer Science: An Interdisciplinary Approach&lt;/i&gt;
+ *  by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class StdArrayIO {
+
+    // it doesn't make sense to instantiate this class
+<span class="nc" id="L68">    private StdArrayIO() { }</span>
+
+    /**
+     * Reads a 1D array of doubles from standard input and returns it.
+     *
+     * @return the 1D array of doubles
+     */
+    public static double[] readDouble1D() {
+<span class="nc" id="L76">        int n = StdIn.readInt();</span>
+<span class="nc" id="L77">        double[] a = new double[n];</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L79">            a[i] = StdIn.readDouble();</span>
+        }
+<span class="nc" id="L81">        return a;</span>
+    }
+
+    /**
+     * Prints an array of doubles to standard output.
+     *
+     * @param a the 1D array of doubles
+     */
+    public static void print(double[] a) {
+<span class="nc" id="L90">        int n = a.length;</span>
+<span class="nc" id="L91">        StdOut.println(n);</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L93">            StdOut.printf(&quot;%9.5f &quot;, a[i]);</span>
+        }
+<span class="nc" id="L95">        StdOut.println();</span>
+<span class="nc" id="L96">    }</span>
+
+        
+    /**
+     * Reads a 2D array of doubles from standard input and returns it.
+     *
+     * @return the 2D array of doubles
+     */
+    public static double[][] readDouble2D() {
+<span class="nc" id="L105">        int m = StdIn.readInt();</span>
+<span class="nc" id="L106">        int n = StdIn.readInt();</span>
+<span class="nc" id="L107">        double[][] a = new double[m][n];</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L110">                a[i][j] = StdIn.readDouble();</span>
+            }
+        }
+<span class="nc" id="L113">        return a;</span>
+    }
+
+    /**
+     * Prints the 2D array of doubles to standard output.
+     *
+     * @param a the 2D array of doubles
+     */
+    public static void print(double[][] a) {
+<span class="nc" id="L122">        int m = a.length;</span>
+<span class="nc" id="L123">        int n = a[0].length;</span>
+<span class="nc" id="L124">        StdOut.println(m + &quot; &quot; + n);</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L127">                StdOut.printf(&quot;%9.5f &quot;, a[i][j]);</span>
+            }
+<span class="nc" id="L129">            StdOut.println();</span>
+        }
+<span class="nc" id="L131">    }</span>
+
+
+    /**
+     * Reads a 1D array of integers from standard input and returns it.
+     *
+     * @return the 1D array of integers
+     */
+    public static int[] readInt1D() {
+<span class="nc" id="L140">        int n = StdIn.readInt();</span>
+<span class="nc" id="L141">        int[] a = new int[n];</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L143">            a[i] = StdIn.readInt();</span>
+        }
+<span class="nc" id="L145">        return a;</span>
+    }
+
+    /**
+     * Prints an array of integers to standard output.
+     *
+     * @param a the 1D array of integers
+     */
+    public static void print(int[] a) {
+<span class="nc" id="L154">        int n = a.length;</span>
+<span class="nc" id="L155">        StdOut.println(n);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L157">            StdOut.printf(&quot;%9d &quot;, a[i]);</span>
+        }
+<span class="nc" id="L159">        StdOut.println();</span>
+<span class="nc" id="L160">    }</span>
+
+        
+    /**
+     * Reads a 2D array of integers from standard input and returns it.
+     *
+     * @return the 2D array of integers
+     */
+    public static int[][] readInt2D() {
+<span class="nc" id="L169">        int m = StdIn.readInt();</span>
+<span class="nc" id="L170">        int n = StdIn.readInt();</span>
+<span class="nc" id="L171">        int[][] a = new int[m][n];</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L174">                a[i][j] = StdIn.readInt();</span>
+            }
+        }
+<span class="nc" id="L177">        return a;</span>
+    }
+
+    /**
+     * Print a 2D array of integers to standard output.
+     *
+     * @param a the 2D array of integers
+     */
+    public static void print(int[][] a) {
+<span class="nc" id="L186">        int m = a.length;</span>
+<span class="nc" id="L187">        int n = a[0].length;</span>
+<span class="nc" id="L188">        StdOut.println(m + &quot; &quot; + n);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L191">                StdOut.printf(&quot;%9d &quot;, a[i][j]);</span>
+            }
+<span class="nc" id="L193">            StdOut.println();</span>
+        }
+<span class="nc" id="L195">    }</span>
+
+
+    /**
+     * Reads a 1D array of booleans from standard input and returns it.
+     *
+     * @return the 1D array of booleans
+     */
+    public static boolean[] readBoolean1D() {
+<span class="nc" id="L204">        int n = StdIn.readInt();</span>
+<span class="nc" id="L205">        boolean[] a = new boolean[n];</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L207">            a[i] = StdIn.readBoolean();</span>
+        }
+<span class="nc" id="L209">        return a;</span>
+    }
+
+    /**
+     * Prints a 1D array of booleans to standard output.
+     *
+     * @param a the 1D array of booleans
+     */
+    public static void print(boolean[] a) {
+<span class="nc" id="L218">        int n = a.length;</span>
+<span class="nc" id="L219">        StdOut.println(n);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if (a[i]) StdOut.print(&quot;1 &quot;);</span>
+<span class="nc" id="L222">            else      StdOut.print(&quot;0 &quot;);</span>
+        }
+<span class="nc" id="L224">        StdOut.println();</span>
+<span class="nc" id="L225">    }</span>
+
+    /**
+     * Reads a 2D array of booleans from standard input and returns it.
+     *
+     * @return the 2D array of booleans
+     */
+    public static boolean[][] readBoolean2D() {
+<span class="nc" id="L233">        int m = StdIn.readInt();</span>
+<span class="nc" id="L234">        int n = StdIn.readInt();</span>
+<span class="nc" id="L235">        boolean[][] a = new boolean[m][n];</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L238">                a[i][j] = StdIn.readBoolean();</span>
+            }
+        }
+<span class="nc" id="L241">        return a;</span>
+    }
+
+   /**
+     * Prints a 2D array of booleans to standard output.
+     *
+     * @param a the 2D array of booleans
+     */
+    public static void print(boolean[][] a) {
+<span class="nc" id="L250">        int m = a.length;</span>
+<span class="nc" id="L251">        int n = a[0].length;</span>
+<span class="nc" id="L252">        StdOut.println(m + &quot; &quot; + n);</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">                if (a[i][j]) StdOut.print(&quot;1 &quot;);</span>
+<span class="nc" id="L256">                else         StdOut.print(&quot;0 &quot;);</span>
+            }
+<span class="nc" id="L258">            StdOut.println();</span>
+        }
+<span class="nc" id="L260">    }</span>
+
+
+   /**
+     * Unit tests {@code StdArrayIO}.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+        // read and print an array of doubles
+<span class="nc" id="L271">        double[] a = StdArrayIO.readDouble1D();</span>
+<span class="nc" id="L272">        StdArrayIO.print(a);</span>
+<span class="nc" id="L273">        StdOut.println();</span>
+
+        // read and print a matrix of doubles
+<span class="nc" id="L276">        double[][] b = StdArrayIO.readDouble2D();</span>
+<span class="nc" id="L277">        StdArrayIO.print(b);</span>
+<span class="nc" id="L278">        StdOut.println();</span>
+
+        // read and print a matrix of doubles
+<span class="nc" id="L281">        boolean[][] d = StdArrayIO.readBoolean2D();</span>
+<span class="nc" id="L282">        StdArrayIO.print(d);</span>
+<span class="nc" id="L283">        StdOut.println();</span>
+<span class="nc" id="L284">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

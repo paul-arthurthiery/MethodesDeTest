@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>QuickX.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">QuickX.java</span></div><h1>QuickX.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac QuickX.java
+ *  Execution:    java QuickX &lt; input.txt
+ *  Dependencies: StdOut.java StdIn.java
+ *  Data files:   https://algs4.cs.princeton.edu/23quicksort/tiny.txt
+ *                https://algs4.cs.princeton.edu/23quicksort/words3.txt
+ *  
+ *  Uses the Hoare's 2-way partitioning scheme, chooses the partitioning
+ *  element using median-of-3, and cuts off to insertion sort.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code QuickX} class provides static methods for sorting an array
+ *  using an optimized version of quicksort (using Hoare's 2-way partitioning
+ *  algorithm, median-of-3 to choose the partitioning element, and cutoff
+ *  to insertion sort).
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/23quick&quot;&gt;Section 2.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L28" title="All 2 branches missed.">public class QuickX {</span>
+
+    // cutoff to insertion sort, must be &gt;= 1
+<span class="nc" id="L31">    private static final int INSERTION_SORT_CUTOFF = 8;</span>
+
+    // This class should not be instantiated.
+<span class="nc" id="L34">    private QuickX() { }</span>
+
+    /**
+     * Rearranges the array in ascending order, using the natural order.
+     * @param a the array to be sorted
+     */
+    public static void sort(Comparable[] a) {
+        // StdRandom.shuffle(a);
+<span class="nc" id="L42">        sort(a, 0, a.length - 1);</span>
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        assert isSorted(a);</span>
+<span class="nc" id="L44">    }</span>
+
+    // quicksort the subarray from a[lo] to a[hi]
+    private static void sort(Comparable[] a, int lo, int hi) { 
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (hi &lt;= lo) return;</span>
+
+        // cutoff to insertion sort (Insertion.sort() uses half-open intervals)
+<span class="nc" id="L51">        int n = hi - lo + 1;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (n &lt;= INSERTION_SORT_CUTOFF) {</span>
+<span class="nc" id="L53">            Insertion.sort(a, lo, hi + 1);</span>
+<span class="nc" id="L54">            return;</span>
+        }
+
+<span class="nc" id="L57">        int j = partition(a, lo, hi);</span>
+<span class="nc" id="L58">        sort(a, lo, j-1);</span>
+<span class="nc" id="L59">        sort(a, j+1, hi);</span>
+<span class="nc" id="L60">    }</span>
+
+    // partition the subarray a[lo..hi] so that a[lo..j-1] &lt;= a[j] &lt;= a[j+1..hi]
+    // and return the index j.
+    private static int partition(Comparable[] a, int lo, int hi) {
+<span class="nc" id="L65">        int n = hi - lo + 1;</span>
+<span class="nc" id="L66">        int m = median3(a, lo, lo + n/2, hi);</span>
+<span class="nc" id="L67">        exch(a, m, lo);</span>
+
+<span class="nc" id="L69">        int i = lo;</span>
+<span class="nc" id="L70">        int j = hi + 1;</span>
+<span class="nc" id="L71">        Comparable v = a[lo];</span>
+
+        // a[lo] is unique largest element
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        while (less(a[++i], v)) {</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (i == hi) { exch(a, lo, hi); return hi; }</span>
+        }
+
+        // a[lo] is unique smallest element
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        while (less(v, a[--j])) {</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (j == lo + 1) return lo;</span>
+        }
+
+        // the main loop
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        while (i &lt; j) { </span>
+<span class="nc" id="L85">            exch(a, i, j);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            while (less(a[++i], v)) ;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            while (less(v, a[--j])) ;</span>
+        }
+
+        // put partitioning item v at a[j]
+<span class="nc" id="L91">        exch(a, lo, j);</span>
+
+        // now, a[lo .. j-1] &lt;= a[j] &lt;= a[j+1 .. hi]
+<span class="nc" id="L94">        return j;</span>
+    }
+
+    // return the index of the median element among a[i], a[j], and a[k]
+    private static int median3(Comparable[] a, int i, int j, int k) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        return (less(a[i], a[j]) ?</span>
+<span class="nc bnc" id="L100" title="All 4 branches missed.">               (less(a[j], a[k]) ? j : less(a[i], a[k]) ? k : i) :</span>
+<span class="nc bnc" id="L101" title="All 4 branches missed.">               (less(a[k], a[j]) ? j : less(a[k], a[i]) ? k : i));</span>
+    }
+
+   /***************************************************************************
+    *  Helper sorting functions.
+    ***************************************************************************/
+    
+    // is v &lt; w ?
+    private static boolean less(Comparable v, Comparable w) {
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        return v.compareTo(w) &lt; 0;</span>
+    }
+
+    // exchange a[i] and a[j]
+    private static void exch(Object[] a, int i, int j) {
+<span class="nc" id="L115">        Object swap = a[i];</span>
+<span class="nc" id="L116">        a[i] = a[j];</span>
+<span class="nc" id="L117">        a[j] = swap;</span>
+<span class="nc" id="L118">    }</span>
+
+
+   /***************************************************************************
+    *  Check if array is sorted - useful for debugging.
+    ***************************************************************************/
+    private static boolean isSorted(Comparable[] a) {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (int i = 1; i &lt; a.length; i++)</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            if (less(a[i], a[i-1])) return false;</span>
+<span class="nc" id="L127">        return true;</span>
+    }
+
+    // print array to standard output
+    private static void show(Comparable[] a) {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++) {</span>
+<span class="nc" id="L133">            StdOut.println(a[i]);</span>
+        }
+<span class="nc" id="L135">    }</span>
+
+    /**
+     * Reads in a sequence of strings from standard input; quicksorts them
+     * (using an optimized version of 2-way quicksort); 
+     * and prints them to standard output in ascending order. 
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L145">        String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L146">        QuickX.sort(a);</span>
+<span class="nc bnc" id="L147" title="All 4 branches missed.">        assert isSorted(a);</span>
+<span class="nc" id="L148">        show(a);</span>
+<span class="nc" id="L149">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

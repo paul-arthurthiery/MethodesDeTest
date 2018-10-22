@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>FileIndex.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">FileIndex.java</span></div><h1>FileIndex.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac FileIndex.java
+ *  Execution:    java FileIndex file1.txt file2.txt file3.txt ...
+ *  Dependencies: ST.java SET.java In.java StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/35applications/ex1.txt
+ *                https://algs4.cs.princeton.edu/35applications/ex2.txt
+ *                https://algs4.cs.princeton.edu/35applications/ex3.txt
+ *                https://algs4.cs.princeton.edu/35applications/ex4.txt
+ *
+ *  % java FileIndex ex*.txt
+ *  age
+ *   ex3.txt
+ *   ex4.txt 
+ * best
+ *   ex1.txt 
+ * was
+ *   ex1.txt
+ *   ex2.txt
+ *   ex3.txt
+ *   ex4.txt 
+ *
+ *  % java FileIndex *.txt
+ *
+ *  % java FileIndex *.java
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.io.File;
+
+/**
+ *  The {@code FileIndex} class provides a client for indexing a set of files,
+ *  specified as command-line arguments. It takes queries from standard input
+ *  and prints each file that contains the given query.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/35applications&quot;&gt;Section 3.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class FileIndex { 
+
+    // Do not instantiate.
+<span class="nc" id="L46">    private FileIndex() { }</span>
+
+    public static void main(String[] args) {
+
+        // key = word, value = set of files containing that word
+<span class="nc" id="L51">        ST&lt;String, SET&lt;File&gt;&gt; st = new ST&lt;String, SET&lt;File&gt;&gt;();</span>
+
+        // create inverted index of all files
+<span class="nc" id="L54">        StdOut.println(&quot;Indexing files&quot;);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        for (String filename : args) {</span>
+<span class="nc" id="L56">            StdOut.println(&quot;  &quot; + filename);</span>
+<span class="nc" id="L57">            File file = new File(filename);</span>
+<span class="nc" id="L58">            In in = new In(file);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L60">                String word = in.readString();</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                if (!st.contains(word)) st.put(word, new SET&lt;File&gt;());</span>
+<span class="nc" id="L62">                SET&lt;File&gt; set = st.get(word);</span>
+<span class="nc" id="L63">                set.add(file);</span>
+            }
+        }
+
+
+        // read queries from standard input, one per line
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L70">            String query = StdIn.readString();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (st.contains(query)) {</span>
+<span class="nc" id="L72">                SET&lt;File&gt; set = st.get(query);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                for (File file : set) {</span>
+<span class="nc" id="L74">                    StdOut.println(&quot;  &quot; + file.getName());</span>
+                }
+            }
+        }
+
+<span class="nc" id="L79">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

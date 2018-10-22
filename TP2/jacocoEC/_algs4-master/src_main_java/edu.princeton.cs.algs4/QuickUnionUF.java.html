@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>QuickUnionUF.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">QuickUnionUF.java</span></div><h1>QuickUnionUF.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac QuickUnionUF.java
+ *  Execution:  java QuickUnionUF &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/15uf/tinyUF.txt
+ *                https://algs4.cs.princeton.edu/15uf/mediumUF.txt
+ *                https://algs4.cs.princeton.edu/15uf/largeUF.txt
+ *
+ *  Quick-union algorithm.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code QuickUnionUF} class represents a &lt;em&gt;union–find data type&lt;/em&gt;
+ *  (also known as the &lt;em&gt;disjoint-sets data type&lt;/em&gt;).
+ *  It supports the &lt;em&gt;union&lt;/em&gt; and &lt;em&gt;find&lt;/em&gt; operations,
+ *  along with a &lt;em&gt;connected&lt;/em&gt; operation for determining whether
+ *  two sites are in the same component and a &lt;em&gt;count&lt;/em&gt; operation that
+ *  returns the total number of components.
+ *  &lt;p&gt;
+ *  The union–find data type models connectivity among a set of &lt;em&gt;n&lt;/em&gt;
+ *  sites, named 0 through &lt;em&gt;n&lt;/em&gt;–1.
+ *  The &lt;em&gt;is-connected-to&lt;/em&gt; relation must be an 
+ *  &lt;em&gt;equivalence relation&lt;/em&gt;:
+ *  &lt;ul&gt;
+ *  &lt;li&gt; &lt;em&gt;Reflexive&lt;/em&gt;: &lt;em&gt;p&lt;/em&gt; is connected to &lt;em&gt;p&lt;/em&gt;.
+ *  &lt;li&gt; &lt;em&gt;Symmetric&lt;/em&gt;: If &lt;em&gt;p&lt;/em&gt; is connected to &lt;em&gt;q&lt;/em&gt;,
+ *       then &lt;em&gt;q&lt;/em&gt; is connected to &lt;em&gt;p&lt;/em&gt;.
+ *  &lt;li&gt; &lt;em&gt;Transitive&lt;/em&gt;: If &lt;em&gt;p&lt;/em&gt; is connected to &lt;em&gt;q&lt;/em&gt;
+ *       and &lt;em&gt;q&lt;/em&gt; is connected to &lt;em&gt;r&lt;/em&gt;, then
+ *       &lt;em&gt;p&lt;/em&gt; is connected to &lt;em&gt;r&lt;/em&gt;.
+ *  &lt;/ul&gt;
+ *  &lt;p&gt;
+ *  An equivalence relation partitions the sites into
+ *  &lt;em&gt;equivalence classes&lt;/em&gt; (or &lt;em&gt;components&lt;/em&gt;). In this case,
+ *  two sites are in the same component if and only if they are connected.
+ *  Both sites and components are identified with integers between 0 and
+ *  &lt;em&gt;n&lt;/em&gt;–1. 
+ *  Initially, there are &lt;em&gt;n&lt;/em&gt; components, with each site in its
+ *  own component.  The &lt;em&gt;component identifier&lt;/em&gt; of a component
+ *  (also known as the &lt;em&gt;root&lt;/em&gt;, &lt;em&gt;canonical element&lt;/em&gt;, &lt;em&gt;leader&lt;/em&gt;,
+ *  or &lt;em&gt;set representative&lt;/em&gt;) is one of the sites in the component:
+ *  two sites have the same component identifier if and only if they are
+ *  in the same component.
+ *  &lt;ul&gt;
+ *  &lt;li&gt;&lt;em&gt;union&lt;/em&gt;(&lt;em&gt;p&lt;/em&gt;, &lt;em&gt;q&lt;/em&gt;) adds a
+ *      connection between the two sites &lt;em&gt;p&lt;/em&gt; and &lt;em&gt;q&lt;/em&gt;.
+ *      If &lt;em&gt;p&lt;/em&gt; and &lt;em&gt;q&lt;/em&gt; are in different components,
+ *      then it replaces
+ *      these two components with a new component that is the union of
+ *      the two.
+ *  &lt;li&gt;&lt;em&gt;find&lt;/em&gt;(&lt;em&gt;p&lt;/em&gt;) returns the component
+ *      identifier of the component containing &lt;em&gt;p&lt;/em&gt;.
+ *  &lt;li&gt;&lt;em&gt;connected&lt;/em&gt;(&lt;em&gt;p&lt;/em&gt;, &lt;em&gt;q&lt;/em&gt;)
+ *      returns true if both &lt;em&gt;p&lt;/em&gt; and &lt;em&gt;q&lt;/em&gt;
+ *      are in the same component, and false otherwise.
+ *  &lt;li&gt;&lt;em&gt;count&lt;/em&gt;() returns the number of components.
+ *  &lt;/ul&gt;
+ *  &lt;p&gt;
+ *  The component identifier of a component can change
+ *  only when the component itself changes during a call to
+ *  &lt;em&gt;union&lt;/em&gt;—it cannot change during a call
+ *  to &lt;em&gt;find&lt;/em&gt;, &lt;em&gt;connected&lt;/em&gt;, or &lt;em&gt;count&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  This implementation uses quick union.
+ *  Initializing a data structure with &lt;em&gt;n&lt;/em&gt; sites takes linear time.
+ *  Afterwards, the &lt;em&gt;union&lt;/em&gt;, &lt;em&gt;find&lt;/em&gt;, and &lt;em&gt;connected&lt;/em&gt;
+ *  operations  take linear time (in the worst case) and the
+ *  &lt;em&gt;count&lt;/em&gt; operation takes constant time.
+ *  For alternate implementations of the same API, see
+ *  {@link UF}, {@link QuickFindUF}, and {@link WeightedQuickUnionUF}.
+ *
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/15uf&quot;&gt;Section 1.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class QuickUnionUF {
+    private int[] parent;  // parent[i] = parent of i
+    private int count;     // number of components
+
+    /**
+     * Initializes an empty union–find data structure with {@code n} sites
+     * {@code 0} through {@code n-1}. Each site is initially in its own 
+     * component.
+     *
+     * @param  n the number of sites
+     * @throws IllegalArgumentException if {@code n &lt; 0}
+     */
+<span class="nc" id="L94">    public QuickUnionUF(int n) {</span>
+<span class="nc" id="L95">        parent = new int[n];</span>
+<span class="nc" id="L96">        count = n;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L98">            parent[i] = i;</span>
+        }
+<span class="nc" id="L100">    }</span>
+
+    /**
+     * Returns the number of components.
+     *
+     * @return the number of components (between {@code 1} and {@code n})
+     */
+    public int count() {
+<span class="nc" id="L108">        return count;</span>
+    }
+  
+    /**
+     * Returns the component identifier for the component containing site {@code p}.
+     *
+     * @param  p the integer representing one object
+     * @return the component identifier for the component containing site {@code p}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= p &lt; n}
+     */
+    public int find(int p) {
+<span class="nc" id="L119">        validate(p);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        while (p != parent[p])</span>
+<span class="nc" id="L121">            p = parent[p];</span>
+<span class="nc" id="L122">        return p;</span>
+    }
+
+    // validate that p is a valid index
+    private void validate(int p) {
+<span class="nc" id="L127">        int n = parent.length;</span>
+<span class="nc bnc" id="L128" title="All 4 branches missed.">        if (p &lt; 0 || p &gt;= n) {</span>
+<span class="nc" id="L129">            throw new IllegalArgumentException(&quot;index &quot; + p + &quot; is not between 0 and &quot; + (n-1));</span>
+        }
+<span class="nc" id="L131">    }</span>
+
+    /**
+     * Returns true if the the two sites are in the same component.
+     *
+     * @param  p the integer representing one site
+     * @param  q the integer representing the other site
+     * @return {@code true} if the two sites {@code p} and {@code q} are in the same component;
+     *         {@code false} otherwise
+     * @throws IllegalArgumentException unless
+     *         both {@code 0 &lt;= p &lt; n} and {@code 0 &lt;= q &lt; n}
+     */
+    public boolean connected(int p, int q) {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        return find(p) == find(q);</span>
+    }
+
+  
+    /**
+     * Merges the component containing site {@code p} with the 
+     * the component containing site {@code q}.
+     *
+     * @param  p the integer representing one site
+     * @param  q the integer representing the other site
+     * @throws IllegalArgumentException unless
+     *         both {@code 0 &lt;= p &lt; n} and {@code 0 &lt;= q &lt; n}
+     */
+    public void union(int p, int q) {
+<span class="nc" id="L158">        int rootP = find(p);</span>
+<span class="nc" id="L159">        int rootQ = find(q);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (rootP == rootQ) return;</span>
+<span class="nc" id="L161">        parent[rootP] = rootQ; </span>
+<span class="nc" id="L162">        count--;</span>
+<span class="nc" id="L163">    }</span>
+
+    /**
+     * Reads in a sequence of pairs of integers (between 0 and n-1) from standard input, 
+     * where each integer represents some object;
+     * if the sites are in different components, merge the two components
+     * and print the pair to standard output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L174">        int n = StdIn.readInt();</span>
+<span class="nc" id="L175">        QuickUnionUF uf = new QuickUnionUF(n);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L177">            int p = StdIn.readInt();</span>
+<span class="nc" id="L178">            int q = StdIn.readInt();</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">            if (uf.connected(p, q)) continue;</span>
+<span class="nc" id="L180">            uf.union(p, q);</span>
+<span class="nc" id="L181">            StdOut.println(p + &quot; &quot; + q);</span>
+        }
+<span class="nc" id="L183">        StdOut.println(uf.count() + &quot; components&quot;);</span>
+<span class="nc" id="L184">    }</span>
+
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

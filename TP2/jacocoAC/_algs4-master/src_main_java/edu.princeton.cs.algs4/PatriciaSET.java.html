@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>PatriciaSET.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">PatriciaSET.java</span></div><h1>PatriciaSET.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac PatriciaSET.java
+ *  Execution:    java PatriciaSET
+ *  Dependencies: StdOut.java StdRandom.java Queue.java
+ *  Data files:   n/a
+ *
+ *  A set implementation based on PATRICIA.
+ *
+ *  % java PatriciaSET 1000000 1
+ *  Creating dataset (1000000 items)...
+ *  Shuffling...
+ *  Adding (1000000 items)...
+ *  Iterating...
+ *  1000000 items iterated
+ *  Shuffling...
+ *  Deleting (500000 items)...
+ *  Iterating...
+ *  500000 items iterated
+ *  Checking...
+ *  500000 items found and 500000 (deleted) items missing
+ *  Deleting the rest (500000 items)...
+ *  PASS 1 TESTS SUCCEEDED
+ *  %
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Iterator;
+
+/**
+ *  The {@code PatriciaSET} class provides an implementation of an
+ *  unordered set, with the restriction that the items (keys) are of class
+ *  {@link java.lang.String}. It supports the usual &lt;em&gt;add&lt;/em&gt;,
+ *  &lt;em&gt;contains&lt;/em&gt;, &lt;em&gt;delete&lt;/em&gt;, &lt;em&gt;size&lt;/em&gt;, and &lt;em&gt;is-empty&lt;/em&gt;
+ *  methods. It also provides an &lt;em&gt;iterator&lt;/em&gt; method for iterating over all
+ *  the elements in the set.
+ *  &lt;p&gt;
+ *  This unordered set class implements PATRICIA (Practical Algorithm to
+ *  Retrieve Information Coded In Alphanumeric). In spite of the acronym, string
+ *  keys are not limited to alphanumeric content. A key may possess any string
+ *  value, with one exception: a zero-length string is not permitted.
+ *  &lt;p&gt;
+ *  Unlike other generic set implementations that can accept a parameterized key
+ *  type, this set class can only accommodate keys of class
+ *  {@link java.lang.String}. This unfortunate restriction stems from a
+ *  limitation in Java. Although Java provides excellent support for generic
+ *  programming, the current infrastructure somewhat limits generic collection
+ *  implementations to those that employ comparison-based or hash-based methods.
+ *  PATRICIA does not employ comparisons or hashing; instead, it relies on
+ *  bit-test operations. Because Java does not furnish any generic abstractions
+ *  (or implementations) for bit-testing the contents of an object, providing
+ *  support for generic keys using PATRICIA does not seem practical.
+ *  &lt;p&gt;
+ *  PATRICIA is a variation of a trie, and it is often classified as a
+ *  space-optimized trie. In a classical trie, each level represents a
+ *  subsequent digit in a key. In PATRICIA, nodes only exist to identify the
+ *  digits (bits) that distinguish the individual keys within the trie. Because
+ *  PATRICIA uses a radix of two, each node has only two children, like a binary
+ *  tree. Also like a binary tree, the number of nodes, within the trie, equals
+ *  the number of keys. Consequently, some classify PATRICIA as a tree.
+ *  &lt;p&gt;
+ *  The analysis of PATRICIA is complicated. The theoretical wost-case
+ *  performance for an &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;, or &lt;em&gt;delete&lt;/em&gt;
+ *  operation is &lt;strong&gt;O(N)&lt;/strong&gt;, when &lt;strong&gt;N&lt;/strong&gt; is less than
+ *  &lt;strong&gt;W&lt;/strong&gt; (where &lt;strong&gt;W&lt;/strong&gt; is the length in bits of the
+ *  longest key), and &lt;strong&gt;O(W)&lt;/strong&gt;, when &lt;strong&gt;N&lt;/strong&gt; is greater
+ *  than &lt;strong&gt;W&lt;/strong&gt;. However, the worst case is unlikely to occur with
+ *  typical use. The average (and usual) performance of PATRICIA is
+ *  approximately &lt;strong&gt;~lg N&lt;/strong&gt; for each &lt;em&gt;add&lt;/em&gt;,
+ *  &lt;em&gt;contains&lt;/em&gt;, or &lt;em&gt;delete&lt;/em&gt; operation. Although this appears to
+ *  put PATRICIA on the same footing as binary trees, this time complexity
+ *  represents the number of single-bit test operations (under PATRICIA), and
+ *  not full-key comparisons (as required by binary trees). After the single-bit
+ *  tests conclude, PATRICIA requires just one full-key comparison to confirm
+ *  the existence (or absence) of the key (per &lt;em&gt;add&lt;/em&gt;, &lt;em&gt;contains&lt;/em&gt;,
+ *  or &lt;em&gt;delete&lt;/em&gt; operation).
+ *  &lt;p&gt;
+ *  In practice, decent implementations of PATRICIA can often outperform
+ *  balanced binary trees, and even hash tables. Although this particular
+ *  implementation performs well, the source code was written with an emphasis
+ *  on clarity, and not performance. PATRICIA performs admirably when its
+ *  bit-testing loops are well tuned. Consider using the source code as a guide,
+ *  should you need to produce an optimized implementation, for anther key type,
+ *  or in another programming language.
+ *  &lt;p&gt;
+ *  Other resources for PATRICIA:&lt;br&gt;
+ *  Sedgewick, R. (1990) &lt;i&gt;Algorithms in C&lt;/i&gt;, Addison-Wesley&lt;br&gt;
+ *  Knuth, D. (1973) &lt;i&gt;The Art of Computer Programming&lt;/i&gt;, Addison-Wesley&lt;br&gt;
+ *
+ *  @author John Hentosh (based on an implementation by Robert Sedgewick)
+ */
+public class PatriciaSET implements Iterable&lt;String&gt; {
+    private Node head;
+    private int count;
+
+    /* An inner Node class specifies the objects that hold each key. The b
+     * value indicates the relevant bit position.
+     */
+    private class Node {
+        private Node left, right;
+        private String key;
+        private int b;
+
+<span class="nc" id="L105">        public Node(String key, int b) {</span>
+<span class="nc" id="L106">            this.key = key;</span>
+<span class="nc" id="L107">            this.b = b;</span>
+<span class="nc" id="L108">        }</span>
+    };
+
+    /**
+     * Initializes an empty PATRICIA-based set.
+     */
+    /* The constructor creates a head (sentinel) node that contains a
+     * zero-length string.
+     */
+<span class="nc" id="L117">    public PatriciaSET() {</span>
+<span class="nc" id="L118">        head = new Node(&quot;&quot;, 0);</span>
+<span class="nc" id="L119">        head.left = head;</span>
+<span class="nc" id="L120">        head.right = head;</span>
+<span class="nc" id="L121">        count = 0;</span>
+<span class="nc" id="L122">    }</span>
+
+    /**
+     * Adds the key to the set if it is not already present.
+     * @param key the key to add
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if {@code key} is the empty string.
+     */
+    public void add(String key) {
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called add(null)&quot;);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (key.length() == 0) throw new IllegalArgumentException(&quot;invalid key&quot;);</span>
+        Node p;
+<span class="nc" id="L134">        Node x = head;</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        do {</span>
+<span class="nc" id="L136">            p = x;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            if (safeBitTest(key, x.b)) x = x.right;</span>
+<span class="nc" id="L138">            else                       x = x.left;</span>
+<span class="nc" id="L139">        } while (p.b &lt; x.b);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (!x.key.equals(key)) {</span>
+<span class="nc" id="L141">            int b = firstDifferingBit(x.key, key);</span>
+<span class="nc" id="L142">            x = head;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            do {</span>
+<span class="nc" id="L144">                p = x;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                if (safeBitTest(key, x.b)) x = x.right;</span>
+<span class="nc" id="L146">                else                       x = x.left;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            } while (p.b &lt; x.b &amp;&amp; x.b &lt; b);</span>
+<span class="nc" id="L148">            Node t = new Node(key, b);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            if (safeBitTest(key, b)) {</span>
+<span class="nc" id="L150">                t.left  = x;</span>
+<span class="nc" id="L151">                t.right = t;</span>
+<span class="nc" id="L152">            }</span>
+            else {
+<span class="nc" id="L154">                t.left  = t;</span>
+<span class="nc" id="L155">                t.right = x;</span>
+            }
+<span class="nc bnc" id="L157" title="All 2 branches missed.">            if (safeBitTest(key, p.b)) p.right = t;</span>
+<span class="nc" id="L158">            else                       p.left = t;</span>
+<span class="nc" id="L159">            count++;</span>
+        }
+<span class="nc" id="L161">    }</span>
+
+    /**
+     * Does the set contain the given key?
+     * @param key the key
+     * @return {@code true} if the set contains {@code key} and
+     * {@code false} otherwise
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if {@code key} is the empty string.
+     */
+    public boolean contains(String key) {
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called contains(null)&quot;);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (key.length() == 0) throw new IllegalArgumentException(&quot;invalid key&quot;);</span>
+        Node p;
+<span class="nc" id="L175">        Node x = head;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        do {</span>
+<span class="nc" id="L177">            p = x;</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">            if (safeBitTest(key, x.b)) x = x.right;</span>
+<span class="nc" id="L179">            else                       x = x.left;</span>
+<span class="nc" id="L180">        } while (p.b &lt; x.b);</span>
+<span class="nc" id="L181">        return x.key.equals(key);</span>
+    }
+
+    /**
+     * Removes the key from the set if the key is present.
+     * @param key the key
+     * @throws IllegalArgumentException if {@code key} is {@code null}
+     * @throws IllegalArgumentException if {@code key} is the empty string.
+     */
+    public void delete(String key) {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (key == null) throw new IllegalArgumentException(&quot;called delete(null)&quot;);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (key.length() == 0) throw new IllegalArgumentException(&quot;invalid key&quot;);</span>
+        Node g;             // previous previous (grandparent)
+<span class="nc" id="L194">        Node p = head;      // previous (parent)</span>
+<span class="nc" id="L195">        Node x = head;      // node to delete</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        do {</span>
+<span class="nc" id="L197">            g = p;</span>
+<span class="nc" id="L198">            p = x;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            if (safeBitTest(key, x.b)) x = x.right;</span>
+<span class="nc" id="L200">            else                       x = x.left;</span>
+<span class="nc" id="L201">        } while (p.b &lt; x.b);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (x.key.equals(key)) {</span>
+            Node z;
+<span class="nc" id="L204">            Node y = head;</span>
+            do {            // find the true parent (z) of x
+<span class="nc" id="L206">                z = y;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">                if (safeBitTest(key, y.b)) y = y.right;</span>
+<span class="nc" id="L208">                else                       y = y.left;</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">            } while (y != x);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (x == p) {   // case 1: remove (leaf node) x</span>
+                Node c;     // child of x
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                if (safeBitTest(key, x.b)) c = x.left;</span>
+<span class="nc" id="L213">                else                       c = x.right;</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                if (safeBitTest(key, z.b)) z.right = c;</span>
+<span class="nc" id="L215">                else                       z.left  = c;</span>
+<span class="nc" id="L216">            }</span>
+            else {          // case 2: p replaces (internal node) x
+                Node c;     // child of p
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                if (safeBitTest(key, p.b)) c = p.left;</span>
+<span class="nc" id="L220">                else                       c = p.right;</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                if (safeBitTest(key, g.b)) g.right = c;</span>
+<span class="nc" id="L222">                else                       g.left  = c;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">                if (safeBitTest(key, z.b)) z.right = p;</span>
+<span class="nc" id="L224">                else                       z.left  = p;</span>
+<span class="nc" id="L225">                p.left = x.left;</span>
+<span class="nc" id="L226">                p.right = x.right;</span>
+<span class="nc" id="L227">                p.b = x.b;</span>
+            }
+<span class="nc" id="L229">            count--;</span>
+        }
+<span class="nc" id="L231">    }</span>
+
+    /**
+     * Is the set empty?
+     * @return {@code true} if the set is empty, and {@code false}
+     * otherwise
+     */
+    boolean isEmpty() {
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        return count == 0;</span>
+    }
+
+    /**
+     * Returns the number of keys in the set.
+     * @return the number of keys in the set
+     */
+    int size() {
+<span class="nc" id="L247">        return count;</span>
+    }
+
+    /**
+     * Returns all of the keys in the set, as an iterator.
+     * To iterate over all of the keys in a set named {@code set}, use the
+     * foreach notation: {@code for (Key key : set)}.
+     * @return an iterator to all of the keys in the set
+     */
+    public Iterator&lt;String&gt; iterator() {
+<span class="nc" id="L257">        Queue&lt;String&gt; queue = new Queue&lt;String&gt;();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if (head.left  != head) collect(head.left,  0, queue);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        if (head.right != head) collect(head.right, 0, queue);</span>
+<span class="nc" id="L260">        return queue.iterator();</span>
+    }
+
+    private void collect(Node x, int b, Queue&lt;String&gt; queue) {
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (x.b &gt; b) {</span>
+<span class="nc" id="L265">            collect(x.left, x.b, queue);</span>
+<span class="nc" id="L266">            queue.enqueue(x.key);</span>
+<span class="nc" id="L267">            collect(x.right, x.b, queue);</span>
+        }
+<span class="nc" id="L269">    }</span>
+
+    /**
+     * Returns a string representation of this set.
+     * @return a string representation of this set, with the keys separated
+     * by single spaces
+     */
+    public String toString() {
+<span class="nc" id="L277">        StringBuilder s = new StringBuilder();</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (String key : this) s.append(key + &quot; &quot;);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (s.length() &gt; 0) s.deleteCharAt(s.length() - 1);</span>
+<span class="nc" id="L280">        return s.toString();</span>
+    }
+
+    /* The safeBitTest function logically appends a terminating sequence (when
+     * required) to extend (logically) the string beyond its length.
+     *
+     * The inner loops of the get and put methods flow much better when they
+     * are not concerned with the lengths of strings, so a trick is employed to
+     * allow the get and put methods to view every string as an &quot;infinite&quot;
+     * sequence of bits. Logically, every string gets a '\uffff' character,
+     * followed by an &quot;infinite&quot; sequence of '\u0000' characters, appended to
+     * the end.
+     *
+     * Note that the '\uffff' character serves to mark the end of the string,
+     * and it is necessary. Simply padding with '\u0000' is insufficient to
+     * make all unique Unicode strings &quot;look&quot; unique to the get and put methods
+     * (because these methods do not regard string lengths).
+     */
+    private static boolean safeBitTest(String key, int b) {
+<span class="nc bnc" id="L299" title="All 4 branches missed.">        if (b &lt; key.length() * 16)      return bitTest(key, b) != 0;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (b &gt; key.length() * 16 + 15) return false;   // padding</span>
+<span class="nc" id="L301">        /* 16 bits of 0xffff */         return true;    // end marker</span>
+    }
+
+    private static int bitTest(String key, int b) {
+<span class="nc" id="L305">        return (key.charAt(b &gt;&gt;&gt; 4) &gt;&gt;&gt; (b &amp; 0xf)) &amp; 1;</span>
+    }
+
+    /* Like the safeBitTest function, the safeCharAt function makes every
+     * string look like an &quot;infinite&quot; sequence of characters. Logically, every
+     * string gets a '\uffff' character, followed by an &quot;infinite&quot; sequence of
+     * '\u0000' characters, appended to the end.
+     */
+    private static int safeCharAt(String key, int i) {
+<span class="nc bnc" id="L314" title="All 2 branches missed.">        if (i &lt; key.length()) return key.charAt(i);</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        if (i &gt; key.length()) return 0x0000;            // padding</span>
+<span class="nc" id="L316">        else                  return 0xffff;            // end marker</span>
+    }
+
+    /* For efficiency's sake, the firstDifferingBit function compares entire
+     * characters first, and then considers the individual bits (once it finds
+     * two characters that do not match). Also, the least significant bits of
+     * an individual character are examined first. There are many Unicode
+     * alphabets where most (if not all) of the &quot;action&quot; occurs in the least
+     * significant bits.
+     *
+     * Notice that the very first character comparison excludes the
+     * least-significant bit. The firstDifferingBit function must never return
+     * zero; otherwise, a node would become created as a child to the head
+     * (sentinel) node that matches the bit-index value (zero) stored in the
+     * head node. This would violate the invariant that bit-index values
+     * increase as you descend into the trie.
+     */
+    private static int firstDifferingBit(String k1, String k2) {
+<span class="nc" id="L334">        int i = 0;</span>
+<span class="nc" id="L335">        int c1 = safeCharAt(k1, 0) &amp; ~1;</span>
+<span class="nc" id="L336">        int c2 = safeCharAt(k2, 0) &amp; ~1;</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (c1 == c2) {</span>
+<span class="nc" id="L338">            i = 1;</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">            while (safeCharAt(k1, i) == safeCharAt(k2, i)) i++;</span>
+<span class="nc" id="L340">            c1 = safeCharAt(k1, i);</span>
+<span class="nc" id="L341">            c2 = safeCharAt(k2, i);</span>
+        }
+<span class="nc" id="L343">        int b = 0;</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        while (((c1 &gt;&gt;&gt; b) &amp; 1) == ((c2 &gt;&gt;&gt; b) &amp; 1)) b++;</span>
+<span class="nc" id="L345">        return i * 16 + b;</span>
+    }
+
+    /**
+     * Unit tests the {@code PatriciaSET} data type.
+     * This test fixture runs a series of tests on a randomly generated dataset.
+     * You may specify up to two integer parameters on the command line. The
+     * first parameter indicates the size of the dataset. The second parameter
+     * controls the number of passes (a new random dataset becomes generated at
+     * the start of each pass).
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L359">        PatriciaSET set = new PatriciaSET();</span>
+<span class="nc" id="L360">        int limitItem = 1000000;</span>
+<span class="nc" id="L361">        int limitPass = 1;</span>
+<span class="nc" id="L362">        int countPass = 0;</span>
+<span class="nc" id="L363">        boolean ok = true;</span>
+
+<span class="nc bnc" id="L365" title="All 2 branches missed.">        if (args.length &gt; 0) limitItem = Integer.parseInt(args[0]);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (args.length &gt; 1) limitPass = Integer.parseInt(args[1]);</span>
+
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        do {</span>
+<span class="nc" id="L369">            String[] a = new String[limitItem];</span>
+
+<span class="nc" id="L371">            StdOut.printf(&quot;Creating dataset (%d items)...\n&quot;, limitItem);</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">            for (int i = 0; i &lt; limitItem; i++)</span>
+<span class="nc" id="L373">                a[i] = Integer.toString(i, 16);</span>
+
+<span class="nc" id="L375">            StdOut.printf(&quot;Shuffling...\n&quot;);</span>
+<span class="nc" id="L376">            StdRandom.shuffle(a);</span>
+
+<span class="nc" id="L378">            StdOut.printf(&quot;Adding (%d items)...\n&quot;, limitItem);</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">            for (int i = 0; i &lt; limitItem; i++)</span>
+<span class="nc" id="L380">                set.add(a[i]);</span>
+
+<span class="nc" id="L382">            int countItems = 0;</span>
+<span class="nc" id="L383">            StdOut.printf(&quot;Iterating...\n&quot;);</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">            for (String key : set) countItems++;</span>
+<span class="nc" id="L385">            StdOut.printf(&quot;%d items iterated\n&quot;, countItems);</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">            if (countItems != limitItem)  ok = false;</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">            if (countItems != set.size()) ok = false;</span>
+
+<span class="nc" id="L389">            StdOut.printf(&quot;Shuffling...\n&quot;);</span>
+<span class="nc" id="L390">            StdRandom.shuffle(a);</span>
+
+<span class="nc" id="L392">            int limitDelete = limitItem / 2;</span>
+<span class="nc" id="L393">            StdOut.printf(&quot;Deleting (%d items)...\n&quot;, limitDelete);</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">            for (int i = 0; i &lt; limitDelete; i++)</span>
+<span class="nc" id="L395">                set.delete(a[i]);</span>
+
+<span class="nc" id="L397">            countItems = 0;</span>
+<span class="nc" id="L398">            StdOut.printf(&quot;Iterating...\n&quot;);</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">            for (String key : set) countItems++;</span>
+<span class="nc" id="L400">            StdOut.printf(&quot;%d items iterated\n&quot;, countItems);</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">            if (countItems != limitItem - limitDelete) ok = false;</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">            if (countItems != set.size())              ok = false;</span>
+
+<span class="nc" id="L404">            int countDelete = 0;</span>
+<span class="nc" id="L405">            int countRemain = 0;</span>
+<span class="nc" id="L406">            StdOut.printf(&quot;Checking...\n&quot;);</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">            for (int i = 0; i &lt; limitItem; i++) {</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">                if (i &lt; limitDelete) {</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">                    if (!set.contains(a[i])) countDelete++;</span>
+<span class="nc" id="L410">                }</span>
+                else {
+<span class="nc bnc" id="L412" title="All 2 branches missed.">                    if (set.contains(a[i])) countRemain++;</span>
+                }
+            }
+<span class="nc" id="L415">            StdOut.printf(&quot;%d items found and %d (deleted) items missing\n&quot;,</span>
+<span class="nc" id="L416">                countRemain, countDelete);</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">            if (countRemain + countDelete != limitItem)  ok = false;</span>
+<span class="nc bnc" id="L418" title="All 2 branches missed.">            if (countRemain               != set.size()) ok = false;</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">            if (set.isEmpty())                           ok = false;</span>
+
+<span class="nc" id="L421">            StdOut.printf(&quot;Deleting the rest (%d items)...\n&quot;,</span>
+<span class="nc" id="L422">                limitItem - countDelete);</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">            for (int i = countDelete; i &lt; limitItem; i++)</span>
+<span class="nc" id="L424">                set.delete(a[i]);</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">            if (!set.isEmpty()) ok = false;</span>
+
+<span class="nc" id="L427">            countPass++;</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">            if (ok) StdOut.printf(&quot;PASS %d TESTS SUCCEEDED\n&quot;, countPass);</span>
+<span class="nc" id="L429">            else    StdOut.printf(&quot;PASS %d TESTS FAILED\n&quot;,    countPass);</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">        } while (ok &amp;&amp; countPass &lt; limitPass);</span>
+
+<span class="nc bnc" id="L432" title="All 2 branches missed.">        if (!ok) throw new java.lang.RuntimeException(&quot;TESTS FAILED&quot;);</span>
+<span class="nc" id="L433">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

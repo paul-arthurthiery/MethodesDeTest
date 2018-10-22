@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>SuffixArrayX.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">SuffixArrayX.java</span></div><h1>SuffixArrayX.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac SuffixArrayX.java
+ *  Execution:    java SuffixArrayX &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/63suffix/abra.txt
+ *  
+ *  A data type that computes the suffix array of a string using 3-way
+ *  radix quicksort.
+ *
+ *  % java SuffixArrayX &lt; abra.txt 
+ *    i ind lcp rnk  select
+ *  ---------------------------
+ *    0  11   -   0  !
+ *    1  10   0   1  A!
+ *    2   7   1   2  ABRA!
+ *    3   0   4   3  ABRACADABRA!
+ *    4   3   1   4  ACADABRA!
+ *    5   5   1   5  ADABRA!
+ *    6   8   0   6  BRA!
+ *    7   1   3   7  BRACADABRA!
+ *    8   4   0   8  CADABRA!
+ *    9   6   0   9  DABRA!
+ *   10   9   0  10  RA!
+ *   11   2   2  11  RACADABRA!
+ *
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code SuffixArrayX} class represents a suffix array of a string of
+ *  length &lt;em&gt;n&lt;/em&gt;.
+ *  It supports the &lt;em&gt;selecting&lt;/em&gt; the &lt;em&gt;i&lt;/em&gt;th smallest suffix,
+ *  getting the &lt;em&gt;index&lt;/em&gt; of the &lt;em&gt;i&lt;/em&gt;th smallest suffix,
+ *  computing the length of the &lt;em&gt;longest common prefix&lt;/em&gt; between the
+ *  &lt;em&gt;i&lt;/em&gt;th smallest suffix and the &lt;em&gt;i&lt;/em&gt;-1st smallest suffix,
+ *  and determining the &lt;em&gt;rank&lt;/em&gt; of a query string (which is the number
+ *  of suffixes strictly less than the query string).
+ *  &lt;p&gt;
+ *  This implementation uses 3-way radix quicksort to sort the array of suffixes.
+ *  For a simpler (but less efficient) implementations of the same API, see
+ *  {@link SuffixArray}.
+ *  The &lt;em&gt;index&lt;/em&gt; and &lt;em&gt;length&lt;/em&gt; operations takes constant time
+ *  in the worst case. The &lt;em&gt;lcp&lt;/em&gt; operation takes time proportional to the
+ *  length of the longest common prefix.
+ *  The &lt;em&gt;select&lt;/em&gt; operation takes time proportional
+ *  to the length of the suffix and should be used primarily for debugging.
+ *  &lt;p&gt;
+ *  This implementation uses '\0' as a sentinel and assumes that the charater
+ *  '\0' does not appear in the text.
+ *  &lt;p&gt;
+ *  In practice, this algorithm runs very fast. However, in the worst-case
+ *  it can be very poor (e.g., a string consisting of N copies of the same
+ *  character. We do not shuffle the array of suffixes before sorting because
+ *  shuffling is relatively expensive and a pathologial input for which 
+ *  the suffixes start out in a bad order (e.g., sorted) is likely to be
+ *  a bad input for this algorithm with or without the shuffle.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/63suffix&quot;&gt;Section 6.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ */
+<span class="nc bnc" id="L63" title="All 2 branches missed.">public class SuffixArrayX {</span>
+<span class="nc" id="L64">    private static final int CUTOFF =  5;   // cutoff to insertion sort (any value between 0 and 12)</span>
+
+    private final char[] text;
+    private final int[] index;   // index[i] = j means text.substring(j) is ith largest suffix
+    private final int n;         // number of characters in text
+
+    /**
+     * Initializes a suffix array for the given {@code text} string.
+     * @param text the input string
+     */
+<span class="nc" id="L74">    public SuffixArrayX(String text) {</span>
+<span class="nc" id="L75">        n = text.length();</span>
+<span class="nc" id="L76">        text = text + '\0';</span>
+<span class="nc" id="L77">        this.text = text.toCharArray();</span>
+<span class="nc" id="L78">        this.index = new int[n];</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L80">            index[i] = i;</span>
+
+<span class="nc" id="L82">        sort(0, n-1, 0);</span>
+<span class="nc" id="L83">    }</span>
+
+    // 3-way string quicksort lo..hi starting at dth character
+    private void sort(int lo, int hi, int d) { 
+
+        // cutoff to insertion sort for small subarrays
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (hi &lt;= lo + CUTOFF) {</span>
+<span class="nc" id="L90">            insertion(lo, hi, d);</span>
+<span class="nc" id="L91">            return;</span>
+        }
+
+<span class="nc" id="L94">        int lt = lo, gt = hi;</span>
+<span class="nc" id="L95">        char v = text[index[lo] + d];</span>
+<span class="nc" id="L96">        int i = lo + 1;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        while (i &lt;= gt) {</span>
+<span class="nc" id="L98">            char t = text[index[i] + d];</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if      (t &lt; v) exch(lt++, i++);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            else if (t &gt; v) exch(i, gt--);</span>
+<span class="nc" id="L101">            else            i++;</span>
+        }
+
+        // a[lo..lt-1] &lt; v = a[lt..gt] &lt; a[gt+1..hi]. 
+<span class="nc" id="L105">        sort(lo, lt-1, d);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (v &gt; 0) sort(lt, gt, d+1);</span>
+<span class="nc" id="L107">        sort(gt+1, hi, d);</span>
+<span class="nc" id="L108">    }</span>
+
+    // sort from a[lo] to a[hi], starting at the dth character
+    private void insertion(int lo, int hi, int d) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        for (int i = lo; i &lt;= hi; i++)</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(index[j], index[j-1], d); j--)</span>
+<span class="nc" id="L114">                exch(j, j-1);</span>
+<span class="nc" id="L115">    }</span>
+
+    // is text[i+d..n) &lt; text[j+d..n) ?
+    private boolean less(int i, int j, int d) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (i == j) return false;</span>
+<span class="nc" id="L120">        i = i + d;</span>
+<span class="nc" id="L121">        j = j + d;</span>
+<span class="nc bnc" id="L122" title="All 4 branches missed.">        while (i &lt; n &amp;&amp; j &lt; n) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            if (text[i] &lt; text[j]) return true;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (text[i] &gt; text[j]) return false;</span>
+<span class="nc" id="L125">            i++;</span>
+<span class="nc" id="L126">            j++;</span>
+        }
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        return i &gt; j;</span>
+    }
+
+    // exchange index[i] and index[j]
+    private void exch(int i, int j) {
+<span class="nc" id="L133">        int swap = index[i];</span>
+<span class="nc" id="L134">        index[i] = index[j];</span>
+<span class="nc" id="L135">        index[j] = swap;</span>
+<span class="nc" id="L136">    }</span>
+
+    /**
+     * Returns the length of the input string.
+     * @return the length of the input string
+     */
+    public int length() {
+<span class="nc" id="L143">        return n;</span>
+    }
+
+
+    /**
+     * Returns the index into the original string of the &lt;em&gt;i&lt;/em&gt;th smallest suffix.
+     * That is, {@code text.substring(sa.index(i))} is the &lt;em&gt;i&lt;/em&gt; smallest suffix.
+     * @param i an integer between 0 and &lt;em&gt;n&lt;/em&gt;-1
+     * @return the index into the original string of the &lt;em&gt;i&lt;/em&gt;th smallest suffix
+     * @throws java.lang.IllegalArgumentException unless {@code 0 &lt;=i &lt; n}
+     */
+    public int index(int i) {
+<span class="nc bnc" id="L155" title="All 4 branches missed.">        if (i &lt; 0 || i &gt;= n) throw new IllegalArgumentException();</span>
+<span class="nc" id="L156">        return index[i];</span>
+    }
+
+    /**
+     * Returns the length of the longest common prefix of the &lt;em&gt;i&lt;/em&gt;th
+     * smallest suffix and the &lt;em&gt;i&lt;/em&gt;-1st smallest suffix.
+     * @param i an integer between 1 and &lt;em&gt;n&lt;/em&gt;-1
+     * @return the length of the longest common prefix of the &lt;em&gt;i&lt;/em&gt;th
+     * smallest suffix and the &lt;em&gt;i&lt;/em&gt;-1st smallest suffix.
+     * @throws java.lang.IllegalArgumentException unless {@code 1 &lt;= i &lt; n}
+     */
+    public int lcp(int i) {
+<span class="nc bnc" id="L168" title="All 4 branches missed.">        if (i &lt; 1 || i &gt;= n) throw new IllegalArgumentException();</span>
+<span class="nc" id="L169">        return lcp(index[i], index[i-1]);</span>
+    }
+
+    // longest common prefix of text[i..n) and text[j..n)
+    private int lcp(int i, int j) {
+<span class="nc" id="L174">        int length = 0;</span>
+<span class="nc bnc" id="L175" title="All 4 branches missed.">        while (i &lt; n &amp;&amp; j &lt; n) {</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            if (text[i] != text[j]) return length;</span>
+<span class="nc" id="L177">            i++;</span>
+<span class="nc" id="L178">            j++;</span>
+<span class="nc" id="L179">            length++;</span>
+        }
+<span class="nc" id="L181">        return length;</span>
+    }
+
+    /**
+     * Returns the &lt;em&gt;i&lt;/em&gt;th smallest suffix as a string.
+     * @param i the index
+     * @return the &lt;em&gt;i&lt;/em&gt; smallest suffix as a string
+     * @throws java.lang.IllegalArgumentException unless {@code 0 &lt;= i &lt; n}
+     */
+    public String select(int i) {
+<span class="nc bnc" id="L191" title="All 4 branches missed.">        if (i &lt; 0 || i &gt;= n) throw new IllegalArgumentException();</span>
+<span class="nc" id="L192">        return new String(text, index[i], n - index[i]);</span>
+    }
+
+    /**
+     * Returns the number of suffixes strictly less than the {@code query} string.
+     * We note that {@code rank(select(i))} equals {@code i} for each {@code i}
+     * between 0 and &lt;em&gt;n&lt;/em&gt;-1. 
+     * @param query the query string
+     * @return the number of suffixes strictly less than {@code query}
+     */
+    public int rank(String query) {
+<span class="nc" id="L203">        int lo = 0, hi = n - 1;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        while (lo &lt;= hi) {</span>
+<span class="nc" id="L205">            int mid = lo + (hi - lo) / 2;</span>
+<span class="nc" id="L206">            int cmp = compare(query, index[mid]);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if      (cmp &lt; 0) hi = mid - 1;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">            else if (cmp &gt; 0) lo = mid + 1;</span>
+<span class="nc" id="L209">            else return mid;</span>
+        }
+<span class="nc" id="L211">        return lo;</span>
+    } 
+
+    // is query &lt; text[i..n) ?
+    private int compare(String query, int i) {
+<span class="nc" id="L216">        int m = query.length();</span>
+<span class="nc" id="L217">        int j = 0;</span>
+<span class="nc bnc" id="L218" title="All 4 branches missed.">        while (i &lt; n &amp;&amp; j &lt; m) {</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">            if (query.charAt(j) != text[i]) return query.charAt(j) - text[i];</span>
+<span class="nc" id="L220">            i++;</span>
+<span class="nc" id="L221">            j++;</span>
+
+        }
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (i &lt; n) return -1;</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (j &lt; m) return +1;</span>
+<span class="nc" id="L226">        return 0;</span>
+    }
+
+
+    /**
+     * Unit tests the {@code SuffixArrayx} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L236">        String s = StdIn.readAll().replaceAll(&quot;\n&quot;, &quot; &quot;).trim();</span>
+<span class="nc" id="L237">        SuffixArrayX suffix1 = new SuffixArrayX(s);</span>
+<span class="nc" id="L238">        SuffixArray suffix2 = new SuffixArray(s);</span>
+<span class="nc" id="L239">        boolean check = true;</span>
+<span class="nc bnc" id="L240" title="All 4 branches missed.">        for (int i = 0; check &amp;&amp; i &lt; s.length(); i++) {</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">            if (suffix1.index(i) != suffix2.index(i)) {</span>
+<span class="nc" id="L242">                StdOut.println(&quot;suffix1(&quot; + i + &quot;) = &quot; + suffix1.index(i));</span>
+<span class="nc" id="L243">                StdOut.println(&quot;suffix2(&quot; + i + &quot;) = &quot; + suffix2.index(i));</span>
+<span class="nc" id="L244">                String ith = &quot;\&quot;&quot; + s.substring(suffix1.index(i), Math.min(suffix1.index(i) + 50, s.length())) + &quot;\&quot;&quot;;</span>
+<span class="nc" id="L245">                String jth = &quot;\&quot;&quot; + s.substring(suffix2.index(i), Math.min(suffix2.index(i) + 50, s.length())) + &quot;\&quot;&quot;;</span>
+<span class="nc" id="L246">                StdOut.println(ith);</span>
+<span class="nc" id="L247">                StdOut.println(jth);</span>
+<span class="nc" id="L248">                check = false;</span>
+            }
+        }
+
+<span class="nc" id="L252">        StdOut.println(&quot;  i ind lcp rnk  select&quot;);</span>
+<span class="nc" id="L253">        StdOut.println(&quot;---------------------------&quot;);</span>
+
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        for (int i = 0; i &lt; s.length(); i++) {</span>
+<span class="nc" id="L256">            int index = suffix2.index(i);</span>
+<span class="nc" id="L257">            String ith = &quot;\&quot;&quot; + s.substring(index, Math.min(index + 50, s.length())) + &quot;\&quot;&quot;;</span>
+<span class="nc" id="L258">            int rank = suffix2.rank(s.substring(index));</span>
+<span class="nc bnc" id="L259" title="All 4 branches missed.">            assert s.substring(index).equals(suffix2.select(i));</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            if (i == 0) {</span>
+<span class="nc" id="L261">                StdOut.printf(&quot;%3d %3d %3s %3d  %s\n&quot;, i, index, &quot;-&quot;, rank, ith);</span>
+<span class="nc" id="L262">            }</span>
+            else {
+                // int lcp  = suffix.lcp(suffix2.index(i), suffix2.index(i-1));
+<span class="nc" id="L265">                int lcp  = suffix2.lcp(i);</span>
+<span class="nc" id="L266">                StdOut.printf(&quot;%3d %3d %3d %3d  %s\n&quot;, i, index, lcp, rank, ith);</span>
+            }
+        }
+<span class="nc" id="L269">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

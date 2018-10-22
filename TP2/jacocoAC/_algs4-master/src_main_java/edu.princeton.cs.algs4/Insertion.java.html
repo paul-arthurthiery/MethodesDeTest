@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Insertion.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Insertion.java</span></div><h1>Insertion.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Insertion.java
+ *  Execution:    java Insertion &lt; input.txt
+ *  Dependencies: StdOut.java StdIn.java
+ *  Data files:   https://algs4.cs.princeton.edu/21elementary/tiny.txt
+ *                https://algs4.cs.princeton.edu/21elementary/words3.txt
+ *  
+ *  Sorts a sequence of strings from standard input using insertion sort.
+ *
+ *  % more tiny.txt
+ *  S O R T E X A M P L E
+ *
+ *  % java Insertion &lt; tiny.txt
+ *  A E E L M O P R S T X                 [ one string per line ]
+ *
+ *  % more words3.txt
+ *  bed bug dad yes zoo ... all bad yet
+ *
+ *  % java Insertion &lt; words3.txt
+ *  all bad bed bug dad ... yes yet zoo   [ one string per line ]
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.util.Comparator;
+
+/**
+ *  The {@code Insertion} class provides static methods for sorting an
+ *  array using insertion sort.
+ *  &lt;p&gt;
+ *  This implementation makes ~ 1/2 n^2 compares and exchanges in
+ *  the worst case, so it is not suitable for sorting large arbitrary arrays.
+ *  More precisely, the number of exchanges is exactly equal to the number
+ *  of inversions. So, for example, it sorts a partially-sorted array
+ *  in linear time.
+ *  &lt;p&gt;
+ *  The sorting algorithm is stable and uses O(1) extra memory.
+ *  &lt;p&gt;
+ *  See &lt;a href=&quot;https://algs4.cs.princeton.edu/21elementary/InsertionPedantic.java.html&quot;&gt;InsertionPedantic.java&lt;/a&gt;
+ *  for a version that eliminates the compiler warning.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/21elementary&quot;&gt;Section 2.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L49" title="All 2 branches missed.">public class Insertion {</span>
+
+    // This class should not be instantiated.
+<span class="nc" id="L52">    private Insertion() { }</span>
+
+    /**
+     * Rearranges the array in ascending order, using the natural order.
+     * @param a the array to be sorted
+     */
+    public static void sort(Comparable[] a) {
+<span class="nc" id="L59">        int n = a.length;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L61" title="All 4 branches missed.">            for (int j = i; j &gt; 0 &amp;&amp; less(a[j], a[j-1]); j--) {</span>
+<span class="nc" id="L62">                exch(a, j, j-1);</span>
+            }
+<span class="nc bnc" id="L64" title="All 4 branches missed.">            assert isSorted(a, 0, i);</span>
+        }
+<span class="nc bnc" id="L66" title="All 4 branches missed.">        assert isSorted(a);</span>
+<span class="nc" id="L67">    }</span>
+
+    /**
+     * Rearranges the subarray a[lo..hi) in ascending order, using the natural order.
+     * @param a the array to be sorted
+     * @param lo left endpoint (inclusive)
+     * @param hi right endpoint (exclusive)
+     */
+    public static void sort(Comparable[] a, int lo, int hi) {
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        for (int i = lo; i &lt; hi; i++) {</span>
+<span class="nc bnc" id="L77" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(a[j], a[j-1]); j--) {</span>
+<span class="nc" id="L78">                exch(a, j, j-1);</span>
+            }
+        }
+<span class="nc bnc" id="L81" title="All 4 branches missed.">        assert isSorted(a, lo, hi);</span>
+<span class="nc" id="L82">    }</span>
+
+    /**
+     * Rearranges the array in ascending order, using a comparator.
+     * @param a the array
+     * @param comparator the comparator specifying the order
+     */
+    public static void sort(Object[] a, Comparator comparator) {
+<span class="nc" id="L90">        int n = a.length;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L92" title="All 4 branches missed.">            for (int j = i; j &gt; 0 &amp;&amp; less(a[j], a[j-1], comparator); j--) {</span>
+<span class="nc" id="L93">                exch(a, j, j-1);</span>
+            }
+<span class="nc bnc" id="L95" title="All 4 branches missed.">            assert isSorted(a, 0, i, comparator);</span>
+        }
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        assert isSorted(a, comparator);</span>
+<span class="nc" id="L98">    }</span>
+
+    /**
+     * Rearranges the subarray a[lo..hi) in ascending order, using a comparator.
+     * @param a the array
+     * @param lo left endpoint (inclusive)
+     * @param hi right endpoint (exclusive)
+     * @param comparator the comparator specifying the order
+     */
+    public static void sort(Object[] a, int lo, int hi, Comparator comparator) {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        for (int i = lo; i &lt; hi; i++) {</span>
+<span class="nc bnc" id="L109" title="All 4 branches missed.">            for (int j = i; j &gt; lo &amp;&amp; less(a[j], a[j-1], comparator); j--) {</span>
+<span class="nc" id="L110">                exch(a, j, j-1);</span>
+            }
+        }
+<span class="nc bnc" id="L113" title="All 4 branches missed.">        assert isSorted(a, lo, hi, comparator);</span>
+<span class="nc" id="L114">    }</span>
+
+
+    // return a permutation that gives the elements in a[] in ascending order
+    // do not change the original array a[]
+    /**
+     * Returns a permutation that gives the elements in the array in ascending order.
+     * @param a the array
+     * @return a permutation {@code p[]} such that {@code a[p[0]]}, {@code a[p[1]]},
+     *    ..., {@code a[p[n-1]]} are in ascending order
+     */
+    public static int[] indexSort(Comparable[] a) {
+<span class="nc" id="L126">        int n = a.length;</span>
+<span class="nc" id="L127">        int[] index = new int[n];</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L129">            index[i] = i;</span>
+
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc bnc" id="L132" title="All 4 branches missed.">            for (int j = i; j &gt; 0 &amp;&amp; less(a[index[j]], a[index[j-1]]); j--)</span>
+<span class="nc" id="L133">                exch(index, j, j-1);</span>
+
+<span class="nc" id="L135">        return index;</span>
+    }
+
+   /***************************************************************************
+    *  Helper sorting functions.
+    ***************************************************************************/
+    
+    // is v &lt; w ?
+    private static boolean less(Comparable v, Comparable w) {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        return v.compareTo(w) &lt; 0;</span>
+    }
+
+    // is v &lt; w ?
+    private static boolean less(Object v, Object w, Comparator comparator) {
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        return comparator.compare(v, w) &lt; 0;</span>
+    }
+        
+    // exchange a[i] and a[j]
+    private static void exch(Object[] a, int i, int j) {
+<span class="nc" id="L154">        Object swap = a[i];</span>
+<span class="nc" id="L155">        a[i] = a[j];</span>
+<span class="nc" id="L156">        a[j] = swap;</span>
+<span class="nc" id="L157">    }</span>
+
+    // exchange a[i] and a[j]  (for indirect sort)
+    private static void exch(int[] a, int i, int j) {
+<span class="nc" id="L161">        int swap = a[i];</span>
+<span class="nc" id="L162">        a[i] = a[j];</span>
+<span class="nc" id="L163">        a[j] = swap;</span>
+<span class="nc" id="L164">    }</span>
+
+   /***************************************************************************
+    *  Check if array is sorted - useful for debugging.
+    ***************************************************************************/
+    private static boolean isSorted(Comparable[] a) {
+<span class="nc" id="L170">        return isSorted(a, 0, a.length);</span>
+    }
+
+    // is the array a[lo..hi) sorted
+    private static boolean isSorted(Comparable[] a, int lo, int hi) {
+<span class="nc bnc" id="L175" title="All 2 branches missed.">        for (int i = lo+1; i &lt; hi; i++)</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            if (less(a[i], a[i-1])) return false;</span>
+<span class="nc" id="L177">        return true;</span>
+    }
+
+    private static boolean isSorted(Object[] a, Comparator comparator) {
+<span class="nc" id="L181">        return isSorted(a, 0, a.length, comparator);</span>
+    }
+
+    // is the array a[lo..hi) sorted
+    private static boolean isSorted(Object[] a, int lo, int hi, Comparator comparator) {
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        for (int i = lo+1; i &lt; hi; i++)</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (less(a[i], a[i-1], comparator)) return false;</span>
+<span class="nc" id="L188">        return true;</span>
+    }
+
+   // print array to standard output
+    private static void show(Comparable[] a) {
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        for (int i = 0; i &lt; a.length; i++) {</span>
+<span class="nc" id="L194">            StdOut.println(a[i]);</span>
+        }
+<span class="nc" id="L196">    }</span>
+
+    /**
+     * Reads in a sequence of strings from standard input; insertion sorts them;
+     * and prints them to standard output in ascending order.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L205">        String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L206">        Insertion.sort(a);</span>
+<span class="nc" id="L207">        show(a);</span>
+<span class="nc" id="L208">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

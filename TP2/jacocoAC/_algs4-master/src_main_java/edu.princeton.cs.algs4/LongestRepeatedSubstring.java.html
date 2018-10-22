@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LongestRepeatedSubstring.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LongestRepeatedSubstring.java</span></div><h1>LongestRepeatedSubstring.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LongestRepeatedSubstring.java
+ *  Execution:    java LongestRepeatedSubstring &lt; file.txt
+ *  Dependencies: StdIn.java SuffixArray.java
+ *  Data files:   https://algs4.cs.princeton.edu/63suffix/tale.txt
+ *                https://algs4.cs.princeton.edu/63suffix/tinyTale.txt
+ *                https://algs4.cs.princeton.edu/63suffix/mobydick.txt
+ *  
+ *  Reads a text string from stdin, replaces all consecutive blocks of
+ *  whitespace with a single space, and then computes the longest
+ *  repeated substring in that text using a suffix array.
+ * 
+ *  % java LongestRepeatedSubstring &lt; tinyTale.txt 
+ *  'st of times it was the '
+ *
+ *  % java LongestRepeatedSubstring &lt; mobydick.txt
+ *  ',- Such a funny, sporty, gamy, jesty, joky, hoky-poky lad, is the Ocean, oh! Th'
+ * 
+ *  % java LongestRepeatedSubstring
+ *  aaaaaaaaa
+ *  'aaaaaaaa'
+ *
+ *  % java LongestRepeatedSubstring
+ *  abcdefg
+ *  ''
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LongestRepeatedSubstring} class provides a {@link SuffixArray}
+ *  client for computing the longest repeated substring of a string that
+ *  appears at least twice. The repeated substrings may overlap (but must
+ *  be distinct).
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/63suffix&quot;&gt;Section 6.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  &lt;p&gt;
+ *  See also {@link LongestCommonSubstring}.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class LongestRepeatedSubstring {
+
+    // Do not instantiate.
+<span class="nc" id="L49">    private LongestRepeatedSubstring() { }</span>
+
+    /**
+     * Returns the longest common string of the two specified strings.
+     *
+     * @param  s one string
+     * @param  t the other string
+     * @return the longest common string that appears as a substring
+     */
+
+    /**
+     * Returns the longest repeated substring of the specified string.
+     *
+     * @param  text the string
+     * @return the longest repeated substring that appears in {@code text};
+     *         the empty string if no such string
+     */
+    public static String lrs(String text) {
+<span class="nc" id="L67">        int n = text.length();</span>
+<span class="nc" id="L68">        SuffixArray sa = new SuffixArray(text);</span>
+<span class="nc" id="L69">        String lrs = &quot;&quot;;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (int i = 1; i &lt; n; i++) {</span>
+<span class="nc" id="L71">            int length = sa.lcp(i);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if (length &gt; lrs.length()) {</span>
+                // lrs = sa.select(i).substring(0, length);
+<span class="nc" id="L74">                lrs = text.substring(sa.index(i), sa.index(i) + length);</span>
+            }
+        }
+<span class="nc" id="L77">        return lrs;</span>
+    }
+
+    /**
+     * Unit tests the {@code lrs()} method.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L86">        String text = StdIn.readAll().replaceAll(&quot;\\s+&quot;, &quot; &quot;);</span>
+<span class="nc" id="L87">        StdOut.println(&quot;'&quot; + lrs(text) + &quot;'&quot;);</span>
+<span class="nc" id="L88">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

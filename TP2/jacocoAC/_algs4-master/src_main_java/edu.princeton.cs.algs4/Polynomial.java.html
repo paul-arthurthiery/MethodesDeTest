@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Polynomial.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Polynomial.java</span></div><h1>Polynomial.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Polynomial.java
+ *  Execution:    java Polynomial
+ *
+ *  Polynomials with integer coefficients.
+ *
+ *  % java Polynomial
+ *  zero(x)     = 0
+ *  p(x)        = 4x^3 + 3x^2 + 2x + 1
+ *  q(x)        = 3x^2 + 5
+ *  p(x) + q(x) = 4x^3 + 6x^2 + 2x + 6
+ *  p(x) * q(x) = 12x^5 + 9x^4 + 26x^3 + 18x^2 + 10x + 5
+ *  p(q(x))     = 108x^6 + 567x^4 + 996x^2 + 586
+ *  p(x) - p(x) = 0
+ *  0 - p(x)    = -4x^3 - 3x^2 - 2x - 1
+ *  p(3)        = 142
+ *  p'(x)       = 12x^2 + 6x + 2
+ *  p''(x)      = 24x + 6
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Polynomial} class represents a polynomial with integer
+ *  coefficients.
+ *  Polynomials are immutable: their values cannot be changed after they
+ *  are created.
+ *  It includes methods for addition, subtraction, multiplication, composition,
+ *  differentiation, and evaluation.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/99scientific&quot;&gt;Section 9.9&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Polynomial {
+    private int[] coef;   // coefficients p(x) = sum { coef[i] * x^i }
+    private int degree;   // degree of polynomial (-1 for the zero polynomial)
+
+    /**
+     * Initializes a new polynomial a x^b
+     * @param a the leading coefficient
+     * @param b the exponent
+     * @throws IllegalArgumentException if {@code b} is negative
+     */
+<span class="nc" id="L49">    public Polynomial(int a, int b) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (b &lt; 0) {</span>
+<span class="nc" id="L51">            throw new IllegalArgumentException(&quot;exponent cannot be negative: &quot; + b);</span>
+        }
+<span class="nc" id="L53">        coef = new int[b+1];</span>
+<span class="nc" id="L54">        coef[b] = a;</span>
+<span class="nc" id="L55">        reduce();</span>
+<span class="nc" id="L56">    }</span>
+
+    // pre-compute the degree of the polynomial, in case of leading zero coefficients
+    // (that is, the length of the array need not relate to the degree of the polynomial)
+    private void reduce() {
+<span class="nc" id="L61">        degree = -1;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        for (int i = coef.length - 1; i &gt;= 0; i--) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (coef[i] != 0) {</span>
+<span class="nc" id="L64">                degree = i;</span>
+<span class="nc" id="L65">                return;</span>
+            }
+        }
+<span class="nc" id="L68">    }</span>
+
+    /**
+     * Returns the degree of this polynomial.
+     * @return the degree of this polynomial, -1 for the zero polynomial.
+     */
+    public int degree() {
+<span class="nc" id="L75">        return degree;</span>
+    }
+
+    /**
+     * Returns the sum of this polynomial and the specified polynomial.
+     *
+     * @param  that the other polynomial
+     * @return the polynomial whose value is {@code (this(x) + that(x))}
+     */
+    public Polynomial plus(Polynomial that) {
+<span class="nc" id="L85">        Polynomial poly = new Polynomial(0, Math.max(this.degree, that.degree));</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (int i = 0; i &lt;= this.degree; i++) poly.coef[i] += this.coef[i];</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        for (int i = 0; i &lt;= that.degree; i++) poly.coef[i] += that.coef[i];</span>
+<span class="nc" id="L88">        poly.reduce();</span>
+<span class="nc" id="L89">        return poly;</span>
+    }
+
+    /**
+     * Returns the result of subtracting the specified polynomial
+     * from this polynomial.
+     *
+     * @param  that the other polynomial
+     * @return the polynomial whose value is {@code (this(x) - that(x))}
+     */
+    public Polynomial minus(Polynomial that) {
+<span class="nc" id="L100">        Polynomial poly = new Polynomial(0, Math.max(this.degree, that.degree));</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        for (int i = 0; i &lt;= this.degree; i++) poly.coef[i] += this.coef[i];</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        for (int i = 0; i &lt;= that.degree; i++) poly.coef[i] -= that.coef[i];</span>
+<span class="nc" id="L103">        poly.reduce();</span>
+<span class="nc" id="L104">        return poly;</span>
+    }
+
+    /**
+     * Returns the product of this polynomial and the specified polynomial.
+     * Takes time proportional to the product of the degrees.
+     * (Faster algorithms are known, e.g., via FFT.)
+     *
+     * @param  that the other polynomial
+     * @return the polynomial whose value is {@code (this(x) * that(x))}
+     */
+    public Polynomial times(Polynomial that) {
+<span class="nc" id="L116">        Polynomial poly = new Polynomial(0, this.degree + that.degree);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (int i = 0; i &lt;= this.degree; i++)</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            for (int j = 0; j &lt;= that.degree; j++)</span>
+<span class="nc" id="L119">                poly.coef[i+j] += (this.coef[i] * that.coef[j]);</span>
+<span class="nc" id="L120">        poly.reduce();</span>
+<span class="nc" id="L121">        return poly;</span>
+    }
+
+    /**
+     * Returns the composition of this polynomial and the specified
+     * polynomial.
+     * Takes time proportional to the product of the degrees.
+     * (Faster algorithms are known, e.g., via FFT.)
+     *
+     * @param  that the other polynomial
+     * @return the polynomial whose value is {@code (this(that(x)))}
+     */
+    public Polynomial compose(Polynomial that) {
+<span class="nc" id="L134">        Polynomial poly = new Polynomial(0, 0);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        for (int i = this.degree; i &gt;= 0; i--) {</span>
+<span class="nc" id="L136">            Polynomial term = new Polynomial(this.coef[i], 0);</span>
+<span class="nc" id="L137">            poly = term.plus(that.times(poly));</span>
+        }
+<span class="nc" id="L139">        return poly;</span>
+    }
+
+
+    /**       
+     * Compares this polynomial to the specified polynomial.
+     *       
+     * @param  other the other polynoimal
+     * @return {@code true} if this polynomial equals {@code other};
+     *         {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L155">        Polynomial that = (Polynomial) other;</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (this.degree != that.degree) return false;</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        for (int i = this.degree; i &gt;= 0; i--)</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (this.coef[i] != that.coef[i]) return false;</span>
+<span class="nc" id="L159">        return true;</span>
+    }
+
+    /**
+     * Returns the result of differentiating this polynomial.
+     *
+     * @return the polynomial whose value is {@code this'(x)}
+     */
+    public Polynomial differentiate() {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (degree == 0) return new Polynomial(0, 0);</span>
+<span class="nc" id="L169">        Polynomial poly = new Polynomial(0, degree - 1);</span>
+<span class="nc" id="L170">        poly.degree = degree - 1;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        for (int i = 0; i &lt; degree; i++)</span>
+<span class="nc" id="L172">            poly.coef[i] = (i + 1) * coef[i + 1];</span>
+<span class="nc" id="L173">        return poly;</span>
+    }
+
+    /**
+     * Returns the result of evaluating this polynomial at the point x.
+     *
+     * @param  x the point at which to evaluate the polynomial
+     * @return the integer whose value is {@code (this(x))}
+     */
+    public int evaluate(int x) {
+<span class="nc" id="L183">        int p = 0;</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        for (int i = degree; i &gt;= 0; i--)</span>
+<span class="nc" id="L185">            p = coef[i] + (x * p);</span>
+<span class="nc" id="L186">        return p;</span>
+    }
+
+    /**
+     * Compares two polynomials by degree, breaking ties by coefficient of leading term.
+     *
+     * @param  that the other point
+     * @return the value {@code 0} if this polynomial is equal to the argument
+     *         polynomial (precisely when {@code equals()} returns {@code true});
+     *         a negative integer if this polynomialt is less than the argument
+     *         polynomial; and a positive integer if this polynomial is greater than the
+     *         argument point
+     */
+    public int compareTo(Polynomial that) {
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (this.degree &lt; that.degree) return -1;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (this.degree &gt; that.degree) return +1;</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        for (int i = this.degree; i &gt;= 0; i--) {</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">            if (this.coef[i] &lt; that.coef[i]) return -1;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (this.coef[i] &gt; that.coef[i]) return +1;</span>
+        }
+<span class="nc" id="L206">        return 0;</span>
+    }
+
+    /**
+     * Return a string representation of this polynomial.
+     * @return a string representation of this polynomial in the format
+     *         4x^5 - 3x^2 + 11x + 5
+     */
+    @Override
+    public String toString() {
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if      (degree == -1) return &quot;0&quot;;</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        else if (degree ==  0) return &quot;&quot; + coef[0];</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        else if (degree ==  1) return coef[1] + &quot;x + &quot; + coef[0];</span>
+<span class="nc" id="L219">        String s = coef[degree] + &quot;x^&quot; + degree;</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (int i = degree - 1; i &gt;= 0; i--) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if      (coef[i] == 0) continue;</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">            else if (coef[i]  &gt; 0) s = s + &quot; + &quot; + (coef[i]);</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">            else if (coef[i]  &lt; 0) s = s + &quot; - &quot; + (-coef[i]);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">            if      (i == 1) s = s + &quot;x&quot;;</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">            else if (i &gt;  1) s = s + &quot;x^&quot; + i;</span>
+        }
+<span class="nc" id="L227">        return s;</span>
+    }
+
+    /**
+     * Unit tests the polynomial data type.
+     *
+     * @param args the command-line arguments (none)
+     */
+    public static void main(String[] args) { 
+<span class="nc" id="L236">        Polynomial zero = new Polynomial(0, 0);</span>
+
+<span class="nc" id="L238">        Polynomial p1   = new Polynomial(4, 3);</span>
+<span class="nc" id="L239">        Polynomial p2   = new Polynomial(3, 2);</span>
+<span class="nc" id="L240">        Polynomial p3   = new Polynomial(1, 0);</span>
+<span class="nc" id="L241">        Polynomial p4   = new Polynomial(2, 1);</span>
+<span class="nc" id="L242">        Polynomial p    = p1.plus(p2).plus(p3).plus(p4);   // 4x^3 + 3x^2 + 1</span>
+
+<span class="nc" id="L244">        Polynomial q1   = new Polynomial(3, 2);</span>
+<span class="nc" id="L245">        Polynomial q2   = new Polynomial(5, 0);</span>
+<span class="nc" id="L246">        Polynomial q    = q1.plus(q2);                     // 3x^2 + 5</span>
+
+
+<span class="nc" id="L249">        Polynomial r    = p.plus(q);</span>
+<span class="nc" id="L250">        Polynomial s    = p.times(q);</span>
+<span class="nc" id="L251">        Polynomial t    = p.compose(q);</span>
+<span class="nc" id="L252">        Polynomial u    = p.minus(p);</span>
+
+<span class="nc" id="L254">        StdOut.println(&quot;zero(x)     = &quot; + zero);</span>
+<span class="nc" id="L255">        StdOut.println(&quot;p(x)        = &quot; + p);</span>
+<span class="nc" id="L256">        StdOut.println(&quot;q(x)        = &quot; + q);</span>
+<span class="nc" id="L257">        StdOut.println(&quot;p(x) + q(x) = &quot; + r);</span>
+<span class="nc" id="L258">        StdOut.println(&quot;p(x) * q(x) = &quot; + s);</span>
+<span class="nc" id="L259">        StdOut.println(&quot;p(q(x))     = &quot; + t);</span>
+<span class="nc" id="L260">        StdOut.println(&quot;p(x) - p(x) = &quot; + u);</span>
+<span class="nc" id="L261">        StdOut.println(&quot;0 - p(x)    = &quot; + zero.minus(p));</span>
+<span class="nc" id="L262">        StdOut.println(&quot;p(3)        = &quot; + p.evaluate(3));</span>
+<span class="nc" id="L263">        StdOut.println(&quot;p'(x)       = &quot; + p.differentiate());</span>
+<span class="nc" id="L264">        StdOut.println(&quot;p''(x)      = &quot; + p.differentiate().differentiate());</span>
+<span class="nc" id="L265">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

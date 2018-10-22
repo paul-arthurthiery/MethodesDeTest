@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Topological.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Topological.java</span></div><h1>Topological.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Topological.java
+ *  Execution:    java  Topological filename.txt delimiter
+ *  Dependencies: Digraph.java DepthFirstOrder.java DirectedCycle.java
+ *                EdgeWeightedDigraph.java EdgeWeightedDirectedCycle.java
+ *                SymbolDigraph.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/jobs.txt
+ *
+ *  Compute topological ordering of a DAG or edge-weighted DAG.
+ *  Runs in O(E + V) time.
+ *
+ *  % java Topological jobs.txt &quot;/&quot;
+ *  Calculus
+ *  Linear Algebra
+ *  Introduction to CS
+ *  Advanced Programming
+ *  Algorithms
+ *  Theoretical CS
+ *  Artificial Intelligence
+ *  Robotics
+ *  Machine Learning
+ *  Neural Networks
+ *  Databases
+ *  Scientific Computing
+ *  Computational Biology
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Topological} class represents a data type for 
+ *  determining a topological order of a directed acyclic graph (DAG).
+ *  Recall, a digraph has a topological order if and only if it is a DAG.
+ *  The &lt;em&gt;hasOrder&lt;/em&gt; operation determines whether the digraph has
+ *  a topological order, and if so, the &lt;em&gt;order&lt;/em&gt; operation
+ *  returns one.
+ *  &lt;p&gt;
+ *  This implementation uses depth-first search.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;
+ *  (in the worst case),
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the &lt;em&gt;hasOrder&lt;/em&gt; and &lt;em&gt;rank&lt;/em&gt; operations takes constant time;
+ *  the &lt;em&gt;order&lt;/em&gt; operation takes time proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  See {@link DirectedCycle}, {@link DirectedCycleX}, and
+ *  {@link EdgeWeightedDirectedCycle} to compute a
+ *  directed cycle if the digraph is not a DAG.
+ *  See {@link TopologicalX} for a nonrecursive queue-based algorithm
+ *  to compute a topological order of a DAG.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Topological {
+    private Iterable&lt;Integer&gt; order;  // topological order
+    private int[] rank;               // rank[v] = rank of vertex v in order
+
+    /**
+     * Determines whether the digraph {@code G} has a topological order and, if so,
+     * finds such a topological order.
+     * @param G the digraph
+     */
+<span class="nc" id="L68">    public Topological(Digraph G) {</span>
+<span class="nc" id="L69">        DirectedCycle finder = new DirectedCycle(G);</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (!finder.hasCycle()) {</span>
+<span class="nc" id="L71">            DepthFirstOrder dfs = new DepthFirstOrder(G);</span>
+<span class="nc" id="L72">            order = dfs.reversePost();</span>
+<span class="nc" id="L73">            rank = new int[G.V()];</span>
+<span class="nc" id="L74">            int i = 0;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            for (int v : order)</span>
+<span class="nc" id="L76">                rank[v] = i++;</span>
+        }
+<span class="nc" id="L78">    }</span>
+
+    /**
+     * Determines whether the edge-weighted digraph {@code G} has a topological
+     * order and, if so, finds such an order.
+     * @param G the edge-weighted digraph
+     */
+<span class="nc" id="L85">    public Topological(EdgeWeightedDigraph G) {</span>
+<span class="nc" id="L86">        EdgeWeightedDirectedCycle finder = new EdgeWeightedDirectedCycle(G);</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (!finder.hasCycle()) {</span>
+<span class="nc" id="L88">            DepthFirstOrder dfs = new DepthFirstOrder(G);</span>
+<span class="nc" id="L89">            order = dfs.reversePost();</span>
+        }
+<span class="nc" id="L91">    }</span>
+
+    /**
+     * Returns a topological order if the digraph has a topologial order,
+     * and {@code null} otherwise.
+     * @return a topological order of the vertices (as an interable) if the
+     *    digraph has a topological order (or equivalently, if the digraph is a DAG),
+     *    and {@code null} otherwise
+     */
+    public Iterable&lt;Integer&gt; order() {
+<span class="nc" id="L101">        return order;</span>
+    }
+
+    /**
+     * Does the digraph have a topological order?
+     * @return {@code true} if the digraph has a topological order (or equivalently,
+     *    if the digraph is a DAG), and {@code false} otherwise
+     */
+    public boolean hasOrder() {
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        return order != null;</span>
+    }
+
+    /**
+     * Does the digraph have a topological order?
+     * @return {@code true} if the digraph has a topological order (or equivalently,
+     *    if the digraph is a DAG), and {@code false} otherwise
+     * @deprecated Replaced by {@link #hasOrder()}.
+     */
+    @Deprecated
+    public boolean isDAG() {
+<span class="nc" id="L121">        return hasOrder();</span>
+    }
+
+    /**
+     * The the rank of vertex {@code v} in the topological order;
+     * -1 if the digraph is not a DAG
+     *
+     * @param v the vertex
+     * @return the position of vertex {@code v} in a topological order
+     *    of the digraph; -1 if the digraph is not a DAG
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int rank(int v) {
+<span class="nc" id="L134">        validateVertex(v);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (hasOrder()) return rank[v];</span>
+<span class="nc" id="L136">        else            return -1;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L141">        int V = rank.length;</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L143">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L144">    }</span>
+
+    /**
+     * Unit tests the {@code Topological} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L152">        String filename  = args[0];</span>
+<span class="nc" id="L153">        String delimiter = args[1];</span>
+<span class="nc" id="L154">        SymbolDigraph sg = new SymbolDigraph(filename, delimiter);</span>
+<span class="nc" id="L155">        Topological topological = new Topological(sg.digraph());</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        for (int v : topological.order()) {</span>
+<span class="nc" id="L157">            StdOut.println(sg.nameOf(v));</span>
+        }
+<span class="nc" id="L159">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

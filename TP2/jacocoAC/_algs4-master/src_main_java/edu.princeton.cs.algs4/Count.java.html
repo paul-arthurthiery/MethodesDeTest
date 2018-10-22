@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Count.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Count.java</span></div><h1>Count.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Count.java
+ *  Execution:    java Count alpha &lt; input.txt
+ *  Dependencies: Alphabet.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/50strings/abra.txt
+ *                https://algs4.cs.princeton.edu/50strings/pi.txt
+ *
+ *  Create an alphabet specified on the command line, read in a 
+ *  sequence of characters over that alphabet (ignoring characters
+ *  not in the alphabet), computes the frequency of occurrence of
+ *  each character, and print out the results.
+ *
+ *  %  java Count ABCDR &lt; abra.txt 
+ *  A 5
+ *  B 2
+ *  C 1
+ *  D 1
+ *  R 2
+ *
+ *  % java Count 0123456789 &lt; pi.txt
+ *  0 99959
+ *  1 99757
+ *  2 100026
+ *  3 100230
+ *  4 100230
+ *  5 100359
+ *  6 99548
+ *  7 99800
+ *  8 99985
+ *  9 100106
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+
+/**
+ *  The {@code Count} class provides an {@link Alphabet} client for reading
+ *  in a piece of text and computing the frequency of occurrence of each
+ *  character over a given alphabet.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/55compress&quot;&gt;Section 5.5&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Count {
+
+    // Do not instantiate.
+<span class="nc" id="L52">    private Count() { }</span>
+
+    /**
+     * Reads in text from standard input; calculates the frequency of
+     * occurrence of each character over the alphabet specified as a
+     * commmand-line argument; and prints the frequencies to standard
+     * output.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L63">        Alphabet alphabet = new Alphabet(args[0]);</span>
+<span class="nc" id="L64">        final int R = alphabet.radix();</span>
+<span class="nc" id="L65">        int[] count = new int[R];</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        while (StdIn.hasNextChar()) {</span>
+<span class="nc" id="L67">            char c = StdIn.readChar();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (alphabet.contains(c))</span>
+<span class="nc" id="L69">                count[alphabet.toIndex(c)]++;</span>
+        }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        for (int c = 0; c &lt; R; c++)</span>
+<span class="nc" id="L72">            StdOut.println(alphabet.toChar(c) + &quot; &quot; + count[c]);</span>
+<span class="nc" id="L73">    }</span>
+}
+
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

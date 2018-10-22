@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>SymbolDigraph.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">SymbolDigraph.java</span></div><h1>SymbolDigraph.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac SymbolDigraph.java
+ *  Execution:    java SymbolDigraph
+ *  Dependencies: ST.java Digraph.java In.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/routes.txt
+ *  
+ *  %  java SymbolDigraph routes.txt &quot; &quot;
+ *  JFK
+ *     MCO
+ *     ATL
+ *     ORD
+ *  ATL
+ *     HOU
+ *     MCO
+ *  LAX
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code SymbolDigraph} class represents a digraph, where the
+ *  vertex names are arbitrary strings.
+ *  By providing mappings between string vertex names and integers,
+ *  it serves as a wrapper around the
+ *  {@link Digraph} data type, which assumes the vertex names are integers
+ *  between 0 and &lt;em&gt;V&lt;/em&gt; - 1.
+ *  It also supports initializing a symbol digraph from a file.
+ *  &lt;p&gt;
+ *  This implementation uses an {@link ST} to map from strings to integers,
+ *  an array to map from integers to strings, and a {@link Digraph} to store
+ *  the underlying graph.
+ *  The &lt;em&gt;indexOf&lt;/em&gt; and &lt;em&gt;contains&lt;/em&gt; operations take time 
+ *  proportional to log &lt;em&gt;V&lt;/em&gt;, where &lt;em&gt;V&lt;/em&gt; is the number of vertices.
+ *  The &lt;em&gt;nameOf&lt;/em&gt; operation takes constant time.
+ *  &lt;p&gt;
+ *  For additional documentation, see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class SymbolDigraph {
+    private ST&lt;String, Integer&gt; st;  // string -&gt; index
+    private String[] keys;           // index  -&gt; string
+    private Digraph graph;           // the underlying digraph
+
+    /**  
+     * Initializes a digraph from a file using the specified delimiter.
+     * Each line in the file contains
+     * the name of a vertex, followed by a list of the names
+     * of the vertices adjacent to that vertex, separated by the delimiter.
+     * @param filename the name of the file
+     * @param delimiter the delimiter between fields
+     */
+<span class="nc" id="L56">    public SymbolDigraph(String filename, String delimiter) {</span>
+<span class="nc" id="L57">        st = new ST&lt;String, Integer&gt;();</span>
+
+        // First pass builds the index by reading strings to associate
+        // distinct strings with an index
+<span class="nc" id="L61">        In in = new In(filename);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        while (in.hasNextLine()) {</span>
+<span class="nc" id="L63">            String[] a = in.readLine().split(delimiter);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            for (int i = 0; i &lt; a.length; i++) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                if (!st.contains(a[i]))</span>
+<span class="nc" id="L66">                    st.put(a[i], st.size());</span>
+            }
+        }
+
+        // inverted index to get string keys in an array
+<span class="nc" id="L71">        keys = new String[st.size()];</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (String name : st.keys()) {</span>
+<span class="nc" id="L73">            keys[st.get(name)] = name;</span>
+        }
+
+        // second pass builds the digraph by connecting first vertex on each
+        // line to all others
+<span class="nc" id="L78">        graph = new Digraph(st.size());</span>
+<span class="nc" id="L79">        in = new In(filename);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        while (in.hasNextLine()) {</span>
+<span class="nc" id="L81">            String[] a = in.readLine().split(delimiter);</span>
+<span class="nc" id="L82">            int v = st.get(a[0]);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            for (int i = 1; i &lt; a.length; i++) {</span>
+<span class="nc" id="L84">                int w = st.get(a[i]);</span>
+<span class="nc" id="L85">                graph.addEdge(v, w);</span>
+            }
+        }
+<span class="nc" id="L88">    }</span>
+
+    /**
+     * Does the digraph contain the vertex named {@code s}?
+     * @param s the name of a vertex
+     * @return {@code true} if {@code s} is the name of a vertex, and {@code false} otherwise
+     */
+    public boolean contains(String s) {
+<span class="nc" id="L96">        return st.contains(s);</span>
+    }
+
+    /**
+     * Returns the integer associated with the vertex named {@code s}.
+     * @param s the name of a vertex
+     * @return the integer (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) associated with the vertex named {@code s}
+     * @deprecated Replaced by {@link #indexOf(String)}.
+     */
+    @Deprecated
+    public int index(String s) {
+<span class="nc" id="L107">        return st.get(s);</span>
+    }
+
+    /**
+     * Returns the integer associated with the vertex named {@code s}.
+     * @param s the name of a vertex
+     * @return the integer (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) associated with the vertex named {@code s}
+     */
+    public int indexOf(String s) {
+<span class="nc" id="L116">        return st.get(s);</span>
+    }
+
+    /**
+     * Returns the name of the vertex associated with the integer {@code v}.
+     * @param  v the integer corresponding to a vertex (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) 
+     * @return the name of the vertex associated with the integer {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     * @deprecated Replaced by {@link #nameOf(int)}.
+     */
+    @Deprecated
+    public String name(int v) {
+<span class="nc" id="L128">        validateVertex(v);</span>
+<span class="nc" id="L129">        return keys[v];</span>
+    }
+
+    /**
+     * Returns the name of the vertex associated with the integer {@code v}.
+     * @param  v the integer corresponding to a vertex (between 0 and &lt;em&gt;V&lt;/em&gt; - 1) 
+     * @return the name of the vertex associated with the integer {@code v}
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public String nameOf(int v) {
+<span class="nc" id="L139">        validateVertex(v);</span>
+<span class="nc" id="L140">        return keys[v];</span>
+    }
+
+    /**
+     * Returns the digraph assoicated with the symbol graph. It is the client's responsibility
+     * not to mutate the digraph.
+     *
+     * @return the digraph associated with the symbol digraph
+     * @deprecated Replaced by {@link #digraph()}.
+     */
+    @Deprecated
+    public Digraph G() {
+<span class="nc" id="L152">        return graph;</span>
+    }
+
+    /**
+     * Returns the digraph assoicated with the symbol graph. It is the client's responsibility
+     * not to mutate the digraph.
+     *
+     * @return the digraph associated with the symbol digraph
+     */
+    public Digraph digraph() {
+<span class="nc" id="L162">        return graph;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L167">        int V = graph.V();</span>
+<span class="nc bnc" id="L168" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L169">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L170">    }</span>
+
+    /**
+     * Unit tests the {@code SymbolDigraph} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L178">        String filename  = args[0];</span>
+<span class="nc" id="L179">        String delimiter = args[1];</span>
+<span class="nc" id="L180">        SymbolDigraph sg = new SymbolDigraph(filename, delimiter);</span>
+<span class="nc" id="L181">        Digraph graph = sg.digraph();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        while (!StdIn.isEmpty()) {</span>
+<span class="nc" id="L183">            String t = StdIn.readLine();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            for (int v : graph.adj(sg.index(t))) {</span>
+<span class="nc" id="L185">                StdOut.println(&quot;   &quot; + sg.name(v));</span>
+            }
+        }
+<span class="nc" id="L188">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LSD.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LSD.java</span></div><h1>LSD.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LSD.java
+ *  Execution:    java LSD &lt; input.txt
+ *  Dependencies: StdIn.java StdOut.java 
+ *  Data files:   https://algs4.cs.princeton.edu/51radix/words3.txt
+ *
+ *  LSD radix sort
+ *
+ *    - Sort a String[] array of n extended ASCII strings (R = 256), each of length w.
+ *
+ *    - Sort an int[] array of n 32-bit integers, treating each integer as 
+ *      a sequence of w = 4 bytes (R = 256).
+ *
+ *  Uses extra space proportional to n + R.
+ *
+ *
+ *  % java LSD &lt; words3.txt
+ *  all
+ *  bad
+ *  bed
+ *  bug
+ *  dad
+ *  ...
+ *  yes
+ *  yet
+ *  zoo
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LSD} class provides static methods for sorting an
+ *  array of &lt;em&gt;w&lt;/em&gt;-character strings or 32-bit integers using LSD radix sort.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/51radix&quot;&gt;Section 5.1&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L43" title="All 2 branches missed.">public class LSD {</span>
+<span class="nc" id="L44">    private static final int BITS_PER_BYTE = 8;</span>
+
+    // do not instantiate
+<span class="nc" id="L47">    private LSD() { }</span>
+
+   /**  
+     * Rearranges the array of W-character strings in ascending order.
+     *
+     * @param a the array to be sorted
+     * @param w the number of characters per string
+     */
+    public static void sort(String[] a, int w) {
+<span class="nc" id="L56">        int n = a.length;</span>
+<span class="nc" id="L57">        int R = 256;   // extend ASCII alphabet size</span>
+<span class="nc" id="L58">        String[] aux = new String[n];</span>
+
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        for (int d = w-1; d &gt;= 0; d--) {</span>
+            // sort by key-indexed counting on dth character
+
+            // compute frequency counts
+<span class="nc" id="L64">            int[] count = new int[R+1];</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L66">                count[a[i].charAt(d) + 1]++;</span>
+
+            // compute cumulates
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            for (int r = 0; r &lt; R; r++)</span>
+<span class="nc" id="L70">                count[r+1] += count[r];</span>
+
+            // move data
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L74">                aux[count[a[i].charAt(d)]++] = a[i];</span>
+
+            // copy back
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L78">                a[i] = aux[i];</span>
+        }
+<span class="nc" id="L80">    }</span>
+
+   /**
+     * Rearranges the array of 32-bit integers in ascending order.
+     * This is about 2-3x faster than Arrays.sort().
+     *
+     * @param a the array to be sorted
+     */
+    public static void sort(int[] a) {
+<span class="nc" id="L89">        final int BITS = 32;                 // each int is 32 bits </span>
+<span class="nc" id="L90">        final int R = 1 &lt;&lt; BITS_PER_BYTE;    // each bytes is between 0 and 255</span>
+<span class="nc" id="L91">        final int MASK = R - 1;              // 0xFF</span>
+<span class="nc" id="L92">        final int w = BITS / BITS_PER_BYTE;  // each int is 4 bytes</span>
+
+<span class="nc" id="L94">        int n = a.length;</span>
+<span class="nc" id="L95">        int[] aux = new int[n];</span>
+
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        for (int d = 0; d &lt; w; d++) {         </span>
+
+            // compute frequency counts
+<span class="nc" id="L100">            int[] count = new int[R+1];</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {           </span>
+<span class="nc" id="L102">                int c = (a[i] &gt;&gt; BITS_PER_BYTE*d) &amp; MASK;</span>
+<span class="nc" id="L103">                count[c + 1]++;</span>
+            }
+
+            // compute cumulates
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            for (int r = 0; r &lt; R; r++)</span>
+<span class="nc" id="L108">                count[r+1] += count[r];</span>
+
+            // for most significant byte, 0x80-0xFF comes before 0x00-0x7F
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            if (d == w-1) {</span>
+<span class="nc" id="L112">                int shift1 = count[R] - count[R/2];</span>
+<span class="nc" id="L113">                int shift2 = count[R/2];</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                for (int r = 0; r &lt; R/2; r++)</span>
+<span class="nc" id="L115">                    count[r] += shift1;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">                for (int r = R/2; r &lt; R; r++)</span>
+<span class="nc" id="L117">                    count[r] -= shift2;</span>
+            }
+
+            // move data
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L122">                int c = (a[i] &gt;&gt; BITS_PER_BYTE*d) &amp; MASK;</span>
+<span class="nc" id="L123">                aux[count[c]++] = a[i];</span>
+            }
+
+            // copy back
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L128">                a[i] = aux[i];</span>
+        }
+<span class="nc" id="L130">    }</span>
+
+    /**
+     * Reads in a sequence of fixed-length strings from standard input;
+     * LSD radix sorts them;
+     * and prints them to standard output in ascending order.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L140">        String[] a = StdIn.readAllStrings();</span>
+<span class="nc" id="L141">        int n = a.length;</span>
+
+        // check that strings have fixed length
+<span class="nc" id="L144">        int w = a[0].length();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">            assert a[i].length() == w : &quot;Strings must have fixed length&quot;;</span>
+
+        // sort the strings
+<span class="nc" id="L149">        sort(a, w);</span>
+
+        // print results
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++)</span>
+<span class="nc" id="L153">            StdOut.println(a[i]);</span>
+<span class="nc" id="L154">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

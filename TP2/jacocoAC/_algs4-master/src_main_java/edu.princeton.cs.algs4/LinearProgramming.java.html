@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LinearProgramming.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LinearProgramming.java</span></div><h1>LinearProgramming.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LinearProgramming.java
+ *  Execution:    java LinearProgramming m n
+ *  Dependencies: StdOut.java
+ *
+ *  Given an m-by-n matrix A, an m-length vector b, and an
+ *  n-length vector c, solve the  LP { max cx : Ax &lt;= b, x &gt;= 0 }.
+ *  Assumes that b &gt;= 0 so that x = 0 is a basic feasible solution.
+ *
+ *  Creates an (m+1)-by-(n+m+1) simplex tableaux with the 
+ *  RHS in column m+n, the objective function in row m, and
+ *  slack variables in columns m through m+n-1.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LinearProgramming} class represents a data type for solving a
+ *  linear program of the form { max cx : Ax &amp;le; b, x &amp;ge; 0 }, where A is a m-by-n
+ *  matrix, b is an m-length vector, and c is an n-length vector. For simplicity,
+ *  we assume that A is of full rank and that b &amp;ge; 0 so that x = 0 is a basic
+ *  feasible soution.
+ *  &lt;p&gt;
+ *  The data type supplies methods for determining the optimal primal and
+ *  dual solutions.
+ *  &lt;p&gt;
+ *  This is a bare-bones implementation of the &lt;em&gt;simplex algorithm&lt;/em&gt;.
+ *  It uses Bland's rule to determing the entering and leaving variables.
+ *  It is not suitable for use on large inputs. It is also not robust
+ *  in the presence of floating-point roundoff error.
+ *  &lt;p&gt;
+ *  For additional documentation, see
+ *  &lt;a href=&quot;https://algs4.cs.princeton.edu/65reductions&quot;&gt;Section 6.5&lt;/a&gt;
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L40" title="All 2 branches missed.">public class LinearProgramming {</span>
+<span class="nc" id="L41">    private static final double EPSILON = 1.0E-10;</span>
+    private double[][] a;   // tableaux
+    private int m;          // number of constraints
+    private int n;          // number of original variables
+
+    private int[] basis;    // basis[i] = basic variable corresponding to row i
+                            // only needed to print out solution, not book
+
+    /**
+     * Determines an optimal solution to the linear program
+     * { max cx : Ax &amp;le; b, x &amp;ge; 0 }, where A is a m-by-n
+     * matrix, b is an m-length vector, and c is an n-length vector.
+     *
+     * @param  A the &lt;em&gt;m&lt;/em&gt;-by-&lt;em&gt;b&lt;/em&gt; matrix
+     * @param  b the &lt;em&gt;m&lt;/em&gt;-length RHS vector
+     * @param  c the &lt;em&gt;n&lt;/em&gt;-length cost vector
+     * @throws IllegalArgumentException unless {@code b[i] &gt;= 0} for each {@code i}
+     * @throws ArithmeticException if the linear program is unbounded
+     */ 
+<span class="nc" id="L60">    public LinearProgramming(double[][] A, double[] b, double[] c) {</span>
+<span class="nc" id="L61">        m = b.length;</span>
+<span class="nc" id="L62">        n = c.length;</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if (!(b[i] &gt;= 0)) throw new IllegalArgumentException(&quot;RHS must be nonnegative&quot;);</span>
+
+<span class="nc" id="L66">        a = new double[m+1][n+m+1];</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++)</span>
+<span class="nc" id="L69">                a[i][j] = A[i][j];</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc" id="L71">            a[i][n+i] = 1.0;</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++)</span>
+<span class="nc" id="L73">            a[m][j] = c[j];</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc" id="L75">            a[i][m+n] = b[i];</span>
+
+<span class="nc" id="L77">        basis = new int[m];</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc" id="L79">            basis[i] = n + i;</span>
+
+<span class="nc" id="L81">        solve();</span>
+
+        // check optimality conditions
+<span class="nc bnc" id="L84" title="All 4 branches missed.">        assert check(A, b, c);</span>
+<span class="nc" id="L85">    }</span>
+
+    // run simplex algorithm starting from initial BFS
+    private void solve() {
+<span class="nc" id="L89">        while (true) {</span>
+
+            // find entering column q
+<span class="nc" id="L92">            int q = bland();</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (q == -1) break;  // optimal</span>
+
+            // find leaving row p
+<span class="nc" id="L96">            int p = minRatioRule(q);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            if (p == -1) throw new ArithmeticException(&quot;Linear program is unbounded&quot;);</span>
+
+            // pivot
+<span class="nc" id="L100">            pivot(p, q);</span>
+
+            // update basis
+<span class="nc" id="L103">            basis[p] = q;</span>
+        }
+<span class="nc" id="L105">    }</span>
+
+    // lowest index of a non-basic column with a positive cost
+    private int bland() {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        for (int j = 0; j &lt; m+n; j++)</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (a[m][j] &gt; 0) return j;</span>
+<span class="nc" id="L111">        return -1;  // optimal</span>
+    }
+
+   // index of a non-basic column with most positive cost
+    private int dantzig() {
+<span class="nc" id="L116">        int q = 0;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (int j = 1; j &lt; m+n; j++)</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (a[m][j] &gt; a[m][q]) q = j;</span>
+
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (a[m][q] &lt;= 0) return -1;  // optimal</span>
+<span class="nc" id="L121">        else return q;</span>
+    }
+
+    // find row p using min ratio rule (-1 if no such row)
+    // (smallest such index if there is a tie)
+    private int minRatioRule(int q) {
+<span class="nc" id="L127">        int p = -1;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+            // if (a[i][q] &lt;= 0) continue;
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (a[i][q] &lt;= EPSILON) continue;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            else if (p == -1) p = i;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            else if ((a[i][m+n] / a[i][q]) &lt; (a[p][m+n] / a[p][q])) p = i;</span>
+        }
+<span class="nc" id="L134">        return p;</span>
+    }
+
+    // pivot on entry (p, q) using Gauss-Jordan elimination
+    private void pivot(int p, int q) {
+
+        // everything but row p and column q
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        for (int i = 0; i &lt;= m; i++)</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            for (int j = 0; j &lt;= m+n; j++)</span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">                if (i != p &amp;&amp; j != q) a[i][j] -= a[p][j] * a[i][q] / a[p][q];</span>
+
+        // zero out column q
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (int i = 0; i &lt;= m; i++)</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (i != p) a[i][q] = 0.0;</span>
+
+        // scale row p
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        for (int j = 0; j &lt;= m+n; j++)</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (j != q) a[p][j] /= a[p][q];</span>
+<span class="nc" id="L152">        a[p][q] = 1.0;</span>
+<span class="nc" id="L153">    }</span>
+
+    /**
+     * Returns the optimal value of this linear program.
+     *
+     * @return the optimal value of this linear program
+     *
+     */
+    public double value() {
+<span class="nc" id="L162">        return -a[m][m+n];</span>
+    }
+
+    /**
+     * Returns the optimal primal solution to this linear program.
+     *
+     * @return the optimal primal solution to this linear program
+     */
+    public double[] primal() {
+<span class="nc" id="L171">        double[] x = new double[n];</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">            if (basis[i] &lt; n) x[basis[i]] = a[i][m+n];</span>
+<span class="nc" id="L174">        return x;</span>
+    }
+
+    /**
+     * Returns the optimal dual solution to this linear program
+     *
+     * @return the optimal dual solution to this linear program
+     */
+    public double[] dual() {
+<span class="nc" id="L183">        double[] y = new double[m];</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc" id="L185">            y[i] = -a[m][n+i];</span>
+<span class="nc" id="L186">        return y;</span>
+    }
+
+
+    // is the solution primal feasible?
+    private boolean isPrimalFeasible(double[][] A, double[] b) {
+<span class="nc" id="L192">        double[] x = primal();</span>
+
+        // check that x &gt;= 0
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        for (int j = 0; j &lt; x.length; j++) {</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">            if (x[j] &lt; 0.0) {</span>
+<span class="nc" id="L197">                StdOut.println(&quot;x[&quot; + j + &quot;] = &quot; + x[j] + &quot; is negative&quot;);</span>
+<span class="nc" id="L198">                return false;</span>
+            }
+        }
+
+        // check that Ax &lt;= b
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L204">            double sum = 0.0;</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L206">                sum += A[i][j] * x[j];</span>
+            }
+<span class="nc bnc" id="L208" title="All 2 branches missed.">            if (sum &gt; b[i] + EPSILON) {</span>
+<span class="nc" id="L209">                StdOut.println(&quot;not primal feasible&quot;);</span>
+<span class="nc" id="L210">                StdOut.println(&quot;b[&quot; + i + &quot;] = &quot; + b[i] + &quot;, sum = &quot; + sum);</span>
+<span class="nc" id="L211">                return false;</span>
+            }
+        }
+<span class="nc" id="L214">        return true;</span>
+    }
+
+    // is the solution dual feasible?
+    private boolean isDualFeasible(double[][] A, double[] c) {
+<span class="nc" id="L219">        double[] y = dual();</span>
+
+        // check that y &gt;= 0
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        for (int i = 0; i &lt; y.length; i++) {</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">            if (y[i] &lt; 0.0) {</span>
+<span class="nc" id="L224">                StdOut.println(&quot;y[&quot; + i + &quot;] = &quot; + y[i] + &quot; is negative&quot;);</span>
+<span class="nc" id="L225">                return false;</span>
+            }
+        }
+
+        // check that yA &gt;= c
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L231">            double sum = 0.0;</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">            for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L233">                sum += A[i][j] * y[i];</span>
+            }
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            if (sum &lt; c[j] - EPSILON) {</span>
+<span class="nc" id="L236">                StdOut.println(&quot;not dual feasible&quot;);</span>
+<span class="nc" id="L237">                StdOut.println(&quot;c[&quot; + j + &quot;] = &quot; + c[j] + &quot;, sum = &quot; + sum);</span>
+<span class="nc" id="L238">                return false;</span>
+            }
+        }
+<span class="nc" id="L241">        return true;</span>
+    }
+
+    // check that optimal value = cx = yb
+    private boolean isOptimal(double[] b, double[] c) {
+<span class="nc" id="L246">        double[] x = primal();</span>
+<span class="nc" id="L247">        double[] y = dual();</span>
+<span class="nc" id="L248">        double value = value();</span>
+
+        // check that value = cx = yb
+<span class="nc" id="L251">        double value1 = 0.0;</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        for (int j = 0; j &lt; x.length; j++)</span>
+<span class="nc" id="L253">            value1 += c[j] * x[j];</span>
+<span class="nc" id="L254">        double value2 = 0.0;</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        for (int i = 0; i &lt; y.length; i++)</span>
+<span class="nc" id="L256">            value2 += y[i] * b[i];</span>
+<span class="nc bnc" id="L257" title="All 4 branches missed.">        if (Math.abs(value - value1) &gt; EPSILON || Math.abs(value - value2) &gt; EPSILON) {</span>
+<span class="nc" id="L258">            StdOut.println(&quot;value = &quot; + value + &quot;, cx = &quot; + value1 + &quot;, yb = &quot; + value2);</span>
+<span class="nc" id="L259">            return false;</span>
+        }
+
+<span class="nc" id="L262">        return true;</span>
+    }
+
+    private boolean check(double[][]A, double[] b, double[] c) {
+<span class="nc bnc" id="L266" title="All 6 branches missed.">        return isPrimalFeasible(A, b) &amp;&amp; isDualFeasible(A, c) &amp;&amp; isOptimal(b, c);</span>
+    }
+
+    // print tableaux
+    private void show() {
+<span class="nc" id="L271">        StdOut.println(&quot;m = &quot; + m);</span>
+<span class="nc" id="L272">        StdOut.println(&quot;n = &quot; + n);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (int i = 0; i &lt;= m; i++) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">            for (int j = 0; j &lt;= m+n; j++) {</span>
+<span class="nc" id="L275">                StdOut.printf(&quot;%7.2f &quot;, a[i][j]);</span>
+                // StdOut.printf(&quot;%10.7f &quot;, a[i][j]);
+            }
+<span class="nc" id="L278">            StdOut.println();</span>
+        }
+<span class="nc" id="L280">        StdOut.println(&quot;value = &quot; + value());</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">            if (basis[i] &lt; n) StdOut.println(&quot;x_&quot; + basis[i] + &quot; = &quot; + a[i][m+n]);</span>
+<span class="nc" id="L283">        StdOut.println();</span>
+<span class="nc" id="L284">    }</span>
+
+
+    private static void test(double[][] A, double[] b, double[] c) {
+        LinearProgramming lp;
+        try {
+<span class="nc" id="L290">            lp = new LinearProgramming(A, b, c);</span>
+<span class="nc" id="L291">        }</span>
+<span class="nc" id="L292">        catch (ArithmeticException e) {</span>
+<span class="nc" id="L293">            System.out.println(e);</span>
+<span class="nc" id="L294">            return;</span>
+        }
+
+<span class="nc" id="L297">        StdOut.println(&quot;value = &quot; + lp.value());</span>
+<span class="nc" id="L298">        double[] x = lp.primal();</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        for (int i = 0; i &lt; x.length; i++)</span>
+<span class="nc" id="L300">            StdOut.println(&quot;x[&quot; + i + &quot;] = &quot; + x[i]);</span>
+<span class="nc" id="L301">        double[] y = lp.dual();</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">        for (int j = 0; j &lt; y.length; j++)</span>
+<span class="nc" id="L303">            StdOut.println(&quot;y[&quot; + j + &quot;] = &quot; + y[j]);</span>
+<span class="nc" id="L304">    }</span>
+
+    private static void test1() {
+<span class="nc" id="L307">        double[][] A = {</span>
+<span class="nc" id="L308">            { -1,  1,  0 },</span>
+<span class="nc" id="L309">            {  1,  4,  0 },</span>
+<span class="nc" id="L310">            {  2,  1,  0 },</span>
+<span class="nc" id="L311">            {  3, -4,  0 },</span>
+<span class="nc" id="L312">            {  0,  0,  1 },</span>
+        };
+<span class="nc" id="L314">        double[] c = { 1, 1, 1 };</span>
+<span class="nc" id="L315">        double[] b = { 5, 45, 27, 24, 4 };</span>
+<span class="nc" id="L316">        test(A, b, c);</span>
+<span class="nc" id="L317">    }</span>
+
+
+    // x0 = 12, x1 = 28, opt = 800
+    private static void test2() {
+<span class="nc" id="L322">        double[] c = {  13.0,  23.0 };</span>
+<span class="nc" id="L323">        double[] b = { 480.0, 160.0, 1190.0 };</span>
+<span class="nc" id="L324">        double[][] A = {</span>
+<span class="nc" id="L325">            {  5.0, 15.0 },</span>
+<span class="nc" id="L326">            {  4.0,  4.0 },</span>
+<span class="nc" id="L327">            { 35.0, 20.0 },</span>
+        };
+<span class="nc" id="L329">        test(A, b, c);</span>
+<span class="nc" id="L330">    }</span>
+
+    // unbounded
+    private static void test3() {
+<span class="nc" id="L334">        double[] c = { 2.0, 3.0, -1.0, -12.0 };</span>
+<span class="nc" id="L335">        double[] b = {  3.0,   2.0 };</span>
+<span class="nc" id="L336">        double[][] A = {</span>
+<span class="nc" id="L337">            { -2.0, -9.0,  1.0,  9.0 },</span>
+<span class="nc" id="L338">            {  1.0,  1.0, -1.0, -2.0 },</span>
+        };
+<span class="nc" id="L340">        test(A, b, c);</span>
+<span class="nc" id="L341">    }</span>
+
+    // degenerate - cycles if you choose most positive objective function coefficient
+    private static void test4() {
+<span class="nc" id="L345">        double[] c = { 10.0, -57.0, -9.0, -24.0 };</span>
+<span class="nc" id="L346">        double[] b = {  0.0,   0.0,  1.0 };</span>
+<span class="nc" id="L347">        double[][] A = {</span>
+<span class="nc" id="L348">            { 0.5, -5.5, -2.5, 9.0 },</span>
+<span class="nc" id="L349">            { 0.5, -1.5, -0.5, 1.0 },</span>
+<span class="nc" id="L350">            { 1.0,  0.0,  0.0, 0.0 },</span>
+        };
+<span class="nc" id="L352">        test(A, b, c);</span>
+<span class="nc" id="L353">    }</span>
+
+
+    /**
+     * Unit tests the {@code LinearProgramming} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+
+<span class="nc" id="L363">        StdOut.println(&quot;----- test 1 --------------------&quot;);</span>
+<span class="nc" id="L364">        test1();</span>
+<span class="nc" id="L365">        StdOut.println();</span>
+
+<span class="nc" id="L367">        StdOut.println(&quot;----- test 2 --------------------&quot;);</span>
+<span class="nc" id="L368">        test2();</span>
+<span class="nc" id="L369">        StdOut.println();</span>
+
+<span class="nc" id="L371">        StdOut.println(&quot;----- test 3 --------------------&quot;);</span>
+<span class="nc" id="L372">        test3();</span>
+<span class="nc" id="L373">        StdOut.println();</span>
+
+<span class="nc" id="L375">        StdOut.println(&quot;----- test 4 --------------------&quot;);</span>
+<span class="nc" id="L376">        test4();</span>
+<span class="nc" id="L377">        StdOut.println();</span>
+
+<span class="nc" id="L379">        StdOut.println(&quot;----- test random ---------------&quot;);</span>
+<span class="nc" id="L380">        int m = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L381">        int n = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L382">        double[] c = new double[n];</span>
+<span class="nc" id="L383">        double[] b = new double[m];</span>
+<span class="nc" id="L384">        double[][] A = new double[m][n];</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        for (int j = 0; j &lt; n; j++)</span>
+<span class="nc" id="L386">            c[j] = StdRandom.uniform(1000);</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc" id="L388">            b[i] = StdRandom.uniform(1000);</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++)</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++)</span>
+<span class="nc" id="L391">                A[i][j] = StdRandom.uniform(100);</span>
+<span class="nc" id="L392">        LinearProgramming lp = new LinearProgramming(A, b, c);</span>
+<span class="nc" id="L393">        test(A, b, c);</span>
+<span class="nc" id="L394">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

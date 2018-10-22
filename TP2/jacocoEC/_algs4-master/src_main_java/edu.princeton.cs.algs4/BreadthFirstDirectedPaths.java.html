@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>BreadthFirstDirectedPaths.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">BreadthFirstDirectedPaths.java</span></div><h1>BreadthFirstDirectedPaths.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac BreadthFirstDirectedPaths.java
+ *  Execution:    java BreadthFirstDirectedPaths digraph.txt s
+ *  Dependencies: Digraph.java Queue.java Stack.java
+ *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
+ *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt
+ *
+ *  Run breadth-first search on a digraph.
+ *  Runs in O(E + V) time.
+ *
+ *  % java BreadthFirstDirectedPaths tinyDG.txt 3
+ *  3 to 0 (2):  3-&gt;2-&gt;0
+ *  3 to 1 (3):  3-&gt;2-&gt;0-&gt;1
+ *  3 to 2 (1):  3-&gt;2
+ *  3 to 3 (0):  3
+ *  3 to 4 (2):  3-&gt;5-&gt;4
+ *  3 to 5 (1):  3-&gt;5
+ *  3 to 6 (-):  not connected
+ *  3 to 7 (-):  not connected
+ *  3 to 8 (-):  not connected
+ *  3 to 9 (-):  not connected
+ *  3 to 10 (-):  not connected
+ *  3 to 11 (-):  not connected
+ *  3 to 12 (-):  not connected
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code BreadthDirectedFirstPaths} class represents a data type for finding
+ *  shortest paths (number of edges) from a source vertex &lt;em&gt;s&lt;/em&gt;
+ *  (or set of source vertices) to every other vertex in the digraph.
+ *  &lt;p&gt;
+ *  This implementation uses breadth-first search.
+ *  The constructor takes time proportional to &lt;em&gt;V&lt;/em&gt; + &lt;em&gt;E&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Each call to {@link #distTo(int)} and {@link #hasPathTo(int)} takes constant time;
+ *  each call to {@link #pathTo(int)} takes time proportional to the length
+ *  of the path.
+ *  It uses extra space (not including the digraph) proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/42digraph&quot;&gt;Section 4.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class BreadthFirstDirectedPaths {
+    private static final int INFINITY = Integer.MAX_VALUE;
+    private boolean[] marked;  // marked[v] = is there an s-&gt;v path?
+    private int[] edgeTo;      // edgeTo[v] = last edge on shortest s-&gt;v path
+    private int[] distTo;      // distTo[v] = length of shortest s-&gt;v path
+
+    /**
+     * Computes the shortest path from {@code s} and every other vertex in graph {@code G}.
+     * @param G the digraph
+     * @param s the source vertex
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+<span class="nc" id="L63">    public BreadthFirstDirectedPaths(Digraph G, int s) {</span>
+<span class="nc" id="L64">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L65">        distTo = new int[G.V()];</span>
+<span class="nc" id="L66">        edgeTo = new int[G.V()];</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L68">            distTo[v] = INFINITY;</span>
+<span class="nc" id="L69">        validateVertex(s);</span>
+<span class="nc" id="L70">        bfs(G, s);</span>
+<span class="nc" id="L71">    }</span>
+
+    /**
+     * Computes the shortest path from any one of the source vertices in {@code sources}
+     * to every other vertex in graph {@code G}.
+     * @param G the digraph
+     * @param sources the source vertices
+     * @throws IllegalArgumentException unless each vertex {@code v} in
+     *         {@code sources} satisfies {@code 0 &lt;= v &lt; V}
+     */
+<span class="nc" id="L81">    public BreadthFirstDirectedPaths(Digraph G, Iterable&lt;Integer&gt; sources) {</span>
+<span class="nc" id="L82">        marked = new boolean[G.V()];</span>
+<span class="nc" id="L83">        distTo = new int[G.V()];</span>
+<span class="nc" id="L84">        edgeTo = new int[G.V()];</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)</span>
+<span class="nc" id="L86">            distTo[v] = INFINITY;</span>
+<span class="nc" id="L87">        validateVertices(sources);</span>
+<span class="nc" id="L88">        bfs(G, sources);</span>
+<span class="nc" id="L89">    }</span>
+
+    // BFS from single source
+    private void bfs(Digraph G, int s) {
+<span class="nc" id="L93">        Queue&lt;Integer&gt; q = new Queue&lt;Integer&gt;();</span>
+<span class="nc" id="L94">        marked[s] = true;</span>
+<span class="nc" id="L95">        distTo[s] = 0;</span>
+<span class="nc" id="L96">        q.enqueue(s);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        while (!q.isEmpty()) {</span>
+<span class="nc" id="L98">            int v = q.dequeue();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                if (!marked[w]) {</span>
+<span class="nc" id="L101">                    edgeTo[w] = v;</span>
+<span class="nc" id="L102">                    distTo[w] = distTo[v] + 1;</span>
+<span class="nc" id="L103">                    marked[w] = true;</span>
+<span class="nc" id="L104">                    q.enqueue(w);</span>
+                }
+            }
+        }
+<span class="nc" id="L108">    }</span>
+
+    // BFS from multiple sources
+    private void bfs(Digraph G, Iterable&lt;Integer&gt; sources) {
+<span class="nc" id="L112">        Queue&lt;Integer&gt; q = new Queue&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (int s : sources) {</span>
+<span class="nc" id="L114">            marked[s] = true;</span>
+<span class="nc" id="L115">            distTo[s] = 0;</span>
+<span class="nc" id="L116">            q.enqueue(s);</span>
+        }
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        while (!q.isEmpty()) {</span>
+<span class="nc" id="L119">            int v = q.dequeue();</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            for (int w : G.adj(v)) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                if (!marked[w]) {</span>
+<span class="nc" id="L122">                    edgeTo[w] = v;</span>
+<span class="nc" id="L123">                    distTo[w] = distTo[v] + 1;</span>
+<span class="nc" id="L124">                    marked[w] = true;</span>
+<span class="nc" id="L125">                    q.enqueue(w);</span>
+                }
+            }
+        }
+<span class="nc" id="L129">    }</span>
+
+    /**
+     * Is there a directed path from the source {@code s} (or sources) to vertex {@code v}?
+     * @param v the vertex
+     * @return {@code true} if there is a directed path, {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public boolean hasPathTo(int v) {
+<span class="nc" id="L138">        validateVertex(v);</span>
+<span class="nc" id="L139">        return marked[v];</span>
+    }
+
+    /**
+     * Returns the number of edges in a shortest path from the source {@code s}
+     * (or sources) to vertex {@code v}?
+     * @param v the vertex
+     * @return the number of edges in a shortest path
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public int distTo(int v) {
+<span class="nc" id="L150">        validateVertex(v);</span>
+<span class="nc" id="L151">        return distTo[v];</span>
+    }
+
+    /**
+     * Returns a shortest path from {@code s} (or sources) to {@code v}, or
+     * {@code null} if no such path.
+     * @param v the vertex
+     * @return the sequence of vertices on a shortest path, as an Iterable
+     * @throws IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+     */
+    public Iterable&lt;Integer&gt; pathTo(int v) {
+<span class="nc" id="L162">        validateVertex(v);</span>
+
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (!hasPathTo(v)) return null;</span>
+<span class="nc" id="L165">        Stack&lt;Integer&gt; path = new Stack&lt;Integer&gt;();</span>
+        int x;
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        for (x = v; distTo[x] != 0; x = edgeTo[x])</span>
+<span class="nc" id="L168">            path.push(x);</span>
+<span class="nc" id="L169">        path.push(x);</span>
+<span class="nc" id="L170">        return path;</span>
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertex(int v) {
+<span class="nc" id="L175">        int V = marked.length;</span>
+<span class="nc bnc" id="L176" title="All 4 branches missed.">        if (v &lt; 0 || v &gt;= V)</span>
+<span class="nc" id="L177">            throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+<span class="nc" id="L178">    }</span>
+
+    // throw an IllegalArgumentException unless {@code 0 &lt;= v &lt; V}
+    private void validateVertices(Iterable&lt;Integer&gt; vertices) {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (vertices == null) {</span>
+<span class="nc" id="L183">            throw new IllegalArgumentException(&quot;argument is null&quot;);</span>
+        }
+<span class="nc" id="L185">        int V = marked.length;</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        for (int v : vertices) {</span>
+<span class="nc bnc" id="L187" title="All 4 branches missed.">            if (v &lt; 0 || v &gt;= V) {</span>
+<span class="nc" id="L188">                throw new IllegalArgumentException(&quot;vertex &quot; + v + &quot; is not between 0 and &quot; + (V-1));</span>
+            }
+        }
+<span class="nc" id="L191">    }</span>
+
+
+    /**
+     * Unit tests the {@code BreadthFirstDirectedPaths} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L200">        In in = new In(args[0]);</span>
+<span class="nc" id="L201">        Digraph G = new Digraph(in);</span>
+        // StdOut.println(G);
+
+<span class="nc" id="L204">        int s = Integer.parseInt(args[1]);</span>
+<span class="nc" id="L205">        BreadthFirstDirectedPaths bfs = new BreadthFirstDirectedPaths(G, s);</span>
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++) {</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">            if (bfs.hasPathTo(v)) {</span>
+<span class="nc" id="L209">                StdOut.printf(&quot;%d to %d (%d):  &quot;, s, v, bfs.distTo(v));</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                for (int x : bfs.pathTo(v)) {</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">                    if (x == s) StdOut.print(x);</span>
+<span class="nc" id="L212">                    else        StdOut.print(&quot;-&gt;&quot; + x);</span>
+                }
+<span class="nc" id="L214">                StdOut.println();</span>
+<span class="nc" id="L215">            }</span>
+
+            else {
+<span class="nc" id="L218">                StdOut.printf(&quot;%d to %d (-):  not connected\n&quot;, s, v);</span>
+            }
+
+        }
+<span class="nc" id="L222">    }</span>
+
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

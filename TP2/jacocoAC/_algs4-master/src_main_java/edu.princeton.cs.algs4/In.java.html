@@ -1,0 +1,820 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>In.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">In.java</span></div><h1>In.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac In.java
+ *  Execution:    java In   (basic test --- see source for required files)
+ *  Dependencies: none
+ *
+ *  Reads in data of various types from standard input, files, and URLs.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.Socket;
+// import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+import java.util.regex.Pattern;
+
+/**
+ *  &lt;i&gt;Input&lt;/i&gt;. This class provides methods for reading strings
+ *  and numbers from standard input, file input, URLs, and sockets. 
+ *  &lt;p&gt;
+ *  The Locale used is: language = English, country = US. This is consistent
+ *  with the formatting conventions with Java floating-point literals,
+ *  command-line arguments (via {@link Double#parseDouble(String)})
+ *  and standard output. 
+ *  &lt;p&gt;
+ *  For additional documentation, see 
+ *  &lt;a href=&quot;https://introcs.cs.princeton.edu/31datatype&quot;&gt;Section 3.1&lt;/a&gt; of
+ *  &lt;i&gt;Computer Science: An Interdisciplinary Approach&lt;/i&gt; 
+ *  by Robert Sedgewick and Kevin Wayne.
+ *  &lt;p&gt;
+ *  Like {@link Scanner}, reading a token also consumes preceding Java
+ *  whitespace, reading a full line consumes
+ *  the following end-of-line delimeter, while reading a character consumes
+ *  nothing extra. 
+ *  &lt;p&gt;
+ *  Whitespace is defined in {@link Character#isWhitespace(char)}. Newlines
+ *  consist of \n, \r, \r\n, and Unicode hex code points 0x2028, 0x2029, 0x0085;
+ *  see &lt;a href=&quot;http://www.docjar.com/html/api/java/util/Scanner.java.html&quot;&gt;
+ *  Scanner.java&lt;/a&gt; (NB: Java 6u23 and earlier uses only \r, \r, \r\n).
+ *
+ *  @author David Pritchard
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L56" title="All 2 branches missed.">public final class In {</span>
+    
+    ///// begin: section (1 of 2) of code duplicated from In to StdIn.
+    
+    // assume Unicode UTF-8 encoding
+    private static final String CHARSET_NAME = &quot;UTF-8&quot;;
+
+    // assume language = English, country = US for consistency with System.out.
+<span class="nc" id="L64">    private static final Locale LOCALE = Locale.US;</span>
+
+    // the default token separator; we maintain the invariant that this value 
+    // is held by the scanner's delimiter between calls
+<span class="nc" id="L68">    private static final Pattern WHITESPACE_PATTERN = Pattern.compile(&quot;\\p{javaWhitespace}+&quot;);</span>
+
+    // makes whitespace characters significant 
+<span class="nc" id="L71">    private static final Pattern EMPTY_PATTERN = Pattern.compile(&quot;&quot;);</span>
+
+    // used to read the entire input. source:
+    // http://weblogs.java.net/blog/pat/archive/2004/10/stupid_scanner_1.html
+<span class="nc" id="L75">    private static final Pattern EVERYTHING_PATTERN = Pattern.compile(&quot;\\A&quot;);</span>
+
+    //// end: section (1 of 2) of code duplicated from In to StdIn.
+
+    private Scanner scanner;
+
+   /**
+     * Initializes an input stream from standard input.
+     */
+<span class="nc" id="L84">    public In() {</span>
+<span class="nc" id="L85">        scanner = new Scanner(new BufferedInputStream(System.in), CHARSET_NAME);</span>
+<span class="nc" id="L86">        scanner.useLocale(LOCALE);</span>
+<span class="nc" id="L87">    }</span>
+
+   /**
+     * Initializes an input stream from a socket.
+     *
+     * @param  socket the socket
+     * @throws IllegalArgumentException if cannot open {@code socket}
+     * @throws IllegalArgumentException if {@code socket} is {@code null}
+     */
+<span class="nc" id="L96">    public In(Socket socket) {</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (socket == null) throw new IllegalArgumentException(&quot;socket argument is null&quot;);</span>
+        try {
+<span class="nc" id="L99">            InputStream is = socket.getInputStream();</span>
+<span class="nc" id="L100">            scanner = new Scanner(new BufferedInputStream(is), CHARSET_NAME);</span>
+<span class="nc" id="L101">            scanner.useLocale(LOCALE);</span>
+<span class="nc" id="L102">        }</span>
+<span class="nc" id="L103">        catch (IOException ioe) {</span>
+<span class="nc" id="L104">            throw new IllegalArgumentException(&quot;Could not open &quot; + socket, ioe);</span>
+        }
+<span class="nc" id="L106">    }</span>
+
+   /**
+     * Initializes an input stream from a URL.
+     *
+     * @param  url the URL
+     * @throws IllegalArgumentException if cannot open {@code url}
+     * @throws IllegalArgumentException if {@code url} is {@code null}
+     */
+<span class="nc" id="L115">    public In(URL url) {</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (url == null) throw new IllegalArgumentException(&quot;url argument is null&quot;);</span>
+        try {
+<span class="nc" id="L118">            URLConnection site = url.openConnection();</span>
+<span class="nc" id="L119">            InputStream is     = site.getInputStream();</span>
+<span class="nc" id="L120">            scanner            = new Scanner(new BufferedInputStream(is), CHARSET_NAME);</span>
+<span class="nc" id="L121">            scanner.useLocale(LOCALE);</span>
+<span class="nc" id="L122">        }</span>
+<span class="nc" id="L123">        catch (IOException ioe) {</span>
+<span class="nc" id="L124">            throw new IllegalArgumentException(&quot;Could not open &quot; + url, ioe);</span>
+        }
+<span class="nc" id="L126">    }</span>
+
+   /**
+     * Initializes an input stream from a file.
+     *
+     * @param  file the file
+     * @throws IllegalArgumentException if cannot open {@code file}
+     * @throws IllegalArgumentException if {@code file} is {@code null}
+     */
+<span class="nc" id="L135">    public In(File file) {</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (file == null) throw new IllegalArgumentException(&quot;file argument is null&quot;);</span>
+        try {
+            // for consistency with StdIn, wrap with BufferedInputStream instead of use
+            // file as argument to Scanner
+<span class="nc" id="L140">            FileInputStream fis = new FileInputStream(file);</span>
+<span class="nc" id="L141">            scanner = new Scanner(new BufferedInputStream(fis), CHARSET_NAME);</span>
+<span class="nc" id="L142">            scanner.useLocale(LOCALE);</span>
+<span class="nc" id="L143">        }</span>
+<span class="nc" id="L144">        catch (IOException ioe) {</span>
+<span class="nc" id="L145">            throw new IllegalArgumentException(&quot;Could not open &quot; + file, ioe);</span>
+        }
+<span class="nc" id="L147">    }</span>
+
+
+   /**
+     * Initializes an input stream from a filename or web page name.
+     *
+     * @param  name the filename or web page name
+     * @throws IllegalArgumentException if cannot open {@code name} as
+     *         a file or URL
+     * @throws IllegalArgumentException if {@code name} is {@code null}
+     */
+<span class="nc" id="L158">    public In(String name) {</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if (name == null) throw new IllegalArgumentException(&quot;argument is null&quot;);</span>
+        try {
+            // first try to read file from local file system
+<span class="nc" id="L162">            File file = new File(name);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">            if (file.exists()) {</span>
+                // for consistency with StdIn, wrap with BufferedInputStream instead of use
+                // file as argument to Scanner
+<span class="nc" id="L166">                FileInputStream fis = new FileInputStream(file);</span>
+<span class="nc" id="L167">                scanner = new Scanner(new BufferedInputStream(fis), CHARSET_NAME);</span>
+<span class="nc" id="L168">                scanner.useLocale(LOCALE);</span>
+<span class="nc" id="L169">                return;</span>
+            }
+
+            // next try for files included in jar
+<span class="nc" id="L173">            URL url = getClass().getResource(name);</span>
+
+            // try this as well
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            if (url == null) {</span>
+<span class="nc" id="L177">                url = getClass().getClassLoader().getResource(name);</span>
+            }
+
+            // or URL from web
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if (url == null) {</span>
+<span class="nc" id="L182">                url = new URL(name);</span>
+            }
+
+<span class="nc" id="L185">            URLConnection site = url.openConnection();</span>
+
+            // in order to set User-Agent, replace above line with these two
+            // HttpURLConnection site = (HttpURLConnection) url.openConnection();
+            // site.addRequestProperty(&quot;User-Agent&quot;, &quot;Mozilla/4.76&quot;);
+
+<span class="nc" id="L191">            InputStream is     = site.getInputStream();</span>
+<span class="nc" id="L192">            scanner            = new Scanner(new BufferedInputStream(is), CHARSET_NAME);</span>
+<span class="nc" id="L193">            scanner.useLocale(LOCALE);</span>
+<span class="nc" id="L194">        }</span>
+<span class="nc" id="L195">        catch (IOException ioe) {</span>
+<span class="nc" id="L196">            throw new IllegalArgumentException(&quot;Could not open &quot; + name, ioe);</span>
+        }
+<span class="nc" id="L198">    }</span>
+
+    /**
+     * Initializes an input stream from a given {@link Scanner} source; use with 
+     * {@code new Scanner(String)} to read from a string.
+     * &lt;p&gt;
+     * Note that this does not create a defensive copy, so the
+     * scanner will be mutated as you read on. 
+     *
+     * @param  scanner the scanner
+     * @throws IllegalArgumentException if {@code scanner} is {@code null}
+     */
+<span class="nc" id="L210">    public In(Scanner scanner) {</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (scanner == null) throw new IllegalArgumentException(&quot;scanner argument is null&quot;);</span>
+<span class="nc" id="L212">        this.scanner = scanner;</span>
+<span class="nc" id="L213">    }</span>
+
+    /**
+     * Returns true if this input stream exists.
+     *
+     * @return {@code true} if this input stream exists; {@code false} otherwise
+     */
+    public boolean exists()  {
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        return scanner != null;</span>
+    }
+    
+    ////  begin: section (2 of 2) of code duplicated from In to StdIn,
+    ////  with all methods changed from &quot;public&quot; to &quot;public static&quot;.
+
+   /**
+     * Returns true if input stream is empty (except possibly whitespace).
+     * Use this to know whether the next call to {@link #readString()}, 
+     * {@link #readDouble()}, etc will succeed.
+     *
+     * @return {@code true} if this input stream is empty (except possibly whitespace);
+     *         {@code false} otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        return !scanner.hasNext();</span>
+    }
+
+   /** 
+     * Returns true if this input stream has a next line.
+     * Use this method to know whether the
+     * next call to {@link #readLine()} will succeed.
+     * This method is functionally equivalent to {@link #hasNextChar()}.
+     *
+     * @return {@code true} if this input stream has more input (including whitespace);
+     *         {@code false} otherwise
+     */
+    public boolean hasNextLine() {
+<span class="nc" id="L249">        return scanner.hasNextLine();</span>
+    }
+
+    /**
+     * Returns true if this input stream has more input (including whitespace).
+     * Use this method to know whether the next call to {@link #readChar()} will succeed.
+     * This method is functionally equivalent to {@link #hasNextLine()}.
+     * 
+     * @return {@code true} if this input stream has more input (including whitespace);
+     *         {@code false} otherwise   
+     */
+    public boolean hasNextChar() {
+<span class="nc" id="L261">        scanner.useDelimiter(EMPTY_PATTERN);</span>
+<span class="nc" id="L262">        boolean result = scanner.hasNext();</span>
+<span class="nc" id="L263">        scanner.useDelimiter(WHITESPACE_PATTERN);</span>
+<span class="nc" id="L264">        return result;</span>
+    }
+
+
+   /**
+     * Reads and returns the next line in this input stream.
+     *
+     * @return the next line in this input stream; {@code null} if no such line
+     */
+    public String readLine() {
+        String line;
+        try {
+<span class="nc" id="L276">            line = scanner.nextLine();</span>
+<span class="nc" id="L277">        }</span>
+<span class="nc" id="L278">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L279">            line = null;</span>
+        }
+<span class="nc" id="L281">        return line;</span>
+    }
+
+    /**
+     * Reads and returns the next character in this input stream.
+     *
+     * @return the next {@code char} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     */
+    public char readChar() {
+<span class="nc" id="L291">        scanner.useDelimiter(EMPTY_PATTERN);</span>
+        try {
+<span class="nc" id="L293">            String ch = scanner.next();</span>
+<span class="nc bnc" id="L294" title="All 4 branches missed.">            assert ch.length() == 1 : &quot;Internal (Std)In.readChar() error!&quot;</span>
+                + &quot; Please contact the authors.&quot;;
+<span class="nc" id="L296">            scanner.useDelimiter(WHITESPACE_PATTERN);</span>
+<span class="nc" id="L297">            return ch.charAt(0);</span>
+        }
+<span class="nc" id="L299">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L300">            throw new NoSuchElementException(&quot;attempts to read a 'char' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }  
+
+
+   /**
+     * Reads and returns the remainder of this input stream, as a string.
+     *
+     * @return the remainder of this input stream, as a string
+     */
+    public String readAll() {
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (!scanner.hasNextLine())</span>
+<span class="nc" id="L313">            return &quot;&quot;;</span>
+
+<span class="nc" id="L315">        String result = scanner.useDelimiter(EVERYTHING_PATTERN).next();</span>
+        // not that important to reset delimeter, since now scanner is empty
+<span class="nc" id="L317">        scanner.useDelimiter(WHITESPACE_PATTERN); // but let's do it anyway</span>
+<span class="nc" id="L318">        return result;</span>
+    }
+
+
+   /**
+     * Reads the next token from this input stream and returns it as a {@code String}.
+     *
+     * @return the next {@code String} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     */
+    public String readString() {
+        try {
+<span class="nc" id="L330">            return scanner.next();</span>
+        }
+<span class="nc" id="L332">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L333">            throw new NoSuchElementException(&quot;attempts to read a 'String' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+   /**
+     * Reads the next token from this input stream, parses it as a {@code int},
+     * and returns the {@code int}.
+     *
+     * @return the next {@code int} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as an {@code int}
+     */
+    public int readInt() {
+        try {
+<span class="nc" id="L348">            return scanner.nextInt();</span>
+        }
+<span class="nc" id="L350">        catch (InputMismatchException e) {</span>
+<span class="nc" id="L351">            String token = scanner.next();</span>
+<span class="nc" id="L352">            throw new InputMismatchException(&quot;attempts to read an 'int' value from the input stream, &quot;</span>
+<span class="nc" id="L353">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L355">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L356">            throw new NoSuchElementException(&quot;attemps to read an 'int' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+   /**
+     * Reads the next token from this input stream, parses it as a {@code double},
+     * and returns the {@code double}.
+     *
+     * @return the next {@code double} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as a {@code double}
+     */
+    public double readDouble() {
+        try {
+<span class="nc" id="L371">            return scanner.nextDouble();</span>
+        }
+<span class="nc" id="L373">        catch (InputMismatchException e) {</span>
+<span class="nc" id="L374">            String token = scanner.next();</span>
+<span class="nc" id="L375">            throw new InputMismatchException(&quot;attempts to read a 'double' value from the input stream, &quot;</span>
+<span class="nc" id="L376">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L378">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L379">            throw new NoSuchElementException(&quot;attemps to read a 'double' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+   /**
+     * Reads the next token from this input stream, parses it as a {@code float},
+     * and returns the {@code float}.
+     *
+     * @return the next {@code float} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as a {@code float}
+     */
+    public float readFloat() {
+        try {
+<span class="nc" id="L394">            return scanner.nextFloat();</span>
+        }
+<span class="nc" id="L396">        catch (InputMismatchException e) {</span>
+<span class="nc" id="L397">            String token = scanner.next();</span>
+<span class="nc" id="L398">            throw new InputMismatchException(&quot;attempts to read a 'float' value from the input stream, &quot;</span>
+<span class="nc" id="L399">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L401">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L402">            throw new NoSuchElementException(&quot;attemps to read a 'float' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+   /**
+     * Reads the next token from this input stream, parses it as a {@code long},
+     * and returns the {@code long}.
+     *
+     * @return the next {@code long} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as a {@code long}
+     */
+    public long readLong() {
+        try {
+<span class="nc" id="L417">            return scanner.nextLong();</span>
+        }
+<span class="nc" id="L419">        catch (InputMismatchException e) {</span>
+<span class="nc" id="L420">            String token = scanner.next();</span>
+<span class="nc" id="L421">            throw new InputMismatchException(&quot;attempts to read a 'long' value from the input stream, &quot;</span>
+<span class="nc" id="L422">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L424">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L425">            throw new NoSuchElementException(&quot;attemps to read a 'long' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+   /**
+     * Reads the next token from this input stream, parses it as a {@code short},
+     * and returns the {@code short}.
+     *
+     * @return the next {@code short} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as a {@code short}
+     */
+    public short readShort() {
+        try {
+<span class="nc" id="L440">            return scanner.nextShort();</span>
+        }
+<span class="nc" id="L442">        catch (InputMismatchException e) {</span>
+<span class="nc" id="L443">            String token = scanner.next();</span>
+<span class="nc" id="L444">            throw new InputMismatchException(&quot;attempts to read a 'short' value from the input stream, &quot;</span>
+<span class="nc" id="L445">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L447">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L448">            throw new NoSuchElementException(&quot;attemps to read a 'short' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+   /**
+     * Reads the next token from this input stream, parses it as a {@code byte},
+     * and returns the {@code byte}.
+     * &lt;p&gt;
+     * To read binary data, use {@link BinaryIn}.
+     *
+     * @return the next {@code byte} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as a {@code byte}
+     */
+    public byte readByte() {
+        try {
+<span class="nc" id="L465">            return scanner.nextByte();</span>
+        }
+<span class="nc" id="L467">        catch (InputMismatchException e) {</span>
+<span class="nc" id="L468">            String token = scanner.next();</span>
+<span class="nc" id="L469">            throw new InputMismatchException(&quot;attempts to read a 'byte' value from the input stream, &quot;</span>
+<span class="nc" id="L470">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L472">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L473">            throw new NoSuchElementException(&quot;attemps to read a 'byte' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+    /**
+     * Reads the next token from this input stream, parses it as a {@code boolean}
+     * (interpreting either {@code &quot;true&quot;} or {@code &quot;1&quot;} as {@code true},
+     * and either {@code &quot;false&quot;} or {@code &quot;0&quot;} as {@code false}).
+     *
+     * @return the next {@code boolean} in this input stream
+     * @throws NoSuchElementException if the input stream is empty
+     * @throws InputMismatchException if the next token cannot be parsed as a {@code boolean}
+     */
+    public boolean readBoolean() {
+        try {
+<span class="nc" id="L489">            String token = readString();</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">            if (&quot;true&quot;.equalsIgnoreCase(token))  return true;</span>
+<span class="nc bnc" id="L491" title="All 2 branches missed.">            if (&quot;false&quot;.equalsIgnoreCase(token)) return false;</span>
+<span class="nc bnc" id="L492" title="All 2 branches missed.">            if (&quot;1&quot;.equals(token))               return true;</span>
+<span class="nc bnc" id="L493" title="All 2 branches missed.">            if (&quot;0&quot;.equals(token))               return false;</span>
+<span class="nc" id="L494">            throw new InputMismatchException(&quot;attempts to read a 'boolean' value from the input stream, &quot;</span>
+<span class="nc" id="L495">                                           + &quot;but the next token is \&quot;&quot; + token + &quot;\&quot;&quot;);</span>
+        }
+<span class="nc" id="L497">        catch (NoSuchElementException e) {</span>
+<span class="nc" id="L498">            throw new NoSuchElementException(&quot;attempts to read a 'boolean' value from the input stream, &quot;</span>
+                                           + &quot;but no more tokens are available&quot;);
+        }
+    }
+
+    /**
+     * Reads all remaining tokens from this input stream and returns them as
+     * an array of strings.
+     *
+     * @return all remaining tokens in this input stream, as an array of strings
+     */
+    public String[] readAllStrings() {
+        // we could use readAll.trim().split(), but that's not consistent
+        // since trim() uses characters 0x00..0x20 as whitespace
+<span class="nc" id="L512">        String[] tokens = WHITESPACE_PATTERN.split(readAll());</span>
+<span class="nc bnc" id="L513" title="All 4 branches missed.">        if (tokens.length == 0 || tokens[0].length() &gt; 0)</span>
+<span class="nc" id="L514">            return tokens;</span>
+<span class="nc" id="L515">        String[] decapitokens = new String[tokens.length-1];</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">        for (int i = 0; i &lt; tokens.length-1; i++)</span>
+<span class="nc" id="L517">            decapitokens[i] = tokens[i+1];</span>
+<span class="nc" id="L518">        return decapitokens;</span>
+    }
+
+    /**
+     * Reads all remaining lines from this input stream and returns them as
+     * an array of strings.
+     *
+     * @return all remaining lines in this input stream, as an array of strings
+     */
+    public String[] readAllLines() {
+<span class="nc" id="L528">        ArrayList&lt;String&gt; lines = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">        while (hasNextLine()) {</span>
+<span class="nc" id="L530">            lines.add(readLine());</span>
+        }
+<span class="nc" id="L532">        return lines.toArray(new String[lines.size()]);</span>
+    }
+
+
+    /**
+     * Reads all remaining tokens from this input stream, parses them as integers,
+     * and returns them as an array of integers.
+     *
+     * @return all remaining lines in this input stream, as an array of integers
+     */
+    public int[] readAllInts() {
+<span class="nc" id="L543">        String[] fields = readAllStrings();</span>
+<span class="nc" id="L544">        int[] vals = new int[fields.length];</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">        for (int i = 0; i &lt; fields.length; i++)</span>
+<span class="nc" id="L546">            vals[i] = Integer.parseInt(fields[i]);</span>
+<span class="nc" id="L547">        return vals;</span>
+    }
+
+    /**
+     * Reads all remaining tokens from this input stream, parses them as longs,
+     * and returns them as an array of longs.
+     *
+     * @return all remaining lines in this input stream, as an array of longs
+     */
+    public long[] readAllLongs() {
+<span class="nc" id="L557">        String[] fields = readAllStrings();</span>
+<span class="nc" id="L558">        long[] vals = new long[fields.length];</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">        for (int i = 0; i &lt; fields.length; i++)</span>
+<span class="nc" id="L560">            vals[i] = Long.parseLong(fields[i]);</span>
+<span class="nc" id="L561">        return vals;</span>
+    }
+
+    /**
+     * Reads all remaining tokens from this input stream, parses them as doubles,
+     * and returns them as an array of doubles.
+     *
+     * @return all remaining lines in this input stream, as an array of doubles
+     */
+    public double[] readAllDoubles() {
+<span class="nc" id="L571">        String[] fields = readAllStrings();</span>
+<span class="nc" id="L572">        double[] vals = new double[fields.length];</span>
+<span class="nc bnc" id="L573" title="All 2 branches missed.">        for (int i = 0; i &lt; fields.length; i++)</span>
+<span class="nc" id="L574">            vals[i] = Double.parseDouble(fields[i]);</span>
+<span class="nc" id="L575">        return vals;</span>
+    }
+    
+    ///// end: section (2 of 2) of code duplicated from In to StdIn */
+
+   /**
+     * Closes this input stream.
+     */
+    public void close() {
+<span class="nc" id="L584">        scanner.close();  </span>
+<span class="nc" id="L585">    }</span>
+
+    /**
+     * Reads all integers from a file and returns them as
+     * an array of integers.
+     *
+     * @param      filename the name of the file
+     * @return     the integers in the file
+     * @deprecated Replaced by {@code new In(filename)}.{@link #readAllInts()}.
+     */
+    @Deprecated
+    public static int[] readInts(String filename) {
+<span class="nc" id="L597">        return new In(filename).readAllInts();</span>
+    }
+
+   /**
+     * Reads all doubles from a file and returns them as
+     * an array of doubles.
+     *
+     * @param      filename the name of the file
+     * @return     the doubles in the file
+     * @deprecated Replaced by {@code new In(filename)}.{@link #readAllDoubles()}.
+     */
+    @Deprecated
+    public static double[] readDoubles(String filename) {
+<span class="nc" id="L610">        return new In(filename).readAllDoubles();</span>
+    }
+
+   /**
+     * Reads all strings from a file and returns them as
+     * an array of strings.
+     *
+     * @param      filename the name of the file
+     * @return     the strings in the file
+     * @deprecated Replaced by {@code new In(filename)}.{@link #readAllStrings()}.
+     */
+    @Deprecated
+    public static String[] readStrings(String filename) {
+<span class="nc" id="L623">        return new In(filename).readAllStrings();</span>
+    }
+
+    /**
+     * Reads all integers from standard input and returns them
+     * an array of integers.
+     *
+     * @return     the integers on standard input
+     * @deprecated Replaced by {@link StdIn#readAllInts()}.
+     */
+    @Deprecated
+    public static int[] readInts() {
+<span class="nc" id="L635">        return new In().readAllInts();</span>
+    }
+
+   /**
+     * Reads all doubles from standard input and returns them as
+     * an array of doubles.
+     *
+     * @return     the doubles on standard input
+     * @deprecated Replaced by {@link StdIn#readAllDoubles()}.
+     */
+    @Deprecated
+    public static double[] readDoubles() {
+<span class="nc" id="L647">        return new In().readAllDoubles();</span>
+    }
+
+   /**
+     * Reads all strings from standard input and returns them as
+     *  an array of strings.
+     *
+     * @return     the strings on standard input
+     * @deprecated Replaced by {@link StdIn#readAllStrings()}.
+     */
+    @Deprecated
+    public static String[] readStrings() {
+<span class="nc" id="L659">        return new In().readAllStrings();</span>
+    }
+    
+   /**
+     * Unit tests the {@code In} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+        In in;
+<span class="nc" id="L669">        String urlName = &quot;https://introcs.cs.princeton.edu/stdlib/InTest.txt&quot;;</span>
+
+        // read from a URL
+<span class="nc" id="L672">        System.out.println(&quot;readAll() from URL &quot; + urlName);</span>
+<span class="nc" id="L673">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L675">            in = new In(urlName);</span>
+<span class="nc" id="L676">            System.out.println(in.readAll());</span>
+<span class="nc" id="L677">        }</span>
+<span class="nc" id="L678">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L679">            System.out.println(e);</span>
+        }
+<span class="nc" id="L681">        System.out.println();</span>
+
+        // read one line at a time from URL
+<span class="nc" id="L684">        System.out.println(&quot;readLine() from URL &quot; + urlName);</span>
+<span class="nc" id="L685">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L687">            in = new In(urlName);</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L689">                String s = in.readLine();</span>
+<span class="nc" id="L690">                System.out.println(s);</span>
+            }
+<span class="nc" id="L692">        }</span>
+<span class="nc" id="L693">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L694">            System.out.println(e);</span>
+        }
+<span class="nc" id="L696">        System.out.println();</span>
+
+        // read one string at a time from URL
+<span class="nc" id="L699">        System.out.println(&quot;readString() from URL &quot; + urlName);</span>
+<span class="nc" id="L700">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L702">            in = new In(urlName);</span>
+<span class="nc bnc" id="L703" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L704">                String s = in.readString();</span>
+<span class="nc" id="L705">                System.out.println(s);</span>
+            }
+<span class="nc" id="L707">        }</span>
+<span class="nc" id="L708">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L709">            System.out.println(e);</span>
+        }
+<span class="nc" id="L711">        System.out.println();</span>
+
+
+        // read one line at a time from file in current directory
+<span class="nc" id="L715">        System.out.println(&quot;readLine() from current directory&quot;);</span>
+<span class="nc" id="L716">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L718">            in = new In(&quot;./InTest.txt&quot;);</span>
+<span class="nc bnc" id="L719" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L720">                String s = in.readLine();</span>
+<span class="nc" id="L721">                System.out.println(s);</span>
+            }
+<span class="nc" id="L723">        }</span>
+<span class="nc" id="L724">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L725">            System.out.println(e);</span>
+        }
+<span class="nc" id="L727">        System.out.println();</span>
+
+
+        // read one line at a time from file using relative path
+<span class="nc" id="L731">        System.out.println(&quot;readLine() from relative path&quot;);</span>
+<span class="nc" id="L732">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L734">            in = new In(&quot;../stdlib/InTest.txt&quot;);</span>
+<span class="nc bnc" id="L735" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L736">                String s = in.readLine();</span>
+<span class="nc" id="L737">                System.out.println(s);</span>
+            }
+<span class="nc" id="L739">        }</span>
+<span class="nc" id="L740">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L741">            System.out.println(e);</span>
+        }
+<span class="nc" id="L743">        System.out.println();</span>
+
+        // read one char at a time
+<span class="nc" id="L746">        System.out.println(&quot;readChar() from file&quot;);</span>
+<span class="nc" id="L747">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L749">            in = new In(&quot;InTest.txt&quot;);</span>
+<span class="nc bnc" id="L750" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L751">                char c = in.readChar();</span>
+<span class="nc" id="L752">                System.out.print(c);</span>
+            }
+<span class="nc" id="L754">        }</span>
+<span class="nc" id="L755">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L756">            System.out.println(e);</span>
+        }
+<span class="nc" id="L758">        System.out.println();</span>
+<span class="nc" id="L759">        System.out.println();</span>
+
+        // read one line at a time from absolute OS X / Linux path
+<span class="nc" id="L762">        System.out.println(&quot;readLine() from absolute OS X / Linux path&quot;);</span>
+<span class="nc" id="L763">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+<span class="nc" id="L764">        in = new In(&quot;/n/fs/introcs/www/java/stdlib/InTest.txt&quot;);</span>
+        try {
+<span class="nc bnc" id="L766" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L767">                String s = in.readLine();</span>
+<span class="nc" id="L768">                System.out.println(s);</span>
+            }
+<span class="nc" id="L770">        }</span>
+<span class="nc" id="L771">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L772">            System.out.println(e);</span>
+        }
+<span class="nc" id="L774">        System.out.println();</span>
+
+
+        // read one line at a time from absolute Windows path
+<span class="nc" id="L778">        System.out.println(&quot;readLine() from absolute Windows path&quot;);</span>
+<span class="nc" id="L779">        System.out.println(&quot;---------------------------------------------------------------------------&quot;);</span>
+        try {
+<span class="nc" id="L781">            in = new In(&quot;G:\\www\\introcs\\stdlib\\InTest.txt&quot;);</span>
+<span class="nc bnc" id="L782" title="All 2 branches missed.">            while (!in.isEmpty()) {</span>
+<span class="nc" id="L783">                String s = in.readLine();</span>
+<span class="nc" id="L784">                System.out.println(s);</span>
+            }
+<span class="nc" id="L786">            System.out.println();</span>
+<span class="nc" id="L787">        }</span>
+<span class="nc" id="L788">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L789">            System.out.println(e);</span>
+        }
+<span class="nc" id="L791">        System.out.println();</span>
+
+<span class="nc" id="L793">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>NFA.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorAC (2018-10-16 00:24:24)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">NFA.java</span></div><h1>NFA.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac NFA.java
+ *  Execution:    java NFA regexp text
+ *  Dependencies: Stack.java Bag.java Digraph.java DirectedDFS.java
+ *
+ *  % java NFA &quot;(A*B|AC)D&quot; AAAABD
+ *  true
+ *
+ *  % java NFA &quot;(A*B|AC)D&quot; AAAAC
+ *  false
+ *
+ *  % java NFA &quot;(a|(bc)*d)*&quot; abcbcd
+ *  true
+ *
+ *  % java NFA &quot;(a|(bc)*d)*&quot; abcbcbcdaaaabcbcdaaaddd
+ *  true
+ *
+ *  Remarks
+ *  -----------
+ *  The following features are not supported:
+ *    - The + operator
+ *    - Multiway or
+ *    - Metacharacters in the text
+ *    - Character classes.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code NFA} class provides a data type for creating a
+ *  &lt;em&gt;nondeterministic finite state automaton&lt;/em&gt; (NFA) from a regular
+ *  expression and testing whether a given string is matched by that regular
+ *  expression.
+ *  It supports the following operations: &lt;em&gt;concatenation&lt;/em&gt;,
+ *  &lt;em&gt;closure&lt;/em&gt;, &lt;em&gt;binary or&lt;/em&gt;, and &lt;em&gt;parentheses&lt;/em&gt;.
+ *  It does not support &lt;em&gt;mutiway or&lt;/em&gt;, &lt;em&gt;character classes&lt;/em&gt;,
+ *  &lt;em&gt;metacharacters&lt;/em&gt; (either in the text or pattern),
+ *  &lt;em&gt;capturing capabilities&lt;/em&gt;, &lt;em&gt;greedy&lt;/em&gt; or &lt;em&gt;relucantant&lt;/em&gt;
+ *  modifiers, and other features in industrial-strength implementations
+ *  such as {@link java.util.regex.Pattern} and {@link java.util.regex.Matcher}.
+ *  &lt;p&gt;
+ *  This implementation builds the NFA using a digraph and a stack
+ *  and simulates the NFA using digraph search (see the textbook for details).
+ *  The constructor takes time proportional to &lt;em&gt;m&lt;/em&gt;, where &lt;em&gt;m&lt;/em&gt;
+ *  is the number of characters in the regular expression.
+ *  The &lt;em&gt;recognizes&lt;/em&gt; method takes time proportional to &lt;em&gt;m n&lt;/em&gt;,
+ *  where &lt;em&gt;n&lt;/em&gt; is the number of characters in the text.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/54regexp&quot;&gt;Section 5.4&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L57" title="All 2 branches missed.">public class NFA { </span>
+
+    private Digraph graph;     // digraph of epsilon transitions
+    private String regexp;     // regular expression
+    private final int m;       // number of characters in regular expression
+
+    /**
+     * Initializes the NFA from the specified regular expression.
+     *
+     * @param  regexp the regular expression
+     */
+<span class="nc" id="L68">    public NFA(String regexp) {</span>
+<span class="nc" id="L69">        this.regexp = regexp;</span>
+<span class="nc" id="L70">        m = regexp.length();</span>
+<span class="nc" id="L71">        Stack&lt;Integer&gt; ops = new Stack&lt;Integer&gt;(); </span>
+<span class="nc" id="L72">        graph = new Digraph(m+1); </span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) { </span>
+<span class="nc" id="L74">            int lp = i; </span>
+<span class="nc bnc" id="L75" title="All 4 branches missed.">            if (regexp.charAt(i) == '(' || regexp.charAt(i) == '|') </span>
+<span class="nc" id="L76">                ops.push(i); </span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            else if (regexp.charAt(i) == ')') {</span>
+<span class="nc" id="L78">                int or = ops.pop(); </span>
+
+                // 2-way or operator
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                if (regexp.charAt(or) == '|') { </span>
+<span class="nc" id="L82">                    lp = ops.pop();</span>
+<span class="nc" id="L83">                    graph.addEdge(lp, or+1);</span>
+<span class="nc" id="L84">                    graph.addEdge(or, i);</span>
+<span class="nc" id="L85">                }</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                else if (regexp.charAt(or) == '(')</span>
+<span class="nc" id="L87">                    lp = or;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                else assert false;</span>
+            } 
+
+            // closure operator (uses 1-character lookahead)
+<span class="nc bnc" id="L92" title="All 4 branches missed.">            if (i &lt; m-1 &amp;&amp; regexp.charAt(i+1) == '*') { </span>
+<span class="nc" id="L93">                graph.addEdge(lp, i+1); </span>
+<span class="nc" id="L94">                graph.addEdge(i+1, lp); </span>
+            } 
+<span class="nc bnc" id="L96" title="All 6 branches missed.">            if (regexp.charAt(i) == '(' || regexp.charAt(i) == '*' || regexp.charAt(i) == ')') </span>
+<span class="nc" id="L97">                graph.addEdge(i, i+1);</span>
+        }
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (ops.size() != 0)</span>
+<span class="nc" id="L100">            throw new IllegalArgumentException(&quot;Invalid regular expression&quot;);</span>
+<span class="nc" id="L101">    } </span>
+
+    /**
+     * Returns true if the text is matched by the regular expression.
+     * 
+     * @param  txt the text
+     * @return {@code true} if the text is matched by the regular expression,
+     *         {@code false} otherwise
+     */
+    public boolean recognizes(String txt) {
+<span class="nc" id="L111">        DirectedDFS dfs = new DirectedDFS(graph, 0);</span>
+<span class="nc" id="L112">        Bag&lt;Integer&gt; pc = new Bag&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (int v = 0; v &lt; graph.V(); v++)</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">            if (dfs.marked(v)) pc.add(v);</span>
+
+        // Compute possible NFA states for txt[i+1]
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (int i = 0; i &lt; txt.length(); i++) {</span>
+<span class="nc bnc" id="L118" title="All 8 branches missed.">            if (txt.charAt(i) == '*' || txt.charAt(i) == '|' || txt.charAt(i) == '(' || txt.charAt(i) == ')')</span>
+<span class="nc" id="L119">                throw new IllegalArgumentException(&quot;text contains the metacharacter '&quot; + txt.charAt(i) + &quot;'&quot;);</span>
+
+<span class="nc" id="L121">            Bag&lt;Integer&gt; match = new Bag&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            for (int v : pc) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">                if (v == m) continue;</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">                if ((regexp.charAt(v) == txt.charAt(i)) || regexp.charAt(v) == '.')</span>
+<span class="nc" id="L125">                    match.add(v+1); </span>
+            }
+<span class="nc" id="L127">            dfs = new DirectedDFS(graph, match); </span>
+<span class="nc" id="L128">            pc = new Bag&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            for (int v = 0; v &lt; graph.V(); v++)</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                if (dfs.marked(v)) pc.add(v);</span>
+
+            // optimization if no states reachable
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            if (pc.size() == 0) return false;</span>
+        }
+
+        // check for accept state
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        for (int v : pc)</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            if (v == m) return true;</span>
+<span class="nc" id="L139">        return false;</span>
+    }
+
+    /**
+     * Unit tests the {@code NFA} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L148">        String regexp = &quot;(&quot; + args[0] + &quot;)&quot;;</span>
+<span class="nc" id="L149">        String txt = args[1];</span>
+<span class="nc" id="L150">        NFA nfa = new NFA(regexp);</span>
+<span class="nc" id="L151">        StdOut.println(nfa.recognizes(txt));</span>
+<span class="nc" id="L152">    }</span>
+
+} 
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorAC (2018-10-16 00:24:24)</div></body></html>

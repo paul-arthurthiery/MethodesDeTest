@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Interval2D.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">Interval2D.java</span></div><h1>Interval2D.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac Interval2D.java
+ *  Execution:    java Interval2D
+ *  Dependencies: StdOut.java Interval1D.java StdDraw.java
+ *  
+ *  2-dimensional interval data type.
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code Interval2D} class represents a closed two-dimensional interval,
+ *  which represents all points (x, y) with both {@code xmin &lt;= x &lt;= xmax} and
+ *  {@code ymin &lt;= y &lt;= ymax}.
+ *  Two-dimensional intervals are immutable: their values cannot be changed
+ *  after they are created.
+ *  The class {@code Interval2D} includes methods for checking whether
+ *  a two-dimensional interval contains a point and determining whether
+ *  two two-dimensional intervals intersect.
+ *  &lt;p&gt;
+ *  For additional documentation, 
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/12oop&quot;&gt;Section 1.2&lt;/a&gt; of 
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne. 
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+public class Interval2D {
+    private final Interval1D x;
+    private final Interval1D y;
+
+    /**
+     * Initializes a two-dimensional interval.
+     * @param x the one-dimensional interval of x-coordinates
+     * @param y the one-dimensional interval of y-coordinates
+     */
+<span class="nc" id="L38">    public Interval2D(Interval1D x, Interval1D y) {</span>
+<span class="nc" id="L39">        this.x = x;</span>
+<span class="nc" id="L40">        this.y = y;</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Does this two-dimensional interval intersect that two-dimensional interval?
+     * @param that the other two-dimensional interval
+     * @return true if this two-dimensional interval intersects
+     *    that two-dimensional interval; false otherwise
+     */
+    public boolean intersects(Interval2D that) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (!this.x.intersects(that.x)) return false;</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (!this.y.intersects(that.y)) return false;</span>
+<span class="nc" id="L52">        return true;</span>
+    }
+
+    /**
+     * Does this two-dimensional interval contain the point p?
+     * @param p the two-dimensional point
+     * @return true if this two-dimensional interval contains the point p; false otherwise
+     */
+    public boolean contains(Point2D p) {
+<span class="nc bnc" id="L61" title="All 4 branches missed.">        return x.contains(p.x())  &amp;&amp; y.contains(p.y());</span>
+    }
+
+    /**
+     * Returns the area of this two-dimensional interval.
+     * @return the area of this two-dimensional interval
+     */
+    public double area() {
+<span class="nc" id="L69">        return x.length() * y.length();</span>
+    }
+        
+    /**
+     * Returns a string representation of this two-dimensional interval.
+     * @return a string representation of this two-dimensional interval
+     *    in the form [xmin, xmax] x [ymin, ymax]
+     */
+    public String toString() {
+<span class="nc" id="L78">        return x + &quot; x &quot; + y;</span>
+    }
+
+    /**
+     * Does this interval equal the other interval?
+     * @param other the other interval
+     * @return true if this interval equals the other interval; false otherwise
+     */
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (other == this) return true;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (other == null) return false;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (other.getClass() != this.getClass()) return false;</span>
+<span class="nc" id="L90">        Interval2D that = (Interval2D) other;</span>
+<span class="nc bnc" id="L91" title="All 4 branches missed.">        return this.x.equals(that.x) &amp;&amp; this.y.equals(that.y);</span>
+    }
+
+ 
+    /**
+     * Returns an integer hash code for this interval.  
+     * @return an integer hash code for this interval 
+     */
+    public int hashCode() {
+<span class="nc" id="L100">        int hash1 = x.hashCode();</span>
+<span class="nc" id="L101">        int hash2 = y.hashCode();</span>
+<span class="nc" id="L102">        return 31*hash1 + hash2;</span>
+    }
+
+    /**
+     * Draws this two-dimensional interval to standard draw.
+     */
+    public void draw() {
+<span class="nc" id="L109">        double xc = (x.min() + x.max()) / 2.0;</span>
+<span class="nc" id="L110">        double yc = (y.min() + y.max()) / 2.0;</span>
+<span class="nc" id="L111">        StdDraw.rectangle(xc, yc, x.length() / 2.0, y.length() / 2.0);</span>
+<span class="nc" id="L112">    }</span>
+
+    /**
+     * Unit tests the {@code Interval2D} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L120">        double xmin = Double.parseDouble(args[0]);</span>
+<span class="nc" id="L121">        double xmax = Double.parseDouble(args[1]);</span>
+<span class="nc" id="L122">        double ymin = Double.parseDouble(args[2]);</span>
+<span class="nc" id="L123">        double ymax = Double.parseDouble(args[3]);</span>
+<span class="nc" id="L124">        int trials = Integer.parseInt(args[4]);</span>
+
+<span class="nc" id="L126">        Interval1D xInterval = new Interval1D(xmin, xmax);</span>
+<span class="nc" id="L127">        Interval1D yInterval = new Interval1D(ymin, ymax);</span>
+<span class="nc" id="L128">        Interval2D box = new Interval2D(xInterval, yInterval);</span>
+<span class="nc" id="L129">        box.draw();</span>
+
+<span class="nc" id="L131">        Counter counter = new Counter(&quot;hits&quot;);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        for (int t = 0; t &lt; trials; t++) {</span>
+<span class="nc" id="L133">            double x = StdRandom.uniform(0.0, 1.0);</span>
+<span class="nc" id="L134">            double y = StdRandom.uniform(0.0, 1.0);</span>
+<span class="nc" id="L135">            Point2D point = new Point2D(x, y);</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            if (box.contains(point)) counter.increment();</span>
+<span class="nc" id="L138">            else                     point.draw();</span>
+        }
+
+<span class="nc" id="L141">        StdOut.println(counter);</span>
+<span class="nc" id="L142">        StdOut.printf(&quot;box area = %.2f\n&quot;, box.area());</span>
+<span class="nc" id="L143">    }</span>
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

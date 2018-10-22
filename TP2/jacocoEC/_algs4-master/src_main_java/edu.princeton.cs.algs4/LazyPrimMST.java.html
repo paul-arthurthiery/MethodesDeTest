@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>LazyPrimMST.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">GraphGeneratorTestEC (2018-10-15 23:10:54)</a> &gt; <a href="../../index.html" class="el_group">_algs4-master</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">edu.princeton.cs.algs4</a> &gt; <span class="el_source">LazyPrimMST.java</span></div><h1>LazyPrimMST.java</h1><pre class="source lang-java linenums">/******************************************************************************
+ *  Compilation:  javac LazyPrimMST.java
+ *  Execution:    java LazyPrimMST filename.txt
+ *  Dependencies: EdgeWeightedGraph.java Edge.java Queue.java
+ *                MinPQ.java UF.java In.java StdOut.java
+ *  Data files:   https://algs4.cs.princeton.edu/43mst/tinyEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/mediumEWG.txt
+ *                https://algs4.cs.princeton.edu/43mst/largeEWG.txt
+ *
+ *  Compute a minimum spanning forest using a lazy version of Prim's 
+ *  algorithm.
+ *
+ *  %  java LazyPrimMST tinyEWG.txt 
+ *  0-7 0.16000
+ *  1-7 0.19000
+ *  0-2 0.26000
+ *  2-3 0.17000
+ *  5-7 0.28000
+ *  4-5 0.35000
+ *  6-2 0.40000
+ *  1.81000
+ *
+ *  % java LazyPrimMST mediumEWG.txt
+ *  0-225   0.02383
+ *  49-225  0.03314
+ *  44-49   0.02107
+ *  44-204  0.01774
+ *  49-97   0.03121
+ *  202-204 0.04207
+ *  176-202 0.04299
+ *  176-191 0.02089
+ *  68-176  0.04396
+ *  58-68   0.04795
+ *  10.46351
+ *
+ *  % java LazyPrimMST largeEWG.txt
+ *  ...
+ *  647.66307
+ *
+ ******************************************************************************/
+
+package edu.princeton.cs.algs4;
+
+/**
+ *  The {@code LazyPrimMST} class represents a data type for computing a
+ *  &lt;em&gt;minimum spanning tree&lt;/em&gt; in an edge-weighted graph.
+ *  The edge weights can be positive, zero, or negative and need not
+ *  be distinct. If the graph is not connected, it computes a &lt;em&gt;minimum
+ *  spanning forest&lt;/em&gt;, which is the union of minimum spanning trees
+ *  in each connected component. The {@code weight()} method returns the 
+ *  weight of a minimum spanning tree and the {@code edges()} method
+ *  returns its edges.
+ *  &lt;p&gt;
+ *  This implementation uses a lazy version of &lt;em&gt;Prim's algorithm&lt;/em&gt;
+ *  with a binary heap of edges.
+ *  The constructor takes time proportional to &lt;em&gt;E&lt;/em&gt; log &lt;em&gt;E&lt;/em&gt;
+ *  and extra space (not including the graph) proportional to &lt;em&gt;E&lt;/em&gt;,
+ *  where &lt;em&gt;V&lt;/em&gt; is the number of vertices and &lt;em&gt;E&lt;/em&gt; is the number of edges.
+ *  Afterwards, the {@code weight()} method takes constant time
+ *  and the {@code edges()} method takes time proportional to &lt;em&gt;V&lt;/em&gt;.
+ *  &lt;p&gt;
+ *  For additional documentation,
+ *  see &lt;a href=&quot;https://algs4.cs.princeton.edu/43mst&quot;&gt;Section 4.3&lt;/a&gt; of
+ *  &lt;i&gt;Algorithms, 4th Edition&lt;/i&gt; by Robert Sedgewick and Kevin Wayne.
+ *  For alternate implementations, see {@link PrimMST}, {@link KruskalMST},
+ *  and {@link BoruvkaMST}.
+ *
+ *  @author Robert Sedgewick
+ *  @author Kevin Wayne
+ */
+<span class="nc bnc" id="L71" title="All 2 branches missed.">public class LazyPrimMST {</span>
+<span class="nc" id="L72">    private static final double FLOATING_POINT_EPSILON = 1E-12;</span>
+
+    private double weight;       // total weight of MST
+    private Queue&lt;Edge&gt; mst;     // edges in the MST
+    private boolean[] marked;    // marked[v] = true iff v on tree
+    private MinPQ&lt;Edge&gt; pq;      // edges with one endpoint in tree
+
+    /**
+     * Compute a minimum spanning tree (or forest) of an edge-weighted graph.
+     * @param G the edge-weighted graph
+     */
+<span class="nc" id="L83">    public LazyPrimMST(EdgeWeightedGraph G) {</span>
+<span class="nc" id="L84">        mst = new Queue&lt;Edge&gt;();</span>
+<span class="nc" id="L85">        pq = new MinPQ&lt;Edge&gt;();</span>
+<span class="nc" id="L86">        marked = new boolean[G.V()];</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        for (int v = 0; v &lt; G.V(); v++)     // run Prim from all vertices to</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            if (!marked[v]) prim(G, v);     // get a minimum spanning forest</span>
+
+        // check optimality conditions
+<span class="nc bnc" id="L91" title="All 4 branches missed.">        assert check(G);</span>
+<span class="nc" id="L92">    }</span>
+
+    // run Prim's algorithm
+    private void prim(EdgeWeightedGraph G, int s) {
+<span class="nc" id="L96">        scan(G, s);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        while (!pq.isEmpty()) {                        // better to stop when mst has V-1 edges</span>
+<span class="nc" id="L98">            Edge e = pq.delMin();                      // smallest edge on pq</span>
+<span class="nc" id="L99">            int v = e.either(), w = e.other(v);        // two endpoints</span>
+<span class="nc bnc" id="L100" title="All 6 branches missed.">            assert marked[v] || marked[w];</span>
+<span class="nc bnc" id="L101" title="All 4 branches missed.">            if (marked[v] &amp;&amp; marked[w]) continue;      // lazy, both v and w already scanned</span>
+<span class="nc" id="L102">            mst.enqueue(e);                            // add e to MST</span>
+<span class="nc" id="L103">            weight += e.weight();</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            if (!marked[v]) scan(G, v);               // v becomes part of tree</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            if (!marked[w]) scan(G, w);               // w becomes part of tree</span>
+        }
+<span class="nc" id="L107">    }</span>
+
+    // add all edges e incident to v onto pq if the other endpoint has not yet been scanned
+    private void scan(EdgeWeightedGraph G, int v) {
+<span class="nc bnc" id="L111" title="All 4 branches missed.">        assert !marked[v];</span>
+<span class="nc" id="L112">        marked[v] = true;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (Edge e : G.adj(v))</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">            if (!marked[e.other(v)]) pq.insert(e);</span>
+<span class="nc" id="L115">    }</span>
+        
+    /**
+     * Returns the edges in a minimum spanning tree (or forest).
+     * @return the edges in a minimum spanning tree (or forest) as
+     *    an iterable of edges
+     */
+    public Iterable&lt;Edge&gt; edges() {
+<span class="nc" id="L123">        return mst;</span>
+    }
+
+    /**
+     * Returns the sum of the edge weights in a minimum spanning tree (or forest).
+     * @return the sum of the edge weights in a minimum spanning tree (or forest)
+     */
+    public double weight() {
+<span class="nc" id="L131">        return weight;</span>
+    }
+
+    // check optimality conditions (takes time proportional to E V lg* V)
+    private boolean check(EdgeWeightedGraph G) {
+
+        // check weight
+<span class="nc" id="L138">        double totalWeight = 0.0;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (Edge e : edges()) {</span>
+<span class="nc" id="L140">            totalWeight += e.weight();</span>
+        }
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (Math.abs(totalWeight - weight()) &gt; FLOATING_POINT_EPSILON) {</span>
+<span class="nc" id="L143">            System.err.printf(&quot;Weight of edges does not equal weight(): %f vs. %f\n&quot;, totalWeight, weight());</span>
+<span class="nc" id="L144">            return false;</span>
+        }
+
+        // check that it is acyclic
+<span class="nc" id="L148">        UF uf = new UF(G.V());</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        for (Edge e : edges()) {</span>
+<span class="nc" id="L150">            int v = e.either(), w = e.other(v);</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (uf.connected(v, w)) {</span>
+<span class="nc" id="L152">                System.err.println(&quot;Not a forest&quot;);</span>
+<span class="nc" id="L153">                return false;</span>
+            }
+<span class="nc" id="L155">            uf.union(v, w);</span>
+        }
+
+        // check that it is a spanning forest
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        for (Edge e : G.edges()) {</span>
+<span class="nc" id="L160">            int v = e.either(), w = e.other(v);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (!uf.connected(v, w)) {</span>
+<span class="nc" id="L162">                System.err.println(&quot;Not a spanning forest&quot;);</span>
+<span class="nc" id="L163">                return false;</span>
+            }
+        }
+
+        // check that it is a minimal spanning forest (cut optimality conditions)
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        for (Edge e : edges()) {</span>
+
+            // all edges in MST except e
+<span class="nc" id="L171">            uf = new UF(G.V());</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            for (Edge f : mst) {</span>
+<span class="nc" id="L173">                int x = f.either(), y = f.other(x);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                if (f != e) uf.union(x, y);</span>
+            }
+
+            // check that e is min weight edge in crossing cut
+<span class="nc bnc" id="L178" title="All 2 branches missed.">            for (Edge f : G.edges()) {</span>
+<span class="nc" id="L179">                int x = f.either(), y = f.other(x);</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                if (!uf.connected(x, y)) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                    if (f.weight() &lt; e.weight()) {</span>
+<span class="nc" id="L182">                        System.err.println(&quot;Edge &quot; + f + &quot; violates cut optimality conditions&quot;);</span>
+<span class="nc" id="L183">                        return false;</span>
+                    }
+                }
+            }
+
+        }
+
+<span class="nc" id="L190">        return true;</span>
+    }
+    
+    
+    /**
+     * Unit tests the {@code LazyPrimMST} data type.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L200">        In in = new In(args[0]);</span>
+<span class="nc" id="L201">        EdgeWeightedGraph G = new EdgeWeightedGraph(in);</span>
+<span class="nc" id="L202">        LazyPrimMST mst = new LazyPrimMST(G);</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        for (Edge e : mst.edges()) {</span>
+<span class="nc" id="L204">            StdOut.println(e);</span>
+        }
+<span class="nc" id="L206">        StdOut.printf(&quot;%.5f\n&quot;, mst.weight());</span>
+<span class="nc" id="L207">    }</span>
+
+}
+
+/******************************************************************************
+ *  Copyright 2002-2018, Robert Sedgewick and Kevin Wayne.
+ *
+ *  This file is part of algs4.jar, which accompanies the textbook
+ *
+ *      Algorithms, 4th edition by Robert Sedgewick and Kevin Wayne,
+ *      Addison-Wesley Professional, 2011, ISBN 0-321-57351-X.
+ *      http://algs4.cs.princeton.edu
+ *
+ *
+ *  algs4.jar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  algs4.jar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with algs4.jar.  If not, see http://www.gnu.org/licenses.
+ ******************************************************************************/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>GraphGeneratorTestEC (2018-10-15 23:10:54)</div></body></html>

@@ -1,4 +1,4 @@
-package Tests;
+package TP2;
 
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.GraphGenerator;
