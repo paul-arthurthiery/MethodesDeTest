@@ -1,0 +1,10 @@
+package TP5;
+
+public enum Operator {
+	UNION,
+	INTERSECTION,
+	DIFFERENCE,
+	SYMMETRIC_DIFFERENCE,
+	IS_SUBSET,
+	IS_SUPERSET
+}
